@@ -31,7 +31,7 @@
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
-                  <TextField />
+                  <TextField fx:id="ttlField" />
                </children>
             </VBox>
             <VBox layoutY="305.0" prefHeight="65.0" prefWidth="240.0">
@@ -53,16 +53,16 @@
                   </Label>
                   <HBox prefHeight="100.0" prefWidth="240.0">
                      <children>
-                        <ChoiceBox prefHeight="35.0" prefWidth="120.0" />
-                        <ChoiceBox prefHeight="35.0" prefWidth="120.0" />
+                        <ChoiceBox fx:id="choiceOrigem" prefHeight="35.0" prefWidth="120.0" />
+                        <ChoiceBox fx:id="choiceDestino" prefHeight="35.0" prefWidth="120.0" />
                      </children>
                   </HBox>
                </children>
             </VBox>
             <VBox layoutY="608.0" prefHeight="80.0" prefWidth="240.0">
                <children>
-                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Carregar Backbone" />
-                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Iniciar Encaminhamento" />
+                  <Button fx:id="buttonReloadBackbone" mnemonicParsing="false" onAction="#recarregarBackbone" prefHeight="40.0" prefWidth="240.0" text="Carregar Backbone" />
+                  <Button mnemonicParsing="false" onAction="#iniciarEnvio" prefHeight="40.0" prefWidth="240.0" text="Iniciar Encaminhamento" />
                </children>
             </VBox>
          </children></AnchorPane>
