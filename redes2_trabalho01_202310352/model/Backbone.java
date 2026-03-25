@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import controller.BackboneController;
+
 public class Backbone {
   private ArrayList<Roteador> roteadores = new ArrayList<>();
 
@@ -17,7 +19,7 @@ public class Backbone {
    * Parametros: posX = posicao horizontal; posY = posicao vertical
    * Retorno: void
    */
-  public void carregarArquivo(String caminho) {
+  public void carregarArquivo(String caminho, BackboneController controller) {
     try {
       BufferedReader buffRead = new BufferedReader(new FileReader(caminho));
       String linha = buffRead.readLine();
@@ -31,7 +33,7 @@ public class Backbone {
         i++;
       } // fim do while
 
-      gerarRoteadores(quantidadeRoteadores);
+      gerarRoteadores(quantidadeRoteadores, controller);
 
       System.out.println("Quantidade de roteadores no backbone: " + quantidadeRoteadores);
 
@@ -67,10 +69,10 @@ public class Backbone {
    * Parametros: quantR = quantidade de roteadores a ser criado
    * Retorno: void
    */
-  public void gerarRoteadores(int quantR) {
+  public void gerarRoteadores(int quantR, BackboneController controller) {
     roteadores.clear();
     for (int j = 1; j <= quantR; j++) {
-      roteadores.add(new Roteador(j));
+      roteadores.add(new Roteador(j, controller));
     } // fim do for
   } // fim do metodo carregarArquivo
 

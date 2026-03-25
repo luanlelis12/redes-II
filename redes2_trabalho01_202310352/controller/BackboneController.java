@@ -15,7 +15,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -25,6 +24,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Line;
 import model.Aresta;
 import model.Backbone;
+import model.Pacote;
 import model.Roteador;
 
 public class BackboneController implements Initializable {
@@ -41,9 +41,14 @@ public class BackboneController implements Initializable {
   ChoiceBox<Integer> choiceDestino;
   @FXML
   TextField ttlField;
+  @FXML
+  Label labelPacoteGerado;
+  @FXML
+  Label labelPacoteChegado;
 
   private Backbone rede = new Backbone();
   private int quantRoteadores = 0;
+  private int pacotesChegados = 0;
   private double anguloDosRoteadores = 0;
   private int versaoAlgoritmo;
 
@@ -57,7 +62,13 @@ public class BackboneController implements Initializable {
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O BackboneController foi carregado corretamente!");
-    rede.carregarArquivo(arquivo);
+    rede.carregarArquivo(arquivo, this);
+
+    for (Roteador r : rede.getRoteadores()) {
+      Thread threadRoteador = new Thread(r);
+      threadRoteador.setDaemon(true);
+      threadRoteador.start();
+    }
 
     Platform.runLater(() -> {
       desenharRede(arquivo);
@@ -170,7 +181,7 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   public void recarregarBackbone() {
-    rede.carregarArquivo(arquivo);
+    rede.carregarArquivo(arquivo, this);
 
     Platform.runLater(() -> {
       paneRoteadores.getChildren().clear();
@@ -199,10 +210,42 @@ public class BackboneController implements Initializable {
    */
   public void iniciarEnvio() {
 
-    String algoritmo = choiceImplementacao.getValue();
-    versaoAlgoritmo = Integer.parseInt(algoritmo.replaceAll("\\D", ""));
+    if (choiceImplementacao.getValue() == null || choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
+      System.out.println("Erro: Selecione todos os campos antes de enviar!");
+      return;
+    } // fim do if
 
-    System.out.println(versaoAlgoritmo);
+    try {
+      String algoritmo = choiceImplementacao.getValue();
+      versaoAlgoritmo = Integer.parseInt(algoritmo.replaceAll("\\D", ""));
+
+      int idOrigem = choiceOrigem.getValue();
+      int idDestino = choiceDestino.getValue();
+      int ttl = Integer.parseInt(ttlField.getText());
+
+      Pacote primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
+
+      for (Roteador roteador : rede.getRoteadores()) {
+        roteador.setAlgoritmo(versaoAlgoritmo);
+      } // fim do for
+
+      System.out.println("Iniciando Algoritmo "+versaoAlgoritmo+" do roteador "+idOrigem+" para o roteador "+idDestino);
+
+      Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+      rOrigem.enviarPacote(primeiroPacote);
+
+    } catch (NumberFormatException e) {
+      System.out.println("Erro: O TTL deve ser um numero inteiro!");
+    } // fim do try-catch
   } // fim do metodo iniciarEnvio
+
+  public void atualizarContadorPacotes(int contador) {
+    Platform.runLater(() -> labelPacoteGerado.setText(String.valueOf(contador)));
+  }
+
+  public void atualizarContadorPacotesChegados() {
+    pacotesChegados++;
+    Platform.runLater(() -> labelPacoteChegado.setText(String.valueOf(pacotesChegados)));
+  }
 
 }

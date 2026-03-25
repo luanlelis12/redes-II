@@ -13,7 +13,7 @@
    <children>
       <AnchorPane fx:id="paneConfiguracoes" minHeight="0.0" minWidth="-Infinity" prefHeight="688.0" prefWidth="240.0" style="-fx-background-color: lightgray;">
          <children>
-            <VBox prefHeight="240.0" prefWidth="240.0">
+            <VBox prefHeight="108.0" prefWidth="240.0">
                <children>
                   <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="Opções do Algoritmo" textAlignment="CENTER">
                      <font>
@@ -22,6 +22,21 @@
                   </Label>
                   <ChoiceBox fx:id="choiceImplementacao" prefWidth="240.0" />
                   <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
+               </children>
+            </VBox>
+            <VBox layoutY="151.0" prefHeight="65.0" prefWidth="240.0">
+               <children>
+                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="ORIGEM -&gt; DESTINO" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="20.0" />
+                     </font>
+                  </Label>
+                  <HBox prefHeight="100.0" prefWidth="240.0">
+                     <children>
+                        <ChoiceBox fx:id="choiceOrigem" prefHeight="35.0" prefWidth="120.0" />
+                        <ChoiceBox fx:id="choiceDestino" prefHeight="35.0" prefWidth="120.0" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
             <VBox layoutY="240.0" prefHeight="65.0" prefWidth="240.0">
@@ -41,22 +56,17 @@
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
-                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="0" textAlignment="CENTER" />
+                  <Label fx:id="labelPacoteGerado" alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="0" textAlignment="CENTER" />
                </children>
             </VBox>
-            <VBox layoutY="383.0" prefHeight="65.0" prefWidth="240.0">
+            <VBox layoutY="371.0" prefHeight="65.0" prefWidth="240.0">
                <children>
-                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="ORIGEM -&gt; DESTINO" textAlignment="CENTER">
+                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="PACOTES CHEGADOS" textAlignment="CENTER">
                      <font>
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
-                  <HBox prefHeight="100.0" prefWidth="240.0">
-                     <children>
-                        <ChoiceBox fx:id="choiceOrigem" prefHeight="35.0" prefWidth="120.0" />
-                        <ChoiceBox fx:id="choiceDestino" prefHeight="35.0" prefWidth="120.0" />
-                     </children>
-                  </HBox>
+                  <Label fx:id="labelPacoteChegado" alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="0" textAlignment="CENTER" />
                </children>
             </VBox>
             <VBox layoutY="608.0" prefHeight="80.0" prefWidth="240.0">
