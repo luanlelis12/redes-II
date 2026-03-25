@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 24 03 2026
-* Ultima alteracao.: 
+* Ultima alteracao.: 24 03 2026
 * Nome.............: Pacote.java
 * Funcao...........: 
 *************************************************************** */
@@ -14,6 +14,12 @@ public class Pacote {
     private int ttl;
 
     private static int contadorPacotes = 0;
+
+    public Pacote(int idRoteadorOrigem, int idRoteadorDestino) {
+        this.idRoteadorOrigem = idRoteadorOrigem;
+        this.idRoteadorDestino = idRoteadorDestino;
+        contadorPacotes++;
+    }
 
     public Pacote(int idRoteadorOrigem, int idRoteadorDestino, int ttl) {
         this.idRoteadorOrigem = idRoteadorOrigem;

@@ -11,6 +11,7 @@ package controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,6 +23,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
+import javafx.util.Duration;
 import model.Aresta;
 import model.Backbone;
 import model.Pacote;
@@ -57,6 +62,7 @@ public class BackboneController implements Initializable {
 
   private final String arquivo = "backbone.txt";
   private final Image imagemRoteador = new Image("file:view/img/roteador.png");
+  private final Image imagemPacote = new Image("file:view/img/pacote.png");
   private final double raio = 300;
 
   @Override
@@ -174,6 +180,35 @@ public class BackboneController implements Initializable {
 
   } // fim do metodo exibirConexao
 
+  public void exibirPacote(Pacote pacote, Roteador rOrigem, Roteador rDestino) {
+    ImageView imageViewPacote = new ImageView(imagemPacote);
+    imageViewPacote.setFitWidth(30);
+    imageViewPacote.setFitHeight(30);
+    Path caminho = new Path();
+
+    double[] posicaoR1 = calcularPosicaoRoteador(rOrigem.getIdRoteador());
+    double[] posicaoR2 = calcularPosicaoRoteador(rDestino.getIdRoteador());
+
+    caminho.getElements().add(new MoveTo(posicaoR1[0], posicaoR1[1]));
+    caminho.getElements().add(new LineTo(posicaoR2[0], posicaoR2[1]));
+
+    PathTransition animacao = new PathTransition();
+    animacao.setDuration(Duration.seconds(3));
+    animacao.setNode(imageViewPacote);
+    animacao.setPath(caminho);
+    animacao.setCycleCount(1);
+    animacao.setAutoReverse(true);
+
+    animacao.setOnFinished(e -> {
+      paneRoteadores.getChildren().remove(imageViewPacote);
+    });
+
+    // 4. Iniciar
+    animacao.play();
+
+    paneRoteadores.getChildren().addAll(caminho, imageViewPacote); // Adiciona caminho e o objeto
+  } // fim do metodo exibirPacote
+
   /*
    * Metodo: recarregarBackbone
    * Funcao: recarrega o backbone caso tenha uma alteracao no txt
@@ -223,13 +258,19 @@ public class BackboneController implements Initializable {
       int idDestino = choiceDestino.getValue();
       int ttl = Integer.parseInt(ttlField.getText());
 
-      Pacote primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
+      Pacote primeiroPacote;
+      if (versaoAlgoritmo == 1 | versaoAlgoritmo == 2) {
+        primeiroPacote = new Pacote(idOrigem, idDestino);
+      } else {
+        primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
+      }
 
       for (Roteador roteador : rede.getRoteadores()) {
         roteador.setAlgoritmo(versaoAlgoritmo);
       } // fim do for
 
-      System.out.println("Iniciando Algoritmo "+versaoAlgoritmo+" do roteador "+idOrigem+" para o roteador "+idDestino);
+      System.out.println(
+          "Iniciando Algoritmo " + versaoAlgoritmo + " do roteador " + idOrigem + " para o roteador " + idDestino);
 
       Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
       rOrigem.enviarPacote(primeiroPacote);

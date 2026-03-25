@@ -36,11 +36,6 @@ public class Roteador extends Thread {
       try {
         Pacote pacoteAtual = bufferPacotes.take();
 
-        if (pacoteAtual.getTtl() <= 0) {
-          System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
-          continue;
-        } // fim do if
-
         processaPacote(pacoteAtual);
 
       } catch (InterruptedException e) {
@@ -57,7 +52,11 @@ public class Roteador extends Thread {
       controller.atualizarContadorPacotesChegados();
       System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!");
     } else {
-      enviarPacote(pacote);
+      if (pacote.getTtl() <= 0 & (algoritmo == 3 | algoritmo == 4)) {
+        System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
+      } else {
+        enviarPacote(pacote);
+      } // fim do if
     }
 
   }
@@ -98,10 +97,12 @@ public class Roteador extends Thread {
   public void roteamentoV1(Pacote pacote) {
     try {
       for (Aresta vizinho : conexoes) {
-        System.out.println("Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
-        Pacote copia = new Pacote(pacote.getIdRoteadorOrigem(), pacote.getIdRoteadorDestino(), pacote.getTtl() - 1);
-        Thread.sleep(500); // Meio segundo de delay
+        System.out.println(
+            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
+        Pacote copia = new Pacote(pacote.getIdRoteadorOrigem(), pacote.getIdRoteadorDestino());
         controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
+        Thread.sleep(500); // Meio segundo de delay
+        controller.exibirPacote(pacote, this, vizinho.getDestino());
         vizinho.getDestino().receberPacote(copia);
       } // fim do for
     } catch (InterruptedException e) {
@@ -114,7 +115,19 @@ public class Roteador extends Thread {
   }
 
   public void roteamentoV3(Pacote pacote) {
-
+    // try {
+    // for (Aresta vizinho : conexoes) {
+    // System.out.println("Roteador " + idRoteador + ": Pacote enviado para Roteador
+    // " + vizinho.getDestino().getIdRoteador());
+    // Pacote copia = new Pacote(pacote.getIdRoteadorOrigem(),
+    // pacote.getIdRoteadorDestino(), pacote.getTtl() - 1);
+    // Thread.sleep(500); // Meio segundo de delay
+    // controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
+    // vizinho.getDestino().receberPacote(copia);
+    // } // fim do for
+    // } catch (InterruptedException e) {
+    // System.out.println("Roteador " + idRoteador + ": Falhou em enviar pacote.");
+    // } // fim do try-catch
   }
 
   public void roteamentoV4(Pacote pacote) {

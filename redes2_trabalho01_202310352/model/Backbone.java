@@ -1,3 +1,11 @@
+/* ***************************************************************
+* Autor............: Luan Alves Lelis Costa
+* Matricula........: 202310352
+* Inicio...........: 16 03 2026
+* Ultima alteracao.: 24 03 2026
+* Nome.............: Backbone.java
+* Funcao...........: 
+*************************************************************** */
 package model;
 
 import java.io.BufferedReader;
