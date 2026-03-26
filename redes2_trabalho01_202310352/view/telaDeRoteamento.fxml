@@ -21,7 +21,7 @@
                      </font>
                   </Label>
                   <ChoiceBox fx:id="choiceImplementacao" prefWidth="240.0" />
-                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
+                  <Button mnemonicParsing="false" onAction="#abrirSobre" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
                </children>
             </VBox>
             <VBox layoutY="151.0" prefHeight="65.0" prefWidth="240.0">

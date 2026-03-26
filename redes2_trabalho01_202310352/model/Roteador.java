@@ -17,9 +17,10 @@ import controller.BackboneController;
 public class Roteador extends Thread {
   private int idRoteador;
   private int algoritmo;
-  private boolean estaRodando = true;
+  private boolean rodando = true;
   private BackboneController controller;
   private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
+
   private ArrayList<Aresta> conexoes = new ArrayList<>();
 
   public Roteador(int idRoteador, BackboneController controller) {
@@ -31,8 +32,7 @@ public class Roteador extends Thread {
   @Override
   public void run() {
     System.out.println("Roteador " + idRoteador + ": ligado e aguardando pacotes...");
-
-    while (estaRodando) {
+    while (rodando) {
       try {
         Pacote pacoteAtual = bufferPacotes.take();
 
@@ -40,11 +40,38 @@ public class Roteador extends Thread {
 
       } catch (InterruptedException e) {
         System.out.println("Roteador " + idRoteador + ": desligado.");
-        estaRodando = false;
+        rodando = false;
       } // fim do try-catch
     } // fim do while
   }
 
+  /*
+   * Metodo: desligar
+   * Funcao: define a flag como falsa para desligar o roteador
+   * Parametros:
+   * Retorno: void
+   */
+  public void desligar() {
+    this.rodando = false;
+  } // fim do metodo desligar
+
+  /*
+   * Metodo: ligar
+   * Funcao: define a flag como verdadeira para ligar o roteador
+   * Parametros:
+   * Retorno: void
+   */
+  public void ligar() {
+    this.rodando = true;
+  } // fim do metodo ligar
+
+  /*
+   * Metodo: processaPacote
+   * Funcao: processa o pacote e verifica se eh o roteador atual eh o destino dele
+   * ou se vai continuar enviando o pacote
+   * Parametros: Pacote recebido pelo roteador
+   * Retorno: void
+   */
   public void processaPacote(Pacote pacote) {
     System.out.println("Roteador " + idRoteador + ": Esta processando um pacote. Fila = " + bufferPacotes.size());
     checaEstaAtivo();
@@ -52,23 +79,22 @@ public class Roteador extends Thread {
       controller.atualizarContadorPacotesChegados();
       System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!");
     } else {
-      if (pacote.getTtl() <= 0 & (algoritmo == 3 | algoritmo == 4)) {
+      if (pacote.getTtl() <= 0 & (algoritmo == 3 | algoritmo == 4)) { // verifica o ttl e o algoritmo
         System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
       } else {
         enviarPacote(pacote);
       } // fim do if
-    }
+    } // fim do if
+  } // fim do metodo processaPacote
 
-  }
-
-  /****************************************************************
+  /*
    * Metodo: checaEstaAtivo
    * Funcao: metodo checa se a thread foi desativada (analiando o valor de
    * 'estaAtivo'),
    * caso positivo interrompe a thread atual
-   ****************************************************************/
+   */
   public void checaEstaAtivo() {
-    if (!estaRodando) {
+    if (!rodando) {
       Thread.currentThread().interrupt();
     } // fim do if
   } // fim do metodo checaEstaAtivo
@@ -157,6 +183,14 @@ public class Roteador extends Thread {
 
   public void setAlgoritmo(int algoritmo) {
     this.algoritmo = algoritmo;
+  }
+
+  public BlockingQueue<Pacote> getBufferPacotes() {
+    return bufferPacotes;
+  }
+
+  public void setBufferPacotes(BlockingQueue<Pacote> bufferPacotes) {
+    this.bufferPacotes = bufferPacotes;
   }
 
 }
