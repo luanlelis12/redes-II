@@ -181,32 +181,35 @@ public class BackboneController implements Initializable {
   } // fim do metodo exibirConexao
 
   public void exibirPacote(Pacote pacote, Roteador rOrigem, Roteador rDestino) {
-    ImageView imageViewPacote = new ImageView(imagemPacote);
-    imageViewPacote.setFitWidth(30);
-    imageViewPacote.setFitHeight(30);
-    Path caminho = new Path();
+    Platform.runLater(() -> {
+      ImageView imageViewPacote = new ImageView(imagemPacote);
+      imageViewPacote.setFitWidth(30);
+      imageViewPacote.setFitHeight(30);
+      Path caminho = new Path();
 
-    double[] posicaoR1 = calcularPosicaoRoteador(rOrigem.getIdRoteador());
-    double[] posicaoR2 = calcularPosicaoRoteador(rDestino.getIdRoteador());
+      double[] posicaoR1 = calcularPosicaoRoteador(rOrigem.getIdRoteador());
+      double[] posicaoR2 = calcularPosicaoRoteador(rDestino.getIdRoteador());
 
-    caminho.getElements().add(new MoveTo(posicaoR1[0], posicaoR1[1]));
-    caminho.getElements().add(new LineTo(posicaoR2[0], posicaoR2[1]));
+      caminho.getElements().add(new MoveTo(posicaoR1[0], posicaoR1[1]));
+      caminho.getElements().add(new LineTo(posicaoR2[0], posicaoR2[1]));
 
-    PathTransition animacao = new PathTransition();
-    animacao.setDuration(Duration.seconds(3));
-    animacao.setNode(imageViewPacote);
-    animacao.setPath(caminho);
-    animacao.setCycleCount(1);
-    animacao.setAutoReverse(true);
+      PathTransition animacao = new PathTransition();
+      animacao.setDuration(Duration.seconds(1));
+      animacao.setNode(imageViewPacote);
+      animacao.setPath(caminho);
+      animacao.setCycleCount(1);
+      animacao.setAutoReverse(true);
 
-    animacao.setOnFinished(e -> {
-      paneRoteadores.getChildren().remove(imageViewPacote);
+      animacao.setOnFinished(e -> {
+        paneRoteadores.getChildren().remove(imageViewPacote);
+        rDestino.receberPacote(pacote);
+      });
+
+      // 4. Iniciar
+      animacao.play();
+
+      paneRoteadores.getChildren().addAll(caminho, imageViewPacote); // Adiciona caminho e o objeto
     });
-
-    // 4. Iniciar
-    animacao.play();
-
-    paneRoteadores.getChildren().addAll(caminho, imageViewPacote); // Adiciona caminho e o objeto
   } // fim do metodo exibirPacote
 
   /*

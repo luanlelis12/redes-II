@@ -95,19 +95,13 @@ public class Roteador extends Thread {
   }
 
   public void roteamentoV1(Pacote pacote) {
-    try {
-      for (Aresta vizinho : conexoes) {
-        System.out.println(
-            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
-        Pacote copia = new Pacote(pacote.getIdRoteadorOrigem(), pacote.getIdRoteadorDestino());
-        controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
-        Thread.sleep(500); // Meio segundo de delay
-        controller.exibirPacote(pacote, this, vizinho.getDestino());
-        vizinho.getDestino().receberPacote(copia);
-      } // fim do for
-    } catch (InterruptedException e) {
-      System.out.println("Roteador " + idRoteador + ": Falhou em enviar pacote.");
-    } // fim do try-catch
+    for (Aresta vizinho : conexoes) {
+      System.out.println(
+          "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
+      Pacote copia = new Pacote(pacote.getIdRoteadorOrigem(), pacote.getIdRoteadorDestino());
+      controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
+      controller.exibirPacote(copia, this, vizinho.getDestino());
+    } // fim do for
   } // fim do metodo roteamentoV1
 
   public void roteamentoV2(Pacote pacote) {
