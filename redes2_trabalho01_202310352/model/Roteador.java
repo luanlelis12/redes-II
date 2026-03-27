@@ -9,6 +9,9 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -20,6 +23,9 @@ public class Roteador extends Thread {
   private boolean rodando = true;
   private BackboneController controller;
   private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
+  private double[] coordenadaXY;
+
+  private Map<Integer, Integer> memoriaSequencia = new HashMap<>();
 
   private ArrayList<Aresta> conexoes = new ArrayList<>();
 
@@ -79,11 +85,43 @@ public class Roteador extends Thread {
       controller.atualizarContadorPacotesChegados();
       System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!");
     } else {
-      if (pacote.getTtl() <= 0 & (algoritmo == 3 | algoritmo == 4)) { // verifica o ttl e o algoritmo
-        System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
-      } else {
-        enviarPacote(pacote);
-      } // fim do if
+      switch (algoritmo) {
+        case 1:
+          enviarPacote(pacote);
+          break;
+        case 2:
+          enviarPacote(pacote);
+          break;
+        case 3:
+          if (pacote.getTtl() <= 0) { // verifica o ttl
+            System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
+          } else {
+            enviarPacote(pacote);
+          } // fim do if
+          break;
+        case 4:
+          int criador = pacote.getIdRoteadorCriador();
+          int seqPacote = pacote.getNumeroSequencia();
+
+          int maiorSeqConhecida = memoriaSequencia.getOrDefault(criador, 0);
+
+          if (pacote.getTtl() <= 0) { // verifica o ttl
+            System.out.println("Roteador " + idRoteador + ": Pacote descartado (TTL=0)");
+          } else if (seqPacote > maiorSeqConhecida) {
+            memoriaSequencia.put(criador, seqPacote);
+            System.out.println("Roteador " + idRoteador + ": aceitou Pacote Novo (Seq: " + seqPacote + ")");
+
+            enviarPacote(pacote);
+          } else {
+            System.out.println(
+                "Roteador " + idRoteador + ": DESCARTOU pacote repetido (Seq: " + seqPacote + " ja processado).");
+          } // fim do if
+          break;
+
+        default:
+          System.out.println("Erro: Algoritmo de roteamento nao selecionado");
+          break;
+      } // fim do switch-case
     } // fim do if
   } // fim do metodo processaPacote
 
@@ -121,41 +159,56 @@ public class Roteador extends Thread {
   } // fim do metodo enviarPacote
 
   public void roteamentoV1(Pacote pacote) {
-    for (Aresta vizinho : conexoes) {
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
       System.out.println(
-          "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
-      Pacote copia = new Pacote(this.getIdRoteador(), pacote.getIdRoteadorDestino());
+          "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getIdRoteador());
+      Pacote copia = new Pacote(this.idRoteador, pacote.getIdRoteadorDestino());
       controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
-      controller.exibirPacote(copia, this, vizinho.getDestino());
+      controller.exibirPacote(copia, this, vizinho);
     } // fim do for
   } // fim do metodo roteamentoV1
 
   public void roteamentoV2(Pacote pacote) {
-    for (Aresta vizinho : conexoes) {
-      if (pacote.getIdRoteadorOrigem() != vizinho.getDestino().getIdRoteador()) {
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
+      if (pacote.getIdRoteadorOrigemAnterior() != vizinho.getIdRoteador()) {
         System.out.println(
-            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
-        Pacote copia = new Pacote(this.getIdRoteador(), pacote.getIdRoteadorDestino());
+            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getIdRoteador());
+        Pacote copia = new Pacote(this.idRoteador, pacote.getIdRoteadorDestino());
         controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
-        controller.exibirPacote(copia, this, vizinho.getDestino());
+        controller.exibirPacote(copia, this, vizinho);
       } // fim do for
     } // fim do for
   } // fim do metodo roteamentoV2
 
   public void roteamentoV3(Pacote pacote) {
-    for (Aresta vizinho : conexoes) {
-      if (pacote.getIdRoteadorOrigem() != vizinho.getDestino().getIdRoteador()) {
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
+      if (pacote.getIdRoteadorOrigemAnterior() != vizinho.getIdRoteador()) {
         System.out.println(
-            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getDestino().getIdRoteador());
-        Pacote copia = new Pacote(this.getIdRoteador(), pacote.getIdRoteadorDestino(), pacote.getTtl() - 1);
+            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getIdRoteador());
+        Pacote copia = new Pacote(this.idRoteador, pacote.getIdRoteadorDestino(), pacote.getTtl() - 1);
         controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
-        controller.exibirPacote(copia, this, vizinho.getDestino());
+        controller.exibirPacote(copia, this, vizinho);
       } // fim do for
     } // fim do for
   } // fim do metodo roteamentoV3
 
   public void roteamentoV4(Pacote pacote) {
+    int criador = pacote.getIdRoteadorCriador();
+    int seqPacote = pacote.getNumeroSequencia();
 
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
+      if (pacote.getIdRoteadorOrigemAnterior() != vizinho.getIdRoteador()) {
+        System.out.println(
+            "Roteador " + idRoteador + ": Pacote enviado para Roteador " + vizinho.getIdRoteador());
+        Pacote copia = new Pacote(this.idRoteador, pacote.getIdRoteadorDestino(), pacote.getTtl() - 1, criador, seqPacote);
+        controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
+        controller.exibirPacote(copia, this, vizinho);
+      } // fim do for
+    } // fim do for
   }
 
   public void receberPacote(Pacote p) {
@@ -191,6 +244,14 @@ public class Roteador extends Thread {
 
   public void setBufferPacotes(BlockingQueue<Pacote> bufferPacotes) {
     this.bufferPacotes = bufferPacotes;
+  }
+
+  public double[] getCoordenadaXY() {
+    return coordenadaXY;
+  }
+
+  public void setCoordenadaXY(double[] coordenadaXY) {
+    this.coordenadaXY = Arrays.copyOf(coordenadaXY, coordenadaXY.length);
   }
 
 }
