@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane fx:id="pane" fx:controller="controllers.ConfiguracoesController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="408.0" style="-fx-background-color: #FFE9E8;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ChoiceBox fx:id="roteadorRemetente" layoutX="114.0" layoutY="194.0" prefHeight="36.0" prefWidth="184.0" />
+      <ChoiceBox fx:id="roteadorDestino" layoutX="112.0" layoutY="310.0" prefHeight="36.0" prefWidth="184.0" />
+      <TextField fx:id="ttlPacote" layoutX="112.0" layoutY="415.0" prefHeight="36.0" prefWidth="184.0" />
+      <ImageView fx:id="botaoPLAY" onMouseClicked="#setEscolhas" fitHeight="64.0" fitWidth="146.0" layoutX="136.0" layoutY="482.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/botaoPlay.png" />
+         </image>
+      </ImageView>
+      <ChoiceBox fx:id="escolhaVersaoAlgoritmo" layoutX="114.0" layoutY="88.0" prefHeight="36.0" prefWidth="184.0" />
+      <ImageView fx:id="algoritmoLabel" fitHeight="76.0" fitWidth="249.0" layoutX="82.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/algoritmoLabel.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="remetenteLabel" fitHeight="76.0" fitWidth="249.0" layoutX="80.0" layoutY="150.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/remetenteLabel.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="destinoLabel" fitHeight="40.0" fitWidth="227.0" layoutX="104.0" layoutY="260.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/destinoLabel.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="ttlLabel" fitHeight="40.0" fitWidth="227.0" layoutX="153.0" layoutY="368.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/ttlLabel.png" />
+         </image>
+      </ImageView>
+   </children>
+</Pane>

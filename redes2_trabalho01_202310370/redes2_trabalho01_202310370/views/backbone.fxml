@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane fx:id="paneBackbone" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" style="-fx-background-color: #FFE9E8;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BackboneController">
+   <children>
+      <ImageView fitHeight="57.0" fitWidth="50.0" layoutX="933.0" layoutY="14.0" onMouseClicked="#configurarSimulacao" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/botaoConfig.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="110.0" fitWidth="223.0" layoutX="14.0" layoutY="27.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/contadorLabel.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="64.0" fitWidth="57.0" layoutX="930.0" layoutY="70.0" onMouseClicked="#abrirHelp" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/botaoHelp.png" />
+         </image>
+      </ImageView>
+      <Label fx:id="contadorPacotes" layoutX="120.0" layoutY="90.0" text="0">
+         <font>
+            <Font size="20.0" />
+         </font></Label>
+      <Text fx:id="labelComecoSimulacao"  layoutX="24.0" layoutY="521.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Começando nova simulação...." textAlignment="CENTER" visible="false" wrappingWidth="203.064453125">
+         <font>
+            <Font name="System Italic" size="20.0" />
+         </font>
+      </Text>
+   </children>
+</Pane>

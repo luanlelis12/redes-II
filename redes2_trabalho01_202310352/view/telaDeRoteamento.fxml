@@ -8,10 +8,12 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
-<HBox prefHeight="688.0" prefWidth="988.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BackboneController">
+<HBox prefHeight="570.0" prefWidth="935.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BackboneController">
    <children>
-      <AnchorPane fx:id="paneConfiguracoes" minHeight="0.0" minWidth="-Infinity" prefHeight="688.0" prefWidth="240.0" style="-fx-background-color: lightgray;">
+      <AnchorPane fx:id="paneConfiguracoes" minHeight="0.0" minWidth="-Infinity" prefHeight="570.0" prefWidth="240.0" style="-fx-background-image: url('file:view/img/bg.png'); -fx-background-size: cover;">
          <children>
             <VBox prefHeight="108.0" prefWidth="240.0">
                <children>
@@ -21,7 +23,7 @@
                      </font>
                   </Label>
                   <ChoiceBox fx:id="choiceImplementacao" prefWidth="240.0" />
-                  <Button mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
+                  <Button mnemonicParsing="false" onAction="#abrirSobre" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
                </children>
             </VBox>
             <VBox layoutY="151.0" prefHeight="65.0" prefWidth="240.0">
@@ -69,13 +71,29 @@
                   <Label fx:id="labelPacoteChegado" alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="0" textAlignment="CENTER" />
                </children>
             </VBox>
-            <VBox layoutY="608.0" prefHeight="80.0" prefWidth="240.0">
+            <VBox layoutY="406.0" prefHeight="80.0" prefWidth="240.0">
                <children>
-                  <Button fx:id="buttonReloadBackbone" mnemonicParsing="false" onAction="#recarregarBackbone" prefHeight="40.0" prefWidth="240.0" text="Carregar Backbone" />
-                  <Button mnemonicParsing="false" onAction="#iniciarEnvio" prefHeight="40.0" prefWidth="240.0" text="Iniciar Encaminhamento" />
+                  <Button fx:id="buttonReloadBackbone" mnemonicParsing="false" onAction="#recarregarBackbone" prefHeight="82.0" prefWidth="240.0" style="-fx-background-color: transparent;">
+                      <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                 <Image url="@img/buttonTest.png" />
+                              </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#iniciarEnvio" prefHeight="82.0" prefWidth="240.0" text="Iniciar Encaminhamento">
+                      <graphic>
+                        <ImageView pickOnBounds="true" preserveRatio="true">
+                              <image>
+                                 <Image url="@img/buttonTest.png" />
+                              </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
                </children>
             </VBox>
          </children></AnchorPane>
-      <AnchorPane fx:id="paneRoteadores" minHeight="0.0" minWidth="0.0" prefHeight="688.0" prefWidth="748.0" />
+      <AnchorPane fx:id="paneRoteadores" minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="735.0" style="-fx-background-image: url('file:view/img/background.png'); -fx-background-size: cover;"/>
    </children>
 </HBox>

@@ -8,13 +8,19 @@
 *************************************************************** */
 package controller;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -22,6 +28,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.Aresta;
 import model.Backbone;
 import model.Pacote;
@@ -55,23 +67,61 @@ public class BackboneController implements Initializable {
   private double centroDaTopologiaX;
   private double centroDaTopologiaY;
 
-  private final String arquivo = "backbone.txt";
-  private final Image imagemRoteador = new Image("file:view/img/roteador.png");
-  private final double raio = 300;
+  private final String ARQUIVO = "backbone.txt";
+  private final Image IMAGEM_ROTEADOR = new Image("file:view/img/roteador.png"),
+      IMAGEM_PACOTE = new Image("file:view/img/pacote.png"),
+      IMAGEM_SELECIONADO = new Image("file:view/img/selected.png");
+  private final double RAIO = 250, LARGURA_ROTEADOR = 50, ALTURA_ROTEADOR = 50;
+
+  private ImageView setaOrigem = new ImageView(IMAGEM_SELECIONADO);
+  private ImageView setaDestino = new ImageView(IMAGEM_SELECIONADO);
+
+  private static int contadorSequencia = 0;
+
+  private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O BackboneController foi carregado corretamente!");
-    rede.carregarArquivo(arquivo, this);
+    rede.carregarArquivo(ARQUIVO, this);
 
     for (Roteador r : rede.getRoteadores()) {
       Thread threadRoteador = new Thread(r);
       threadRoteador.setDaemon(true);
       threadRoteador.start();
-    }
+    } // fim do for
+
+    choiceOrigem.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      if (valorNovo != null) {
+        Roteador roteador = rede.getRoteadores().get(valorNovo - 1);
+        double[] posicao = roteador.getCoordenadaXY();
+
+        setaOrigem.setLayoutX(posicao[0] - 15);
+        setaOrigem.setLayoutY(posicao[1] - ALTURA_ROTEADOR / 2 - 35);
+
+        if (!paneRoteadores.getChildren().contains(setaOrigem)) {
+          paneRoteadores.getChildren().add(setaOrigem);
+        }
+      }
+    });
+
+    choiceDestino.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      if (valorNovo != null) {
+        Roteador roteador = rede.getRoteadores().get(valorNovo - 1);
+        double[] posicao = roteador.getCoordenadaXY();
+
+        setaDestino.setLayoutX(posicao[0] - 15);
+        setaDestino.setLayoutY(posicao[1] - ALTURA_ROTEADOR / 2 - 35);
+
+        if (!paneRoteadores.getChildren().contains(setaDestino)) {
+          paneRoteadores.getChildren().add(setaDestino);
+        }
+      }
+    });
 
     Platform.runLater(() -> {
-      desenharRede(arquivo);
+      desenharRede(ARQUIVO);
+      // Adiciona as opcoes nas choiceBoxs
       choiceImplementacao.getItems().addAll("Opcao 1", "Opcao 2", "Opcao 3", "Opcao 4");
       choiceImplementacao.setValue("Opcao 1");
       for (Roteador r : rede.getRoteadores()) {
@@ -84,11 +134,12 @@ public class BackboneController implements Initializable {
 
       ttlField.setText("1");
     });
-  }
+  } // fim do initialize
 
   /*
    * Metodo: desenharRede
-   * Funcao:
+   * Funcao: Faz a disposicao dos roteadores na topologia e os exibem com suas
+   * devidas conexoes
    * Parametros: caminho = rota do arquivo backbone.txt
    * Retorno: void
    */
@@ -99,13 +150,16 @@ public class BackboneController implements Initializable {
 
     anguloDosRoteadores = 360 / quantRoteadores;
 
+    // itera sobre os roteadores da rede para calcular a coordenada de cada um deles
+    // para exibir na tela
     for (Roteador roteador : rede.getRoteadores()) {
       int idRoteador = roteador.getIdRoteador();
-      double[] coordenadaRoteador = calcularPosicaoRoteador(idRoteador);
-      exibirRoteador(idRoteador, coordenadaRoteador);
+      roteador.setCoordenadaXY(calcularPosicaoRoteador(idRoteador));
+      exibirRoteador(roteador);
+      // itera sobre as arestas de conexao para exibir cada um delas na tela
       for (Aresta conexao : roteador.getConexoes()) {
         exibirConexao(roteador, conexao.getDestino(), conexao.getPeso());
-      }
+      } // fim do for
     } // fim do for
 
   } // fim do metodo desenharRede
@@ -118,8 +172,8 @@ public class BackboneController implements Initializable {
    */
   public double[] calcularPosicaoRoteador(int idRoteador) {
     double angulo = Math.toRadians(idRoteador * anguloDosRoteadores);
-    double posX = centroDaTopologiaX + raio * Math.cos(angulo);
-    double posY = centroDaTopologiaY + raio * Math.sin(angulo);
+    double posX = centroDaTopologiaX + RAIO * Math.cos(angulo);
+    double posY = centroDaTopologiaY + RAIO * Math.sin(angulo);
     return new double[] { posX, posY };
   } // fim do metodo calcularPosicaoRoteador
 
@@ -129,23 +183,25 @@ public class BackboneController implements Initializable {
    * Parametros: posX = posicao horizontal; posY = posicao vertical
    * Retorno: void
    */
-  public void exibirRoteador(int idRoteador, double[] coordenadaRoteador) {
-    ImageView roteadorView = new ImageView(imagemRoteador);
-    Label labelIdRoteador = new Label("" + idRoteador);
+  public void exibirRoteador(Roteador roteador) {
+    Platform.runLater(() -> {
+    ImageView roteadorView = new ImageView(IMAGEM_ROTEADOR);
+    Label labelIdRoteador = new Label("" + roteador.getIdRoteador());
 
-    double posX = coordenadaRoteador[0];
-    double posY = coordenadaRoteador[1];
+    double posX = roteador.getCoordenadaXY()[0];
+    double posY = roteador.getCoordenadaXY()[1];
 
-    roteadorView.setFitWidth(50);
-    roteadorView.setFitHeight(50);
-    roteadorView.setLayoutX(posX - 25);
-    roteadorView.setLayoutY(posY - 25);
+    roteadorView.setFitWidth(LARGURA_ROTEADOR);
+    roteadorView.setFitHeight(ALTURA_ROTEADOR);
+    roteadorView.setLayoutX(posX - LARGURA_ROTEADOR / 2);
+    roteadorView.setLayoutY(posY - ALTURA_ROTEADOR / 2);
 
-    labelIdRoteador.setLayoutX(posX - 25);
-    labelIdRoteador.setLayoutY(posY - 25);
+    labelIdRoteador.setLayoutX(posX + LARGURA_ROTEADOR / 4);
+    labelIdRoteador.setLayoutY(posY - ALTURA_ROTEADOR / 2);
 
     paneRoteadores.getChildren().add(roteadorView);
     paneRoteadores.getChildren().add(labelIdRoteador);
+    });
   } // fim do metodo exibirRoteador
 
   /*
@@ -155,24 +211,63 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   public void exibirConexao(Roteador r1, Roteador r2, int peso) {
-    int idR1 = r1.getIdRoteador();
-    int idR2 = r2.getIdRoteador();
+    Platform.runLater(() -> {
+      double[] posicaoR1 = r1.getCoordenadaXY();
+      double[] posicaoR2 = r2.getCoordenadaXY();
 
-    double[] posicaoR1 = calcularPosicaoRoteador(idR1);
-    double[] posicaoR2 = calcularPosicaoRoteador(idR2);
+      Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
+      paneRoteadores.getChildren().add(conexao);
+      conexao.toBack();
 
-    Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
-    paneRoteadores.getChildren().add(conexao);
-
-    Label pesoConexao = new Label("" + peso);
-    pesoConexao.setStyle("-fx-font-weight: bold; -fx-background-color: gray");
-    pesoConexao.setPrefSize(15, 15);
-    pesoConexao.setAlignment(Pos.CENTER);
-    pesoConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
-    pesoConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
-    paneRoteadores.getChildren().add(pesoConexao);
-
+      Label pesoConexao = new Label("" + peso);
+      pesoConexao.setStyle("-fx-font-weight: bold; -fx-background-color: gray");
+      pesoConexao.setPrefSize(15, 15);
+      pesoConexao.setAlignment(Pos.CENTER);
+      pesoConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
+      pesoConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
+      paneRoteadores.getChildren().add(pesoConexao);
+    });
   } // fim do metodo exibirConexao
+
+  /*
+   * Metodo: exibirPacote
+   * Funcao: Exibe o pacote e faz a animacao do pacote indo de um roteador a outro
+   * Parametros: pacote = pacote sendo enviado; rOrigem = roteador que esta
+   * enviando o pacote; rDestino = roteador que esta recebendo o pacote
+   * Retorno: void
+   */
+  public void exibirPacote(Pacote pacote, Roteador rOrigem, Roteador rDestino) {
+    Platform.runLater(() -> {
+      ImageView imageViewPacote = new ImageView(IMAGEM_PACOTE);
+      imageViewPacote.setFitWidth(30);
+      imageViewPacote.setFitHeight(30);
+      Path caminho = new Path();
+
+      double[] posicaoR1 = rOrigem.getCoordenadaXY();
+      double[] posicaoR2 = rDestino.getCoordenadaXY();
+
+      caminho.getElements().add(new MoveTo(posicaoR1[0], posicaoR1[1]));
+      caminho.getElements().add(new LineTo(posicaoR2[0], posicaoR2[1]));
+
+      PathTransition animacao = new PathTransition();
+      animacao.setDuration(Duration.seconds(1));
+      animacao.setNode(imageViewPacote);
+      animacao.setPath(caminho);
+      animacao.setCycleCount(1);
+      animacao.setAutoReverse(true);
+      arrayAnimacoes.add(animacao);
+
+      // Quando a animacao acabar o roteador recebe o pacote e o processa
+      animacao.setOnFinished(e -> {
+        paneRoteadores.getChildren().remove(imageViewPacote);
+        rDestino.receberPacote(pacote);
+      });
+
+      animacao.play();
+
+      paneRoteadores.getChildren().add(imageViewPacote);
+    });
+  } // fim do metodo exibirPacote
 
   /*
    * Metodo: recarregarBackbone
@@ -181,14 +276,15 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   public void recarregarBackbone() {
-    rede.carregarArquivo(arquivo, this);
+    reiniciarRede();
+    rede.carregarArquivo(ARQUIVO, this);
 
     Platform.runLater(() -> {
       paneRoteadores.getChildren().clear();
       choiceOrigem.getItems().clear();
       choiceDestino.getItems().clear();
 
-      desenharRede(arquivo);
+      desenharRede(ARQUIVO);
 
       for (Roteador r : rede.getRoteadores()) {
         choiceOrigem.getItems().add(r.getIdRoteador());
@@ -204,32 +300,60 @@ public class BackboneController implements Initializable {
 
   /*
    * Metodo: iniciarEnvio
-   * Funcao:
+   * Funcao: faz a chamada dos roteadores e comece o encaminhamento do pacote de
+   * um roteador a outro
    * Parametros:
    * Retorno: void
    */
   public void iniciarEnvio() {
+    reiniciarRede();
+    int idOrigem = choiceOrigem.getValue();
+    int idDestino = choiceDestino.getValue();
+    int ttl = Integer.parseInt(ttlField.getText());
+    String algoritmo = choiceImplementacao.getValue();
+    versaoAlgoritmo = Integer.parseInt(algoritmo.replaceAll("\\D", ""));
 
-    if (choiceImplementacao.getValue() == null || choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
+    if (algoritmo == null || choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
       System.out.println("Erro: Selecione todos os campos antes de enviar!");
       return;
     } // fim do if
 
+    if (idOrigem == idDestino) {
+      System.out.println("Erro: Selecione um roteador de destino diferente do roteador de origem!");
+      return;
+    } // fim do if
+
+    if (ttl <= 0) {
+      System.out.println("Erro: Digite um valor de ttl maior que 0!");
+      return;
+    } // fim do if
+
+    // Itera para encerrar as threads de todos os roteadores e limpa os buffers
+    for (Roteador roteador : rede.getRoteadores()) {
+      roteador.desligar();
+      roteador.getBufferPacotes().clear();
+    } // fim do for
+
     try {
-      String algoritmo = choiceImplementacao.getValue();
-      versaoAlgoritmo = Integer.parseInt(algoritmo.replaceAll("\\D", ""));
+      Pacote primeiroPacote;
+      // Caso seja o algoritmo 1 ou 2 e ignorado o ttl
+      if (versaoAlgoritmo == 1 | versaoAlgoritmo == 2) {
+        primeiroPacote = new Pacote(idOrigem, idDestino);
+      } else if (versaoAlgoritmo == 3) {
+        primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
+      } else {
+        contadorSequencia++;
+        primeiroPacote = new Pacote(idOrigem, idDestino, ttl, idOrigem, contadorSequencia);
+      } // fim do if
 
-      int idOrigem = choiceOrigem.getValue();
-      int idDestino = choiceDestino.getValue();
-      int ttl = Integer.parseInt(ttlField.getText());
-
-      Pacote primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
-
+      // itera sobre os roteadores para definir os algoritmos e ligalos
       for (Roteador roteador : rede.getRoteadores()) {
+        roteador.ligar();
         roteador.setAlgoritmo(versaoAlgoritmo);
       } // fim do for
 
-      System.out.println("Iniciando Algoritmo "+versaoAlgoritmo+" do roteador "+idOrigem+" para o roteador "+idDestino);
+      System.out.println(
+          "Iniciando Algoritmo " + versaoAlgoritmo + " do roteador " + idOrigem + " para o roteador " + idDestino);
 
       Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
       rOrigem.enviarPacote(primeiroPacote);
@@ -239,13 +363,73 @@ public class BackboneController implements Initializable {
     } // fim do try-catch
   } // fim do metodo iniciarEnvio
 
+  /*
+   * Metodo: reiniciarRede
+   * Funcao: reinicia as contagens e desliga as animacoes dos pacotes
+   * Parametros:
+   * Retorno: void
+   */
+  public void reiniciarRede() {
+    pacotesChegados = -1;
+    atualizarContadorPacotes(0);
+    Pacote.setContadorPacotes(0);
+    atualizarContadorPacotesChegados();
+
+    // Itera sobre o array de animacoes para desliga-las
+    for (PathTransition animacao : arrayAnimacoes) {
+      animacao.stop();
+      paneRoteadores.getChildren().remove(animacao.getNode());
+    } // fim do for
+    arrayAnimacoes.clear();
+  } // fim do metodo reiniciarRede
+
+  /*
+   * Metodo: atualizarContadorPacotes
+   * Funcao: adiciona mais um na contagem de pacotes gerados
+   * Parametros: contador = quantidade de pacotes gerados
+   * Retorno: void
+   */
   public void atualizarContadorPacotes(int contador) {
     Platform.runLater(() -> labelPacoteGerado.setText(String.valueOf(contador)));
-  }
+  } // fim do metodo atualizarContadorPacotes
 
+  /*
+   * Metodo: atualizarContadorPacotesChegados
+   * Funcao: adiciona mais um na contagem de pacotes chegados no roteador destino
+   * Parametros:
+   * Retorno: void
+   */
   public void atualizarContadorPacotesChegados() {
     pacotesChegados++;
     Platform.runLater(() -> labelPacoteChegado.setText(String.valueOf(pacotesChegados)));
-  }
+  } // fim do metodo atualizarContadorPacotesChegados
+
+  /*
+   * Metodo: abrirSobre
+   * Funcao: Abre popout falando sobre os 4 algoritmos
+   * Parametros:
+   * Retorno: void
+   */
+  public void abrirSobre() {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/telaDeSobre.fxml"));
+      Parent root = loader.load();
+
+      Stage popOut = new Stage();
+      popOut.setTitle("Sobre o Simulador");
+
+      popOut.initModality(Modality.APPLICATION_MODAL);
+
+      popOut.setResizable(false);
+
+      Scene cena = new Scene(root);
+      popOut.setScene(cena);
+      popOut.show();
+
+    } catch (IOException e) {
+      System.out.println("Erro ao abrir a tela de Sobre!");
+      e.printStackTrace();
+    } // fim do try-catch
+  } // fim do metodo abrirSobre
 
 }
