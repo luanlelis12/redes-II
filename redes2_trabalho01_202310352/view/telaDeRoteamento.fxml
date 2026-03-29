@@ -15,27 +15,7 @@
          <children>
             <VBox layoutY="57.0" prefHeight="456.0" prefWidth="240.0" spacing="17.0">
                <children>
-<<<<<<< HEAD
                   <VBox prefWidth="240.0">
-=======
-                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="Opções do Algoritmo" textAlignment="CENTER">
-                     <font>
-                        <Font name="System Bold" size="20.0" />
-                     </font>
-                  </Label>
-                  <ChoiceBox fx:id="choiceImplementacao" prefWidth="240.0" />
-                  <Button mnemonicParsing="false" onAction="#abrirSobre" prefHeight="40.0" prefWidth="240.0" text="Sobre os algoritmos" />
-               </children>
-            </VBox>
-            <VBox layoutY="151.0" prefHeight="65.0" prefWidth="240.0">
-               <children>
-                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="ORIGEM -&gt; DESTINO" textAlignment="CENTER">
-                     <font>
-                        <Font name="System Bold" size="20.0" />
-                     </font>
-                  </Label>
-                  <HBox prefHeight="100.0" prefWidth="240.0">
->>>>>>> 7c2e7ccf2c136a385af1ecfeb612926858fe5297
                      <children>
                         <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="Opções do Algoritmo" textAlignment="CENTER" textFill="WHITE">
                            <font>
