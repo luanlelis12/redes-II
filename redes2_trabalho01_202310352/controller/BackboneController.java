@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 
+* Ultima alteracao.: 28 03 2026
 * Nome.............: BackboneController.java
 * Funcao...........: 
 *************************************************************** */
@@ -27,6 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -59,22 +60,15 @@ public class BackboneController implements Initializable {
   Label labelPacoteChegado;
 
   private Backbone rede = new Backbone();
-  private int quantRoteadores = 0;
-  private int pacotesChegados = 0;
-  private double anguloDosRoteadores = 0;
-  private int versaoAlgoritmo;
-
-  private double centroDaTopologiaX;
-  private double centroDaTopologiaY;
+  private int quantRoteadores = 0, pacotesChegados = 0, versaoAlgoritmo;
+  private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
 
   private final String ARQUIVO = "backbone.txt";
   private final Image IMAGEM_ROTEADOR = new Image("file:view/img/roteador.png"),
-      IMAGEM_PACOTE = new Image("file:view/img/pacote.png"),
-      IMAGEM_SELECIONADO = new Image("file:view/img/selected.png");
-  private final double RAIO = 250, LARGURA_ROTEADOR = 50, ALTURA_ROTEADOR = 50;
-
-  private ImageView setaOrigem = new ImageView(IMAGEM_SELECIONADO);
-  private ImageView setaDestino = new ImageView(IMAGEM_SELECIONADO);
+      IMAGEM_ROTEADOR_ORIGEM = new Image("file:view/img/roteadorOrigem.png"),
+      IMAGEM_ROTEADOR_DESTINO = new Image("file:view/img/roteadorDestino.png"),
+      IMAGEM_PACOTE = new Image("file:view/img/pacote.png");
+  private final double RAIO = 250, LARGURA_ROTEADOR = 74, ALTURA_ROTEADOR = 70;
 
   private static int contadorSequencia = 0;
 
@@ -91,35 +85,8 @@ public class BackboneController implements Initializable {
       threadRoteador.start();
     } // fim do for
 
-    choiceOrigem.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
-      if (valorNovo != null) {
-        Roteador roteador = rede.getRoteadores().get(valorNovo - 1);
-        double[] posicao = roteador.getCoordenadaXY();
-
-        setaOrigem.setLayoutX(posicao[0] - 15);
-        setaOrigem.setLayoutY(posicao[1] - ALTURA_ROTEADOR / 2 - 35);
-
-        if (!paneRoteadores.getChildren().contains(setaOrigem)) {
-          paneRoteadores.getChildren().add(setaOrigem);
-        }
-      }
-    });
-
-    choiceDestino.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
-      if (valorNovo != null) {
-        Roteador roteador = rede.getRoteadores().get(valorNovo - 1);
-        double[] posicao = roteador.getCoordenadaXY();
-
-        setaDestino.setLayoutX(posicao[0] - 15);
-        setaDestino.setLayoutY(posicao[1] - ALTURA_ROTEADOR / 2 - 35);
-
-        if (!paneRoteadores.getChildren().contains(setaDestino)) {
-          paneRoteadores.getChildren().add(setaDestino);
-        }
-      }
-    });
-
     Platform.runLater(() -> {
+
       desenharRede(ARQUIVO);
       // Adiciona as opcoes nas choiceBoxs
       choiceImplementacao.getItems().addAll("Opcao 1", "Opcao 2", "Opcao 3", "Opcao 4");
@@ -133,6 +100,31 @@ public class BackboneController implements Initializable {
       choiceDestino.setValue(quantRoteadores);
 
       ttlField.setText("1");
+
+      choiceOrigem.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
+        if (valorAntigo != null) {
+          Roteador roteadorAntigo = rede.getRoteadores().get(valorAntigo - 1);
+          roteadorAntigo.getImageView().setImage(IMAGEM_ROTEADOR);
+        }
+
+        if (valorNovo != null) {
+          Roteador roteadorNovo = rede.getRoteadores().get(valorNovo - 1);
+          roteadorNovo.getImageView().setImage(IMAGEM_ROTEADOR_ORIGEM);
+        }
+      });
+
+      choiceDestino.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
+        if (valorAntigo != null) {
+          Roteador roteadorAntigo = rede.getRoteadores().get(valorAntigo - 1);
+          roteadorAntigo.getImageView().setImage(IMAGEM_ROTEADOR);
+        }
+
+        if (valorNovo != null) {
+          Roteador roteadorNovo = rede.getRoteadores().get(valorNovo - 1);
+          roteadorNovo.getImageView().setImage(IMAGEM_ROTEADOR_DESTINO);
+        }
+      });
+
     });
   } // fim do initialize
 
@@ -185,22 +177,23 @@ public class BackboneController implements Initializable {
    */
   public void exibirRoteador(Roteador roteador) {
     Platform.runLater(() -> {
-    ImageView roteadorView = new ImageView(IMAGEM_ROTEADOR);
-    Label labelIdRoteador = new Label("" + roteador.getIdRoteador());
+      ImageView roteadorView = new ImageView(IMAGEM_ROTEADOR);
+      roteador.setImageView(roteadorView);
+      Label labelIdRoteador = new Label("" + roteador.getIdRoteador());
 
-    double posX = roteador.getCoordenadaXY()[0];
-    double posY = roteador.getCoordenadaXY()[1];
+      double posX = roteador.getCoordenadaXY()[0];
+      double posY = roteador.getCoordenadaXY()[1];
 
-    roteadorView.setFitWidth(LARGURA_ROTEADOR);
-    roteadorView.setFitHeight(ALTURA_ROTEADOR);
-    roteadorView.setLayoutX(posX - LARGURA_ROTEADOR / 2);
-    roteadorView.setLayoutY(posY - ALTURA_ROTEADOR / 2);
+      roteadorView.setFitWidth(LARGURA_ROTEADOR);
+      roteadorView.setFitHeight(ALTURA_ROTEADOR);
+      roteadorView.setLayoutX(posX - LARGURA_ROTEADOR / 2);
+      roteadorView.setLayoutY(posY - ALTURA_ROTEADOR / 2);
 
-    labelIdRoteador.setLayoutX(posX + LARGURA_ROTEADOR / 4);
-    labelIdRoteador.setLayoutY(posY - ALTURA_ROTEADOR / 2);
+      labelIdRoteador.setLayoutX(posX + LARGURA_ROTEADOR / 4);
+      labelIdRoteador.setLayoutY(posY - ALTURA_ROTEADOR / 2);
 
-    paneRoteadores.getChildren().add(roteadorView);
-    paneRoteadores.getChildren().add(labelIdRoteador);
+      paneRoteadores.getChildren().add(roteadorView);
+      paneRoteadores.getChildren().add(labelIdRoteador);
     });
   } // fim do metodo exibirRoteador
 
@@ -216,6 +209,7 @@ public class BackboneController implements Initializable {
       double[] posicaoR2 = r2.getCoordenadaXY();
 
       Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
+      conexao.setStroke(Color.WHITE);
       paneRoteadores.getChildren().add(conexao);
       conexao.toBack();
 

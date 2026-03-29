@@ -4,10 +4,42 @@
 
 .button:hover {
     -fx-cursor: hand;
-    -fx-background-image: url('img/buttonTestSelected.png');
 }
 
 .button:pressed {
     -fx-scale-x: 0.95;
     -fx-scale-y: 0.95;
+}
+
+.buttonIniciar {
+    -fx-background-image: url('img/buttonIniciar.png');
+}
+
+.buttonRecarregar {
+    -fx-background-image: url('img/buttonRecarregar.png');
+}
+
+.buttonIniciar:hover {
+    -fx-background-image: url('img/buttonIniciarSelected.png');
+}
+
+.buttonRecarregar:hover {
+    -fx-background-image: url('img/buttonRecarregarSelected.png');
+}
+
+.buttonSobre {
+    -fx-background-image: url('img/buttonSobre.png');
+}
+
+.buttonSobre:hover {
+    -fx-background-image: url('img/buttonSobreSelected.png');
+}
+
+.quadroPacotes {
+    -fx-background-image: url('img/quadro.png');
+}
+
+.paneConfiguracoes {
+    -fx-background-image: url('file:view/img/bg.png');
+    -fx-background-size:  cover;
 }

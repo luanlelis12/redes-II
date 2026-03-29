@@ -16,6 +16,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import controller.BackboneController;
+import javafx.scene.image.ImageView;
 
 public class Roteador extends Thread {
   private int idRoteador;
@@ -24,6 +25,7 @@ public class Roteador extends Thread {
   private BackboneController controller;
   private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
   private double[] coordenadaXY;
+  private ImageView imageView;
 
   private Map<Integer, Integer> memoriaSequencia = new HashMap<>();
 
@@ -230,12 +232,32 @@ public class Roteador extends Thread {
     return idRoteador;
   }
 
-  public ArrayList<Aresta> getConexoes() {
-    return conexoes;
+  public void setIdRoteador(int idRoteador) {
+    this.idRoteador = idRoteador;
+  }
+
+  public int getAlgoritmo() {
+    return algoritmo;
   }
 
   public void setAlgoritmo(int algoritmo) {
     this.algoritmo = algoritmo;
+  }
+
+  public boolean isRodando() {
+    return rodando;
+  }
+
+  public void setRodando(boolean rodando) {
+    this.rodando = rodando;
+  }
+
+  public BackboneController getController() {
+    return controller;
+  }
+
+  public void setController(BackboneController controller) {
+    this.controller = controller;
   }
 
   public BlockingQueue<Pacote> getBufferPacotes() {
@@ -252,6 +274,30 @@ public class Roteador extends Thread {
 
   public void setCoordenadaXY(double[] coordenadaXY) {
     this.coordenadaXY = Arrays.copyOf(coordenadaXY, coordenadaXY.length);
+  }
+
+  public ImageView getImageView() {
+    return imageView;
+  }
+
+  public void setImageView(ImageView imageView) {
+    this.imageView = imageView;
+  }
+
+  public Map<Integer, Integer> getMemoriaSequencia() {
+    return memoriaSequencia;
+  }
+
+  public void setMemoriaSequencia(Map<Integer, Integer> memoriaSequencia) {
+    this.memoriaSequencia = memoriaSequencia;
+  }
+
+  public ArrayList<Aresta> getConexoes() {
+    return conexoes;
+  }
+
+  public void setConexoes(ArrayList<Aresta> conexoes) {
+    this.conexoes = conexoes;
   }
 
 }
