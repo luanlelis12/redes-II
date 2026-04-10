@@ -11,7 +11,6 @@ package model;
 public class Pacote {
     private int idRoteadorOrigemAnterior;
     private int idRoteadorDestino;
-    private int ttl;
 
     private int idRoteadorCriador;
     private int numeroSequencia;
@@ -27,14 +26,12 @@ public class Pacote {
     public Pacote(int idRoteadorOrigem, int idRoteadorDestino, int ttl) {
         this.idRoteadorOrigemAnterior = idRoteadorOrigem;
         this.idRoteadorDestino = idRoteadorDestino;
-        this.ttl = ttl;
         contadorPacotes++;
     }
 
     public Pacote(int idRoteadorOrigem, int idRoteadorDestino, int ttl, int idRoteadorCriador, int numeroSequencia) {
         this.idRoteadorOrigemAnterior = idRoteadorOrigem;
         this.idRoteadorDestino = idRoteadorDestino;
-        this.ttl = ttl;        
         this.idRoteadorCriador = idRoteadorCriador;
         this.numeroSequencia = numeroSequencia;
         contadorPacotes++;
@@ -54,14 +51,6 @@ public class Pacote {
 
     public void setIdRoteadorDestino(int idRoteadorDestino) {
         this.idRoteadorDestino = idRoteadorDestino;
-    }
-
-    public int getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(int ttl) {
-        this.ttl = ttl;
     }
 
     public int getIdRoteadorCriador() {

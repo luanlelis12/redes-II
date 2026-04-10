@@ -61,7 +61,7 @@ public class Backbone {
 
           gerarConexao(r1, r2, peso);
 
-          System.out.println("Conexão criada: " + idOrigem + " <-> " + idDestino + " peso " + peso);
+          System.out.println("Conexao criada: " + idOrigem + " <-> " + idDestino + " peso " + peso);
         } // fim do if
       } // fim do while
 

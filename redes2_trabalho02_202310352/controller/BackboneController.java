@@ -51,20 +51,16 @@ public class BackboneController implements Initializable {
   @FXML
   AnchorPane paneConfiguracoes;
   @FXML
-  ChoiceBox<String> choiceImplementacao;
-  @FXML
   ChoiceBox<Integer> choiceOrigem;
   @FXML
   ChoiceBox<Integer> choiceDestino;
-  @FXML
-  TextField ttlField;
   @FXML
   Label labelPacoteGerado;
   @FXML
   Label labelPacoteChegado;
 
   private Backbone rede = new Backbone();
-  private int quantRoteadores = 0, pacotesChegados = 0, versaoAlgoritmo;
+  private int quantRoteadores = 0, pacotesChegados = 0;
   private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
 
   private final String ARQUIVO = "backbone.txt";
@@ -100,18 +96,14 @@ public class BackboneController implements Initializable {
     Platform.runLater(() -> {
 
       desenharRede(ARQUIVO);
-      // Adiciona as opcoes nas choiceBoxs
-      choiceImplementacao.getItems().addAll("Opcao 1", "Opcao 2", "Opcao 3", "Opcao 4");
-      choiceImplementacao.setValue("Opcao 1");
+      // Itera sobre os roteador para colocar na choiceBox
       for (Roteador r : rede.getRoteadores()) {
         choiceOrigem.getItems().add(r.getIdRoteador());
         choiceDestino.getItems().add(r.getIdRoteador());
       } // fim do for
 
-      ttlField.setText("1");
-
       choiceOrigem.getSelectionModel().selectedItemProperty().addListener((observable, valorAntigo, valorNovo) -> {
-        
+
         paneRoteadores.getChildren().remove(HAUNTER);
 
         if (valorAntigo != null && valorAntigo <= rede.getRoteadores().size()) {
@@ -341,7 +333,6 @@ public class BackboneController implements Initializable {
         choiceDestino.getItems().add(r.getIdRoteador());
       } // fim do for
 
-      ttlField.setText("1");
     });
   } // fim do metodo recarregarBackbone
 
@@ -355,65 +346,39 @@ public class BackboneController implements Initializable {
   public void iniciarEnvio() {
     reiniciarRede();
 
-    // Caso o roteador de origem ou de destino nao sejam selecionado nao eh iniciado a simulacao
-    if (choiceImplementacao.getValue() == null || choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
+    // Caso o roteador de origem ou de destino nao sejam selecionado nao eh iniciado
+    // a simulacao
+    if (choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
       System.out.println("Erro: Selecione todos os campos antes de enviar!");
       return;
     } // fim do if
 
     int idOrigem = choiceOrigem.getValue();
     int idDestino = choiceDestino.getValue();
-    String algoritmo = choiceImplementacao.getValue();
-    versaoAlgoritmo = Integer.parseInt(algoritmo.replaceAll("\\D", ""));
 
-    try {
-      int ttl = Integer.parseInt(ttlField.getText());
+    // Caso o roteador de origem e destino sejam o mesmo nao eh iniciado a simulacao
+    if (idOrigem == idDestino) {
+      System.out.println("Erro: Selecione um roteador de destino diferente do roteador de origem!");
+      return;
+    } // fim do if
 
-      // Caso o roteador de origem e destino sejam o mesmo nao eh iniciado a simulacao
-      if (idOrigem == idDestino) {
-        System.out.println("Erro: Selecione um roteador de destino diferente do roteador de origem!");
-        return;
-      } // fim do if
+    // Itera para encerrar as threads de todos os roteadores e limpa os buffers
+    for (Roteador roteador : rede.getRoteadores()) {
+      roteador.desligar();
+      roteador.getBufferPacotes().clear();
+    } // fim do for
 
-      // Caso o ttl seja 0 ou negativo nao eh iniciado a simulacao
-      if (ttl <= 0) {
-        System.out.println("Erro: Digite um valor de ttl maior que 0!");
-        return;
-      } // fim do if
+    Pacote primeiroPacote = new Pacote(idOrigem, idDestino);
 
-      // Itera para encerrar as threads de todos os roteadores e limpa os buffers
-      for (Roteador roteador : rede.getRoteadores()) {
-        roteador.desligar();
-        roteador.getBufferPacotes().clear();
-        roteador.getMemoriaSequencia().clear();
-      } // fim do for
+    // itera sobre os roteadores para definir os algoritmos e ligalos
+    for (Roteador roteador : rede.getRoteadores()) {
+      roteador.calcularDijkstra(rede.getRoteadores());
+      roteador.ligar();
+    } // fim do for
 
-      Pacote primeiroPacote;
-      // Caso seja o algoritmo 1 ou 2 o ttl eh ignorado e no caso do algoritmo 4 eh levado em conta o numero de sequencia
-      if (versaoAlgoritmo == 1 || versaoAlgoritmo == 2) {
-        primeiroPacote = new Pacote(idOrigem, idDestino);
-      } else if (versaoAlgoritmo == 3) {
-        primeiroPacote = new Pacote(idOrigem, idDestino, ttl);
-      } else {
-        contadorSequencia++;
-        primeiroPacote = new Pacote(idOrigem, idDestino, ttl, idOrigem, contadorSequencia);
-      } // fim do if
+    Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+    rOrigem.enviarPacote(primeiroPacote);
 
-      // itera sobre os roteadores para definir os algoritmos e ligalos
-      for (Roteador roteador : rede.getRoteadores()) {
-        roteador.ligar();
-        roteador.setAlgoritmo(versaoAlgoritmo);
-      } // fim do for
-
-      System.out.println(
-          "Iniciando Algoritmo " + versaoAlgoritmo + " do roteador " + idOrigem + " para o roteador " + idDestino);
-
-      Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
-      rOrigem.enviarPacote(primeiroPacote);
-
-    } catch (NumberFormatException e) {
-      System.out.println("Erro: O TTL deve ser um numero inteiro!");
-    } // fim do try-catch
   } // fim do metodo iniciarEnvio
 
   /*

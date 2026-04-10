@@ -72,11 +72,19 @@ public class SobreController implements Initializable {
     Text op4Texto1 = new Text(
         "implementa o algoritmo de TTL (Opcao 3) com uma otimizacao baseada em numeros de sequencia. Cada novo pacote gerado recebe um numero de sequencia unico. Os roteadores mantem um registo dos pacotes que ja processaram. Quando um roteador recebe um pacote, ele verifica se essa sequencia ja eh conhecida; se for, o pacote eh descartado imediatamente.");
 
+    Text op5Titulo = new Text("Opcao 5: ");
+    op5Titulo.setStyle("-fx-font-weight: bold;");
+    
+    Text op5Texto1 = new Text(
+        "implementa o algoritmo de Dijkstra.");
+
     textoSobre.getChildren().addAll(
         op1Titulo, op1Texto1, op1Destaque, op1Texto2,
         op2Titulo, op2Texto1, op2Destaque, op2Texto2,
         op3Titulo, op3Texto1, op3Destaque1, op3Texto2, op3Destaque2, op3Texto3, op3Destaque3, op3Texto4,
-        op4Titulo, op4Texto1);
+        op4Titulo, op4Texto1,
+        op5Titulo, op5Texto1
+    );
   }
 
 }
