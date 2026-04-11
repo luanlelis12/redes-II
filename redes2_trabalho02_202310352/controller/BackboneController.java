@@ -11,6 +11,8 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javafx.animation.PathTransition;
@@ -23,7 +25,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -79,9 +80,8 @@ public class BackboneController implements Initializable {
 
   private final ImageView HAUNTER = new ImageView(IMAGEM_HAUNTER), GENGAR = new ImageView(IMAGEM_GENGAR);
 
-  private static int contadorSequencia = 0;
-
   private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>();
+  private Map<String, Line> mapaLinhas = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -239,11 +239,23 @@ public class BackboneController implements Initializable {
    */
   public void exibirConexao(Roteador r1, Roteador r2, int peso) {
     Platform.runLater(() -> {
+
+      int idMin = Math.min(r1.getIdRoteador(), r2.getIdRoteador());
+      int idMax = Math.max(r1.getIdRoteador(), r2.getIdRoteador());
+      String chave = idMin + "-" + idMax;
+
+      if (mapaLinhas.containsKey(chave)) {
+        return;
+      }
+
       double[] posicaoR1 = r1.getCoordenadaXY();
       double[] posicaoR2 = r2.getCoordenadaXY();
 
       Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
       conexao.setStroke(Color.WHITE);
+
+      mapaLinhas.put(chave, conexao);
+
       paneRoteadores.getChildren().add(conexao);
       conexao.toBack();
 
@@ -313,6 +325,8 @@ public class BackboneController implements Initializable {
       r.interrupt();
     }
 
+    mapaLinhas.clear();
+
     rede.carregarArquivo(ARQUIVO, this);
 
     for (Roteador r : rede.getRoteadores()) {
@@ -376,10 +390,70 @@ public class BackboneController implements Initializable {
       roteador.ligar();
     } // fim do for
 
-    Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
-    rOrigem.enviarPacote(primeiroPacote);
+    System.out.println("Caminho calculado!");
+    double esperaTotal = desenharMenorCaminho(idOrigem, idDestino);
 
+    // Cria um cronometro para o pacote esperar
+    javafx.animation.PauseTransition pausaDoPacote = new javafx.animation.PauseTransition(
+        javafx.util.Duration.seconds(esperaTotal + 0.2));
+
+    pausaDoPacote.setOnFinished(e -> {
+      // O pacote so sai da origem quando o cronometro termina
+      Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+      rOrigem.enviarPacote(primeiroPacote);
+    });
+
+    pausaDoPacote.play();
   } // fim do metodo iniciarEnvio
+
+  /*
+   * Metodo: desenharMenorCaminho
+   * Funcao: destaca o menor caminho entre roteadores
+   * Parametros: idOridem = id do roteador que envia o pacote
+   * idDestino = id do roteador final que recebe o pacote
+   * Retorno: double = o tempo que a animacao demora
+   */
+  public double desenharMenorCaminho(int idOrigem, int idDestino) {
+    int atual = idOrigem;
+    double tempoAcumulado = 0.0;
+    double tempoPorLinha = 0.5;
+
+    // Itera sobre os roteadores ate chegar no roteador de destino
+    while (atual != idDestino) {
+      Roteador roteadorAtual = rede.getRoteadores().get(atual - 1);
+
+      // Pega o roteador que recebera o pacote
+      Integer proximo = roteadorAtual.getTabelaProximoSalto().get(idDestino);
+
+      if (proximo == null)
+        break;
+
+      // Pega a conexao entre os roteadores
+      int idMin = Math.min(atual, proximo);
+      int idMax = Math.max(atual, proximo);
+      Line linhaCaminho = mapaLinhas.get(idMin + "-" + idMax);
+
+      // Destaca a conexao de vermelho e deixa mais grossa
+      if (linhaCaminho != null) {
+        // Cria um delay para destacar esta linha
+        javafx.animation.PauseTransition pausa = new javafx.animation.PauseTransition(
+            javafx.util.Duration.seconds(tempoAcumulado));
+
+        pausa.setOnFinished(e -> {
+          linhaCaminho.setStroke(Color.LIMEGREEN);
+          linhaCaminho.setStrokeWidth(3);
+        });
+
+        pausa.play();
+        // Adiciona o tempo para a proxima linha acender depois desta
+        tempoAcumulado += tempoPorLinha;
+      } // fim do if
+
+      // O atual agora passa a ser o proximo
+      atual = proximo;
+    } // fim do while
+    return tempoAcumulado; // Devolve o tempo total que a animacao vai levar
+  } // fim do metodo desenharMenorCaminho
 
   /*
    * Metodo: reiniciarRede
@@ -395,6 +469,12 @@ public class BackboneController implements Initializable {
 
     paneRoteadores.getChildren().remove(HAUNTER);
     paneRoteadores.getChildren().remove(GENGAR);
+
+    // Itera sobre a conexoes para deixar na cor padrao
+    for (Line linha : mapaLinhas.values()) {
+      linha.setStroke(Color.WHITE);
+      linha.setStrokeWidth(1);
+    } // fim do for
 
     // Itera sobre o array de animacoes para desliga-las
     for (PathTransition animacao : arrayAnimacoes) {

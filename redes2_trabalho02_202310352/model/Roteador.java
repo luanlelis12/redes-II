@@ -87,9 +87,7 @@ public class Roteador extends Thread {
       controller.exibirGengar(idRoteador);
       System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!");
     } else {
-
       enviarPacote(pacote);
-
     } // fim do if
   } // fim do metodo processaPacote
 
@@ -140,13 +138,13 @@ public class Roteador extends Thread {
     Map<Integer, Integer> tabelaCustos = new HashMap<>();
     ArrayList<Roteador> naoVisitados = new ArrayList<>(todosRoteadores);
 
-    // 1. Inicializa todos os custos como "Infinito", exceto a si mesmo
+    // Inicializa todos os custos como "Infinito", exceto a si mesmo
     for (Roteador r : todosRoteadores) {
       tabelaCustos.put(r.getIdRoteador(), Integer.MAX_VALUE);
     }
     tabelaCustos.put(this.idRoteador, 0);
 
-    // 2. Loop de exploracao
+    // Itera sobre os nos nao visitados
     while (!naoVisitados.isEmpty()) {
       Roteador atual = null;
       int menorCusto = Integer.MAX_VALUE;
