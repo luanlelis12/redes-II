@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 24 03 2026
-* Ultima alteracao.: 27 03 2026
+* Ultima alteracao.: 12 04 2026
 * Nome.............: Pacote.java
 * Funcao...........: Pacote enviado entre os roteadores
 *************************************************************** */
@@ -15,26 +15,11 @@ public class Pacote {
     private int idRoteadorCriador;
     private int numeroSequencia;
 
-    private static int contadorPacotes = 0;
+    private static int custoTotalDeEnvio = 0;
 
     public Pacote(int idRoteadorOrigem, int idRoteadorDestino) {
         this.idRoteadorOrigemAnterior = idRoteadorOrigem;
         this.idRoteadorDestino = idRoteadorDestino;
-        contadorPacotes++;
-    }
-
-    public Pacote(int idRoteadorOrigem, int idRoteadorDestino, int ttl) {
-        this.idRoteadorOrigemAnterior = idRoteadorOrigem;
-        this.idRoteadorDestino = idRoteadorDestino;
-        contadorPacotes++;
-    }
-
-    public Pacote(int idRoteadorOrigem, int idRoteadorDestino, int ttl, int idRoteadorCriador, int numeroSequencia) {
-        this.idRoteadorOrigemAnterior = idRoteadorOrigem;
-        this.idRoteadorDestino = idRoteadorDestino;
-        this.idRoteadorCriador = idRoteadorCriador;
-        this.numeroSequencia = numeroSequencia;
-        contadorPacotes++;
     }
 
     public int getIdRoteadorOrigemAnterior() {
@@ -68,13 +53,13 @@ public class Pacote {
     public void setNumeroSequencia(int numeroSequencia) {
         this.numeroSequencia = numeroSequencia;
     }
-    
-    public static int getContadorPacotes() {
-        return contadorPacotes;
+
+    public static int getCustoTotalDeEnvio() {
+        return custoTotalDeEnvio;
     }
 
-    public static void setContadorPacotes(int contadorPacotes) {
-        Pacote.contadorPacotes = contadorPacotes;
+    public static void setCustoTotalDeEnvio(int custoTotalDeEnvio) {
+        Pacote.custoTotalDeEnvio = custoTotalDeEnvio;
     }
     
 }

@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 29 03 2026
+* Ultima alteracao.: 12 04 2026
 * Nome.............: BackboneController.java
 * Funcao...........: Controller para gerenciar entre tela do backbone do programa e os models 
 *************************************************************** */
@@ -37,6 +37,7 @@ import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -44,6 +45,7 @@ import model.Aresta;
 import model.Backbone;
 import model.Pacote;
 import model.Roteador;
+import util.FxmlRotas;
 
 public class BackboneController implements Initializable {
   // Elementos do javaFx
@@ -56,15 +58,18 @@ public class BackboneController implements Initializable {
   @FXML
   ChoiceBox<Integer> choiceDestino;
   @FXML
-  Label labelPacoteGerado;
+  Label labelCustoCaminho;
   @FXML
-  Label labelPacoteChegado;
+  TextFlow textoLog;
 
   private Backbone rede = new Backbone();
   private int quantRoteadores = 0, pacotesChegados = 0;
   private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
 
   private final String ARQUIVO = "backbone.txt";
+
+  private Stage stageLog;
+  private LogController logController;
 
   private final Image IMAGEM_ROTEADOR = new Image("file:view/img/roteador.png"),
       IMAGEM_ROTEADOR_ORIGEM = new Image("file:view/img/roteadorOrigem.png"),
@@ -94,6 +99,8 @@ public class BackboneController implements Initializable {
     } // fim do for
 
     Platform.runLater(() -> {
+
+      inicializarTelaLog();
 
       desenharRede(ARQUIVO);
       // Itera sobre os roteador para colocar na choiceBox
@@ -323,7 +330,7 @@ public class BackboneController implements Initializable {
     for (Roteador r : rede.getRoteadores()) {
       r.desligar();
       r.interrupt();
-    }
+    } // fim do for
 
     mapaLinhas.clear();
 
@@ -381,6 +388,11 @@ public class BackboneController implements Initializable {
       roteador.desligar();
       roteador.getBufferPacotes().clear();
     } // fim do for
+
+    // Limpa a tela de log para o novo calculo
+    if (logController != null) {
+      logController.limparLog();
+    }
 
     Pacote primeiroPacote = new Pacote(idOrigem, idDestino);
 
@@ -463,9 +475,8 @@ public class BackboneController implements Initializable {
    */
   public void reiniciarRede() {
     pacotesChegados = -1;
-    atualizarContadorPacotes(0);
-    Pacote.setContadorPacotes(0);
-    atualizarContadorPacotesChegados();
+    Pacote.setCustoTotalDeEnvio(0);
+    atualizarCustoTotalDoCaminho(0);
 
     paneRoteadores.getChildren().remove(HAUNTER);
     paneRoteadores.getChildren().remove(GENGAR);
@@ -485,46 +496,33 @@ public class BackboneController implements Initializable {
   } // fim do metodo reiniciarRede
 
   /*
-   * Metodo: atualizarContadorPacotes
-   * Funcao: adiciona mais um na contagem de pacotes gerados
+   * Metodo: atualizarCustoTotalDoCaminho
+   * Funcao: exibi na interface o custo do caminho
    * Parametros: contador = quantidade de pacotes gerados
    * Retorno: void
    */
-  public void atualizarContadorPacotes(int contador) {
-    Platform.runLater(() -> labelPacoteGerado.setText(String.valueOf(contador)));
-  } // fim do metodo atualizarContadorPacotes
-
-  /*
-   * Metodo: atualizarContadorPacotesChegados
-   * Funcao: adiciona mais um na contagem de pacotes chegados no roteador destino
-   * Parametros:
-   * Retorno: void
-   */
-  public void atualizarContadorPacotesChegados() {
-    pacotesChegados++;
-    Platform.runLater(() -> labelPacoteChegado.setText(String.valueOf(pacotesChegados)));
-  } // fim do metodo atualizarContadorPacotesChegados
+  public void atualizarCustoTotalDoCaminho(int contador) {
+    Platform.runLater(() -> labelCustoCaminho.setText(String.valueOf(contador)));
+  } // fim do metodo atualizarCustoTotalDoCaminho
 
   /*
    * Metodo: abrirSobre
-   * Funcao: Abre popout falando sobre os 4 algoritmos
+   * Funcao: Abre popout falando sobre o algoritmo
    * Parametros:
    * Retorno: void
    */
   public void abrirSobre() {
     try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/telaDeSobre.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(FxmlRotas.TELA_SOBRE));
       Parent root = loader.load();
 
       Stage popOut = new Stage();
-      popOut.setTitle("Sobre o Simulador");
 
       popOut.initModality(Modality.APPLICATION_MODAL);
-
       popOut.setResizable(false);
 
       popOut.setScene(new Scene(root));
-      popOut.setTitle("ROTEAMENTO POR INUNDACAO - SOBRE");
+      popOut.setTitle("ROTEAMENTO POR MENOR CAMINHO - SOBRE");
       Image icon = new Image(getClass().getResourceAsStream("../view/img/icon.png"));
       popOut.getIcons().add(icon);
       popOut.show();
@@ -553,5 +551,65 @@ public class BackboneController implements Initializable {
       } // fim do if
     });
   } // fim do metodo exibirGengar
+
+  /*
+   * Metodo: inicializarTelaLog
+   * Funcao: Carrega a tela de log na memoria ao abrir o programa
+   * Parametros:
+   * Retorno:
+   */
+  public void inicializarTelaLog() {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(FxmlRotas.TELA_LOG));
+      Parent root = loader.load();
+
+      // Captura o controlador para podermos enviar as mensagens depois
+      logController = loader.getController();
+
+      stageLog = new Stage();
+      stageLog.setTitle("ROTEAMENTO POR MENOR CAMINHO - LOG");
+      Image icon = new Image(getClass().getResourceAsStream("../view/img/icon.png"));
+      stageLog.getIcons().add(icon);
+      stageLog.setScene(new Scene(root));
+
+      // Em vez de destruir a janela ao clicar no X, apenas a esconde
+      stageLog.setOnCloseRequest(e -> {
+        e.consume(); // Cancela o evento padrao de fechar
+        stageLog.hide(); // Apenas esconde
+      });
+
+    } catch (Exception e) {
+      System.out.println("Erro ao carregar a tela de Log em segundo plano!");
+      e.printStackTrace();
+    } // fim do try-catch
+  } // fim do metodo inicializarTelaLog
+
+  /*
+   * Metodo: abrirLog
+   * Funcao: Abre popout mostrando o log
+   * Parametros:
+   * Retorno: void
+   */
+  public void abrirLog() {
+    if (stageLog != null) {
+      if (!stageLog.isShowing()) {
+        stageLog.show(); // Abre a janela se estiver escondida
+      } else {
+        stageLog.toFront(); // Traz para a frente se ja estiver aberta, mas por tras da janela principal
+      } // fim do if
+    } // fim do if
+  } // fim do metodo abrirLog
+
+  /*
+   * Metodo: enviarParaLog
+   * Funcao: Recebe mensagens dos roteadores e repassa para o LogController
+   * Parametros: mensagem = log do algoritmo / tipo = se eh um titulo, destaque ou texto normal
+   * Retorno: void
+   */
+  public void enviarParaLog(String mensagem, String tipo) {
+    if (logController != null) {
+      logController.adicionarLog(mensagem, tipo);
+    } // fim do if
+  } // fim do metodo enviarParaLog
 
 }

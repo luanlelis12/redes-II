@@ -35,11 +35,24 @@
     -fx-background-image: url('img/buttonSobreSelected.png');
 }
 
+.buttonLog {
+    -fx-background-image: url('img/buttonLog.png');
+}
+
+.buttonLog:hover {
+    -fx-background-image: url('img/buttonLogSelected.png');
+}
+
 .quadroPacotes {
     -fx-background-image: url('img/quadro.png');
 }
 
 .paneConfiguracoes {
     -fx-background-image: url('file:view/img/bg.png');
+    -fx-background-size:  cover;
+}
+
+.paneLog {
+    -fx-background-image: url('file:view/img/bgLog.png');
     -fx-background-size:  cover;
 }

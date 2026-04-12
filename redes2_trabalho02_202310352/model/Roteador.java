@@ -83,9 +83,10 @@ public class Roteador extends Thread {
     System.out.println("Roteador " + idRoteador + ": Esta processando um pacote. Fila = " + bufferPacotes.size());
     checaEstaAtivo();
     if (pacote.getIdRoteadorDestino() == idRoteador) {
-      controller.atualizarContadorPacotesChegados();
       controller.exibirGengar(idRoteador);
-      System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!");
+      System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!\nCusto total de envio: "
+          + Pacote.getCustoTotalDeEnvio());
+      controller.atualizarCustoTotalDoCaminho(Pacote.getCustoTotalDeEnvio());
     } else {
       enviarPacote(pacote);
     } // fim do if
@@ -121,19 +122,27 @@ public class Roteador extends Thread {
         if (conexao.getDestino().getIdRoteador() == idProximoSalto) {
           Roteador vizinho = conexao.getDestino();
           System.out.println(
-              "Roteador " + idRoteador + " enviou para " + vizinho.getIdRoteador() + " | Destino Final: " + idDestino);
+              "Roteador " + idRoteador + " enviou para " + vizinho.getIdRoteador() + " Custo: " + conexao.getPeso()
+                  + " | Destino Final: " + idDestino);
 
           Pacote copia = new Pacote(this.idRoteador, idDestino);
-          controller.atualizarContadorPacotes(Pacote.getContadorPacotes());
+          Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + conexao.getPeso());
           controller.exibirPacote(copia, this, vizinho);
           break; // Sai do for pois ja enviou
-        }
-      }
+        } // fim do if
+      } // fim do for
     } else {
       System.out.println("Roteador " + idRoteador + ": Rota desconhecida!");
-    }
+    } // fim do if
   } // fim do metodo enviarPacote
 
+  /*
+   * Metodo: calcularDijkstra
+   * Funcao: calcula a menor distancia entre roteadores e adiciona o caminho na
+   * tabela
+   * Parametros: todosRoteadores = arrayList com todos os roteadores do backbone
+   * Retorno: void
+   */
   public void calcularDijkstra(ArrayList<Roteador> todosRoteadores) {
     Map<Integer, Integer> tabelaCustos = new HashMap<>();
     ArrayList<Roteador> naoVisitados = new ArrayList<>(todosRoteadores);
@@ -141,8 +150,10 @@ public class Roteador extends Thread {
     // Inicializa todos os custos como "Infinito", exceto a si mesmo
     for (Roteador r : todosRoteadores) {
       tabelaCustos.put(r.getIdRoteador(), Integer.MAX_VALUE);
-    }
+    } // fim do for
     tabelaCustos.put(this.idRoteador, 0);
+
+    controller.enviarParaLog("[Roteador " + this.idRoteador + "] Iniciou o calculo de rotas.", "TITULO");
 
     // Itera sobre os nos nao visitados
     while (!naoVisitados.isEmpty()) {
@@ -155,24 +166,29 @@ public class Roteador extends Thread {
         if (custo < menorCusto) {
           menorCusto = custo;
           atual = r;
-        }
-      }
+        } // fim do if
+      } // fim do if
 
       // Se nao achar ninguem ou todos os restantes estiverem isolados, para
       if (atual == null || menorCusto == Integer.MAX_VALUE)
         break;
 
+      controller.enviarParaLog("  -> Explorando vizinhos do Roteador " + atual.getIdRoteador(), "NORMAL");
+
       naoVisitados.remove(atual);
 
-      // 3. Avalia as conexoes do roteador atual
+      // Avalia as conexoes do roteador atual
       for (Aresta aresta : atual.getConexoes()) {
         Roteador vizinho = aresta.getDestino();
 
         if (naoVisitados.contains(vizinho)) {
           int novoCusto = tabelaCustos.get(atual.getIdRoteador()) + aresta.getPeso();
 
-          // Relaxamento: Achou um caminho mais rapido?
+          // Caso ache um caminho com custo menor ele muda a rota
           if (novoCusto < tabelaCustos.get(vizinho.getIdRoteador())) {
+            controller.enviarParaLog("      * Rota mais rapida para R" + vizinho.getIdRoteador()
+                + " encontrada! (Custo total: " + novoCusto + ")", "DESTAQUE");
+
             tabelaCustos.put(vizinho.getIdRoteador(), novoCusto);
 
             // Atualiza o proximo salto
@@ -180,12 +196,12 @@ public class Roteador extends Thread {
               tabelaProximoSalto.put(vizinho.getIdRoteador(), vizinho.getIdRoteador());
             } else {
               tabelaProximoSalto.put(vizinho.getIdRoteador(), tabelaProximoSalto.get(atual.getIdRoteador()));
-            }
-          }
-        }
-      }
-    }
-  }
+            } // fim do if
+          } // fim do if
+        } // fim do if
+      } // fim do for
+    } // fim do while
+  } // fim do metodo calcularDijkstra
 
   /*
    * Metodo: receberPacote
