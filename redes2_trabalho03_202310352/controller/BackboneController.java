@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 12 04 2026
+* Ultima alteracao.: 29 04 2026
 * Nome.............: BackboneController.java
 * Funcao...........: Controller para gerenciar entre tela do backbone do programa e os models 
 *************************************************************** */
@@ -401,24 +401,11 @@ public class BackboneController implements Initializable {
 
     // itera sobre os roteadores para definir os algoritmos e ligalos
     for (Roteador roteador : rede.getRoteadores()) {
-      roteador.calcularDijkstra(rede.getRoteadores());
       roteador.ligar();
     } // fim do for
-
-    System.out.println("Caminho calculado!");
-    double esperaTotal = desenharMenorCaminho(idOrigem, idDestino);
-
-    // Cria um cronometro para o pacote esperar
-    javafx.animation.PauseTransition pausaDoPacote = new javafx.animation.PauseTransition(
-        javafx.util.Duration.seconds(esperaTotal + 0.2));
-
-    pausaDoPacote.setOnFinished(e -> {
-      // O pacote so sai da origem quando o cronometro termina
-      Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
-      rOrigem.enviarPacote(primeiroPacote);
-    });
-
-    pausaDoPacote.play();
+    
+    Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+    rOrigem.enviarPacoteDados(primeiroPacote);
   } // fim do metodo iniciarEnvio
 
   /*
@@ -438,7 +425,7 @@ public class BackboneController implements Initializable {
       Roteador roteadorAtual = rede.getRoteadores().get(atual - 1);
 
       // Pega o roteador que recebera o pacote
-      Integer proximo = roteadorAtual.getTabelaProximoSalto().get(idDestino);
+      Integer proximo = roteadorAtual.getTabelaRoteamento().get(idDestino).getDestino().getIdRoteador();
 
       if (proximo == null)
         break;

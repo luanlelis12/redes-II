@@ -26,18 +26,20 @@ public class Roteador extends Thread {
   private double[] coordenadaXY;
   private ImageView imageView;
 
-  private Map<Integer, Integer> tabelaProximoSalto = new HashMap<>();
+  private Map<Integer, Aresta> tabelaRoteamento = new HashMap<>();
 
   private ArrayList<Aresta> conexoes = new ArrayList<>();
 
   public Roteador(int idRoteador, BackboneController controller) {
     this.controller = controller;
     this.idRoteador = idRoteador;
+    tabelaRoteamento.put(idRoteador, new Aresta(this, 0));
     System.out.println("Roteador " + idRoteador + ": criado com sucesso!");
   }
 
   @Override
   public void run() {
+    iniciarDescobertaDeVizinhos();
     System.out.println("Roteador " + idRoteador + ": ligado e aguardando pacotes...");
     while (rodando) {
       try {
@@ -74,21 +76,20 @@ public class Roteador extends Thread {
 
   /*
    * Metodo: processaPacote
-   * Funcao: processa o pacote e verifica se eh o roteador atual eh o destino dele
-   * ou se vai continuar enviando o pacote
+   * Funcao: processa o pacote e o encaminha para ser tratado de maneira a
+   * depender de seu tipo
    * Parametros: Pacote recebido pelo roteador
    * Retorno: void
    */
   public void processaPacote(Pacote pacote) {
     System.out.println("Roteador " + idRoteador + ": Esta processando um pacote. Fila = " + bufferPacotes.size());
     checaEstaAtivo();
-    if (pacote.getIdRoteadorDestino() == idRoteador) {
-      controller.exibirGengar(idRoteador);
-      System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!\nCusto total de envio: "
-          + Pacote.getCustoTotalDeEnvio());
-      controller.atualizarCustoTotalDoCaminho(Pacote.getCustoTotalDeEnvio());
+    if (pacote instanceof PacoteEcho) {
+      tratarEcho((PacoteEcho) pacote);
+    } else if (pacote instanceof PacoteVetor) {
+      tratarVetor((PacoteVetor) pacote);
     } else {
-      enviarPacote(pacote);
+      tratarDados(pacote);
     } // fim do if
   } // fim do metodo processaPacote
 
@@ -105,103 +106,137 @@ public class Roteador extends Thread {
   } // fim do metodo checaEstaAtivo
 
   /*
-   * Metodo: enviarPacote
-   * Funcao: envia o pacote entre os roteadores
+   * Metodo: tratarEcho
+   * Funcao: Avalia o pacote Echo e direciona para a rotina correta
+   */
+  public void tratarEcho(PacoteEcho pacote) {
+    if (pacote.isReply()) {
+      int idVizinho = pacote.getIdRoteadorDestino();
+      int latencia = pacote.getLatenciaDaAresta();
+
+      Roteador instanciaVizinho = null;
+      for (Aresta conexao : conexoes) {
+        if (conexao.getDestino().getIdRoteador() == idVizinho) {
+          instanciaVizinho = conexao.getDestino();
+          break;
+        }
+      }
+
+      if (instanciaVizinho != null) {
+        tabelaRoteamento.put(idVizinho, new Aresta(instanciaVizinho, latencia));
+
+        System.out.println("Roteador " + idRoteador + " registrou vizinho R" + idVizinho + " na tabela!");
+        controller.enviarParaLog(
+            "  -> R" + idRoteador + " confirmou conexao com R" + idVizinho + " (Latencia: " + latencia + ")", "NORMAL");
+      }
+    } else {
+      int idOrigem = pacote.getIdRoteadorCriador();
+
+      for (Aresta conexao : conexoes) {
+        if (conexao.getDestino().getIdRoteador() == idOrigem) {
+
+          PacoteEcho reply = new PacoteEcho(this.idRoteador, idOrigem, conexao.getLatencia());
+          reply.setReply(true);
+
+          System.out.println("Roteador " + idRoteador + " enviando REPLY para R" + idOrigem);
+          transmitirParaVizinho(reply, conexao.getDestino());
+          break;
+        }
+      }
+    }
+  }
+
+  public void tratarVetor(PacoteVetor pacote) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'tratarVetor'");
+  }
+
+  /*
+   * Metodo: tratarDados
+   * Funcao: processa o pacote e verifica se eh o roteador atual eh o destino dele
    * Parametros: Pacote recebido pelo roteador
    * Retorno: void
    */
-  public void enviarPacote(Pacote pacote) {
-    int idDestino = pacote.getIdRoteadorDestino();
-    Integer idProximoSalto = tabelaProximoSalto.get(idDestino);
-
-    // Se a rota existir na tabela
-    if (idProximoSalto != null) {
-
-      // Procura a aresta especifica para esse vizinho
-      for (Aresta conexao : conexoes) {
-        if (conexao.getDestino().getIdRoteador() == idProximoSalto) {
-          Roteador vizinho = conexao.getDestino();
-          System.out.println(
-              "Roteador " + idRoteador + " enviou para " + vizinho.getIdRoteador() + " Custo: " + conexao.getLatencia()
-                  + " | Destino Final: " + idDestino);
-
-          Pacote copia = new Pacote(this.idRoteador, idDestino);
-          Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + conexao.getLatencia());
-          controller.exibirPacote(copia, this, vizinho);
-          break; // Sai do for pois ja enviou
-        } // fim do if
-      } // fim do for
+  public void tratarDados(Pacote pacote) {
+    if (pacote.getIdRoteadorDestino() == idRoteador) {
+      controller.exibirGengar(idRoteador);
+      System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!\nCusto total de envio: "
+          + Pacote.getCustoTotalDeEnvio());
+      controller.atualizarCustoTotalDoCaminho(Pacote.getCustoTotalDeEnvio());
     } else {
-      System.out.println("Roteador " + idRoteador + ": Rota desconhecida!");
+      enviarPacoteDados(pacote);
     } // fim do if
-  } // fim do metodo enviarPacote
+  } // fim do metodo tratarDados
 
   /*
-   * Metodo: calcularDijkstra
-   * Funcao: calcula a menor distancia entre roteadores e adiciona o caminho na
-   * tabela
-   * Parametros: todosRoteadores = arrayList com todos os roteadores do backbone
-   * Retorno: void
+   * Metodo: enviarVetorParaVizinhos
+   * Funcao: Pega a tabela de roteamento e envia uma copia para TODOS os vizinhos
+   * diretos
    */
-  public void calcularDijkstra(ArrayList<Roteador> todosRoteadores) {
-    Map<Integer, Integer> tabelaCustos = new HashMap<>();
-    ArrayList<Roteador> naoVisitados = new ArrayList<>(todosRoteadores);
-
-    // Inicializa todos os custos como "Infinito", exceto a si mesmo
-    for (Roteador r : todosRoteadores) {
-      tabelaCustos.put(r.getIdRoteador(), Integer.MAX_VALUE);
+  public void enviarVetorParaVizinhos() {
+    Map<Integer, Integer> tabela = new HashMap<>();
+    for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
+      tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
     } // fim do for
-    tabelaCustos.put(this.idRoteador, 0);
 
-    controller.enviarParaLog("[Roteador " + this.idRoteador + "] Iniciou o calculo de rotas.", "TITULO");
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
 
-    // Itera sobre os nos nao visitados
-    while (!naoVisitados.isEmpty()) {
-      Roteador atual = null;
-      int menorCusto = Integer.MAX_VALUE;
+      PacoteVetor pacoteVetor = new PacoteVetor(this.idRoteador, vizinho.getIdRoteador(), tabela);
 
-      // Procura o roteador mais proximo que ainda nao foi visitado
-      for (Roteador r : naoVisitados) {
-        int custo = tabelaCustos.get(r.getIdRoteador());
-        if (custo < menorCusto) {
-          menorCusto = custo;
-          atual = r;
-        } // fim do if
-      } // fim do if
+      System.out.println("Roteador " + idRoteador + " enviando VETOR (Fofoca) para vizinho " + vizinho.getIdRoteador());
+      transmitirParaVizinho(pacoteVetor, vizinho);
+    } // fim do for
+  } // fim do metodo enviarVetorParaVizinhos
 
-      // Se nao achar ninguem ou todos os restantes estiverem isolados, para
-      if (atual == null || menorCusto == Integer.MAX_VALUE)
-        break;
+  /*
+   * Metodo: enviarPacoteDados
+   * Funcao: Consulta a tabela de roteamento para encaminhar o pacote de usuario
+   */
+  public void enviarPacoteDados(Pacote pacote) {
+    int idDestino = pacote.getIdRoteadorDestino();
+    Aresta rota = tabelaRoteamento.get(idDestino);
 
-      controller.enviarParaLog("  -> Explorando vizinhos do Roteador " + atual.getIdRoteador(), "NORMAL");
+    // SEGURANÇA: Só tenta enviar se a rota existe na tabela e tem um próximo salto
+    // válido
+    if (rota != null && rota.getDestino() != null) {
+      Roteador vizinho = rota.getDestino();
 
-      naoVisitados.remove(atual);
+      System.out.println("Roteador " + idRoteador + " roteando DADOS para " + vizinho.getIdRoteador()
+          + " | Destino Final: " + idDestino);
 
-      // Avalia as conexoes do roteador atual
-      for (Aresta aresta : atual.getConexoes()) {
-        Roteador vizinho = aresta.getDestino();
+      Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + rota.getLatencia());
+      transmitirParaVizinho(pacote, vizinho);
 
-        if (naoVisitados.contains(vizinho)) {
-          int novoCusto = tabelaCustos.get(atual.getIdRoteador()) + aresta.getLatencia();
+    } else {
+      System.out.println("Roteador " + idRoteador + ": Rota para " + idDestino + " desconhecida! Descartando pacote.");
+    } // fim do if
+  } // fim do metodo enviarPacoteDados
 
-          // Caso ache um caminho com custo menor ele muda a rota
-          if (novoCusto < tabelaCustos.get(vizinho.getIdRoteador())) {
-            controller.enviarParaLog("      * Rota mais rapida para R" + vizinho.getIdRoteador()
-                + " encontrada! (Custo total: " + novoCusto + ")", "DESTAQUE");
+  /*
+   * Metodo: transmitirParaVizinho
+   * Funcao: inicializa a animacao de envio de pacote
+   */
+  private void transmitirParaVizinho(Pacote pacote, Roteador vizinho) {
+    controller.exibirPacote(pacote, this, vizinho);
+  } // fim do metodo transmitirParaVizinho
 
-            tabelaCustos.put(vizinho.getIdRoteador(), novoCusto);
+  /*
+   * Metodo: iniciarDescobertaDeVizinhos
+   * Funcao: Envia um Echo Request para todas as portas fisicas (conexoes)
+   */
+  public void iniciarDescobertaDeVizinhos() {
+    System.out.println("Roteador " + idRoteador + " iniciando descoberta (Echo Request)...");
+    controller.enviarParaLog("[Roteador " + idRoteador + "] Iniciou a descoberta de vizinhos.", "TITULO");
 
-            // Atualiza o proximo salto
-            if (atual.getIdRoteador() == this.idRoteador) {
-              tabelaProximoSalto.put(vizinho.getIdRoteador(), vizinho.getIdRoteador());
-            } else {
-              tabelaProximoSalto.put(vizinho.getIdRoteador(), tabelaProximoSalto.get(atual.getIdRoteador()));
-            } // fim do if
-          } // fim do if
-        } // fim do if
-      } // fim do for
-    } // fim do while
-  } // fim do metodo calcularDijkstra
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
+
+      PacoteEcho request = new PacoteEcho(this.idRoteador, vizinho.getIdRoteador(), conexao.getLatencia());
+
+      transmitirParaVizinho(request, vizinho);
+    }
+  }
 
   /*
    * Metodo: receberPacote
@@ -216,7 +251,8 @@ public class Roteador extends Thread {
   /*
    * Metodo: addVizinho
    * Funcao: Adicionar roteador vizinho e a latencia de envio
-   * Parametros: Vizinho = roteador que esta interligado; latencia = tempo de retardo
+   * Parametros: Vizinho = roteador que esta interligado; latencia = tempo de
+   * retardo
    * Retorno: void
    */
   public void addVizinho(Roteador vizinho, int latencia) {
@@ -271,12 +307,12 @@ public class Roteador extends Thread {
     this.imageView = imageView;
   }
 
-  public Map<Integer, Integer> getTabelaProximoSalto() {
-    return tabelaProximoSalto;
+  public Map<Integer, Aresta> getTabelaRoteamento() {
+    return tabelaRoteamento;
   }
 
-  public void setTabelaProximoSalto(Map<Integer, Integer> tabelaProximoSalto) {
-    this.tabelaProximoSalto = tabelaProximoSalto;
+  public void setTabelaRoteamento(Map<Integer, Aresta> tabelaRoteamento) {
+    this.tabelaRoteamento = tabelaRoteamento;
   }
 
   public ArrayList<Aresta> getConexoes() {

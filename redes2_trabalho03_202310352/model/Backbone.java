@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 24 03 2026
+* Ultima alteracao.: 29 03 2026
 * Nome.............: Backbone.java
 * Funcao...........: Fazer a leitura do arquivo txt e criar os roteadores e suas conexoes
 *************************************************************** */
@@ -57,13 +57,13 @@ public class Backbone {
           int latencia01 = Integer.parseInt(partes[2].trim());
           int latencia02 = Integer.parseInt(partes[3].trim());
 
-          Roteador r1 = roteadores.get(idOrigem-1);
-          Roteador r2 = roteadores.get(idDestino-1);
+          Roteador r1 = roteadores.get(idOrigem - 1);
+          Roteador r2 = roteadores.get(idDestino - 1);
 
           gerarConexao(r1, r2, latencia01, latencia02);
 
-          System.out.println("Conexao criada: " + idOrigem + " -> " + idDestino + " latencia " + latencia01);
-          System.out.println("Conexao criada: " + idDestino + " -> " + idOrigem + " latencia " + latencia02);
+          System.out.println("Conexao criada: " + idOrigem + " -> " + idDestino + " | Latencia de ida:" + latencia01
+              + " | Latencia de volta:" + latencia02);
         } // fim do if
       } // fim do while
 
@@ -94,7 +94,9 @@ public class Backbone {
    */
   public void gerarConexao(Roteador r1, Roteador r2, int latencia01, int latencia02) {
     r1.addVizinho(r2, latencia01);
+    r1.getTabelaRoteamento().put(r2.getIdRoteador(), null);
     r2.addVizinho(r1, latencia02);
+    r2.getTabelaRoteamento().put(r1.getIdRoteador(), null);
   } // fim do metodo gerarConexao
 
   public ArrayList<Roteador> getRoteadores() {
