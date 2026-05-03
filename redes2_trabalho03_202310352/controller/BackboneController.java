@@ -30,6 +30,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -73,6 +74,8 @@ public class BackboneController implements Initializable {
   private Backbone rede = new Backbone();
   private int quantRoteadores = 0;
   private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
+  private Paint corAnterior = Color.WHITE;
+  private double strokeAnterior = 1;
 
   private final String ARQUIVO = "backbone.txt";
 
@@ -279,6 +282,8 @@ public class BackboneController implements Initializable {
 
       // Quando passar o mouse, a linha fica vermelha avisando o perigo
       conexao.setOnMouseEntered(e -> {
+        corAnterior = conexao.getStroke();
+        strokeAnterior = conexao.getStrokeWidth();
         conexao.setStroke(Color.RED);
         conexao.setStrokeWidth(3);
         conexao.setCursor(Cursor.HAND);
@@ -286,8 +291,8 @@ public class BackboneController implements Initializable {
 
       // Quando tirar o mouse, volta ao normal
       conexao.setOnMouseExited(e -> {
-        conexao.setStroke(Color.WHITE);
-        conexao.setStrokeWidth(1);
+        conexao.setStroke(corAnterior);
+        conexao.setStrokeWidth(strokeAnterior);
         conexao.setCursor(Cursor.DEFAULT);
       });
 
