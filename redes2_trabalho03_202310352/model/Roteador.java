@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import controller.BackboneController;
 import javafx.scene.image.ImageView;
@@ -25,6 +27,7 @@ public class Roteador extends Thread {
   private int ecosRecebidos = 0;
   private BackboneController controller;
   private volatile boolean rodando = true;
+  private Timer timerAtualizacao;
 
   private Map<Integer, Aresta> tabelaRoteamento = new HashMap<>();
   private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
@@ -40,6 +43,7 @@ public class Roteador extends Thread {
   @Override
   public void run() {
     iniciarDescobertaDeVizinhos();
+    iniciarEnvioPeriodico();
     System.out.println("Roteador " + idRoteador + ": ligado e aguardando pacotes...");
     while (rodando) {
       try {
@@ -60,6 +64,10 @@ public class Roteador extends Thread {
    */
   public void desligar() {
     this.rodando = false;
+    if (timerAtualizacao != null) {
+      timerAtualizacao.cancel();
+      timerAtualizacao = null;
+    }
   } // fim do metodo desligar
 
   /*
@@ -70,6 +78,7 @@ public class Roteador extends Thread {
    */
   public void ligar() {
     this.rodando = true;
+    iniciarEnvioPeriodico();
   } // fim do metodo ligar
 
   /*
@@ -211,9 +220,10 @@ public class Roteador extends Thread {
    */
   public void enviarVetorParaVizinhos() {
     Map<Integer, Integer> tabela = new HashMap<>();
+    Map<Integer, Aresta> copiaSegura = getCopiaSeguraTabelaRoteamento();
 
     // Monta o vetor (Destino -> Custo)
-    for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
+    for (Map.Entry<Integer, Aresta> entrada : copiaSegura.entrySet()) {
       tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
     } // fim do for
 
@@ -305,12 +315,36 @@ public class Roteador extends Thread {
    * ConcurrentModificationException na Interface Grafica
    */
   public Map<Integer, Aresta> getCopiaSeguraTabelaRoteamento() {
-    // O 'synchronized' garante que a thread do Roteador pause a escrita
-    // por 1 milissegundo apenas para fazer a cópia com segurança
     synchronized (tabelaRoteamento) {
       return new HashMap<>(tabelaRoteamento);
     }
   }
+
+  /*
+   * Metodo: iniciarEnvioPeriodico
+   * Funcao: Configura um cronometro para reenviar a tabela de rotas a cada 10
+   * segundos
+   */
+  public void iniciarEnvioPeriodico() {
+    // Mata o timer anterior caso ainda exista
+    if (timerAtualizacao != null)
+      timerAtualizacao.cancel();
+
+    timerAtualizacao = new Timer();
+    timerAtualizacao.scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          if (ecosRecebidos >= conexoes.size() && conexoes.size() > 0) {
+            System.out.println("Roteador " + idRoteador + ": Disparando atualizacao periodica de rotas!");
+            enviarVetorParaVizinhos();
+          }
+        } catch (Exception e) {
+          System.out.println("Erro no Timer do Roteador " + idRoteador + " (ignorado).");
+        }
+      } // fim do run
+    }, 10000, 10000);
+  } // fim do metodo iniciarEnvioPeriodico
 
   public int getIdRoteador() {
     return idRoteador;

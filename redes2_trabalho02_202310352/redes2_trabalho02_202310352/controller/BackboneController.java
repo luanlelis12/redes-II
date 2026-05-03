@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 03 05 2026
+* Ultima alteracao.: 12 04 2026
 * Nome.............: BackboneController.java
 * Funcao...........: Controller para gerenciar entre tela do backbone do programa e os models 
 *************************************************************** */
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+
 import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -22,7 +23,6 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -41,50 +41,40 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.Pair;
-import javafx.scene.control.Alert;
-import javafx.scene.Cursor;
 import model.Aresta;
 import model.Backbone;
 import model.Pacote;
-import model.PacoteEcho;
-import model.PacoteVetor;
 import model.Roteador;
 import util.FxmlRotas;
 
 public class BackboneController implements Initializable {
   // Elementos do javaFx
   @FXML
-  private AnchorPane paneRoteadores;
+  AnchorPane paneRoteadores;
   @FXML
-  private AnchorPane paneConfiguracoes;
+  AnchorPane paneConfiguracoes;
   @FXML
-  private ChoiceBox<Integer> choiceOrigem;
+  ChoiceBox<Integer> choiceOrigem;
   @FXML
-  private ChoiceBox<Integer> choiceDestino;
+  ChoiceBox<Integer> choiceDestino;
   @FXML
-  private Label labelCustoCaminho;
+  Label labelCustoCaminho;
   @FXML
-  private TextFlow textoLog;
-  @FXML
-  private VBox paneTabelasLateral;
-  @FXML
-  private VBox vboxTabelas;
-  @FXML
-  private Button buttonIniciar;
+  TextFlow textoLog;
 
   private Backbone rede = new Backbone();
-  private int quantRoteadores = 0;
+  private int quantRoteadores = 0, pacotesChegados = 0;
   private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
 
   private final String ARQUIVO = "backbone.txt";
+
+  private Stage stageLog;
+  private LogController logController;
 
   private final Image IMAGEM_ROTEADOR = new Image("file:view/img/roteador.png"),
       IMAGEM_ROTEADOR_ORIGEM = new Image("file:view/img/roteadorOrigem.png"),
       IMAGEM_ROTEADOR_DESTINO = new Image("file:view/img/roteadorDestino.png"),
       IMAGEM_PACOTE = new Image("file:view/img/pacote.png"),
-      IMAGEM_PACOTE_ECHO_REQUEST = new Image("file:view/img/pacoteEchoRequest.png"),
-      IMAGEM_PACOTE_VETOR = new Image("file:view/img/pacoteVetor.png"),
       IMAGEM_HAUNTER = new Image("file:view/img/haunter.png"),
       IMAGEM_GENGAR = new Image("file:view/img/gengar.png");
 
@@ -96,22 +86,23 @@ public class BackboneController implements Initializable {
   private final ImageView HAUNTER = new ImageView(IMAGEM_HAUNTER), GENGAR = new ImageView(IMAGEM_GENGAR);
 
   private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>();
-  private Map<String, Pair<Line, Label>> mapaLinhas = new HashMap<>();
+  private Map<String, Line> mapaLinhas = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O BackboneController foi carregado corretamente!");
     rede.carregarArquivo(ARQUIVO, this);
 
+    for (Roteador r : rede.getRoteadores()) {
+      r.setDaemon(true);
+      r.start();
+    } // fim do for
+
     Platform.runLater(() -> {
 
+      inicializarTelaLog();
+
       desenharRede(ARQUIVO);
-
-      for (Roteador r : rede.getRoteadores()) {
-        r.setDaemon(true);
-        r.start();
-      } // fim do for
-
       // Itera sobre os roteador para colocar na choiceBox
       for (Roteador r : rede.getRoteadores()) {
         choiceOrigem.getItems().add(r.getIdRoteador());
@@ -184,9 +175,10 @@ public class BackboneController implements Initializable {
       exibirRoteador(roteador);
       // itera sobre as arestas de conexao para exibir cada um delas na tela
       for (Aresta conexao : roteador.getConexoes()) {
-        exibirConexao(roteador, conexao.getDestino(), conexao.getLatencia());
+        exibirConexao(roteador, conexao.getDestino(), conexao.getPeso());
       } // fim do for
     } // fim do for
+
   } // fim do metodo desenharRede
 
   /*
@@ -249,10 +241,10 @@ public class BackboneController implements Initializable {
   /*
    * Metodo: exibirConexao
    * Funcao: exibir a conexao entre dois roteadores
-   * Parametros: r1 = roteador; r2 = roteador, getLatencia = latencia da conexao
+   * Parametros: r1 = roteador; r2 = roteador, peso = peso da conexao
    * Retorno: void
    */
-  public void exibirConexao(Roteador r1, Roteador r2, int latencia) {
+  public void exibirConexao(Roteador r1, Roteador r2, int peso) {
     Platform.runLater(() -> {
 
       int idMin = Math.min(r1.getIdRoteador(), r2.getIdRoteador());
@@ -260,8 +252,6 @@ public class BackboneController implements Initializable {
       String chave = idMin + "-" + idMax;
 
       if (mapaLinhas.containsKey(chave)) {
-        Label label = mapaLinhas.get(chave).getValue();
-        label.setText(label.getText() + latencia);
         return;
       }
 
@@ -270,86 +260,22 @@ public class BackboneController implements Initializable {
 
       Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
       conexao.setStroke(Color.WHITE);
+
+      mapaLinhas.put(chave, conexao);
+
       paneRoteadores.getChildren().add(conexao);
       conexao.toBack();
 
-      Label latenciaConexao = new Label("" + latencia + ";");
-      latenciaConexao.setStyle(
+      Label pesoConexao = new Label("" + peso);
+      pesoConexao.setStyle(
           "-fx-font-weight: bold; -fx-background-color: gray; -fx-text-fill: white; -fx-border-radius: 50%; -fx-background-radius: 50%;");
-      latenciaConexao.setPrefSize(40, 20);
-      latenciaConexao.setAlignment(Pos.CENTER);
-      latenciaConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
-      latenciaConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
-      paneRoteadores.getChildren().add(latenciaConexao);
-
-      // Quando passar o mouse, a linha fica vermelha avisando o perigo
-      conexao.setOnMouseEntered(e -> {
-        conexao.setStroke(Color.RED);
-        conexao.setStrokeWidth(3);
-        conexao.setCursor(Cursor.HAND);
-      });
-
-      // Quando tirar o mouse, volta ao normal
-      conexao.setOnMouseExited(e -> {
-        conexao.setStroke(Color.WHITE);
-        conexao.setStrokeWidth(1);
-        conexao.setCursor(Cursor.DEFAULT);
-      });
-
-      latenciaConexao.setCursor(Cursor.HAND);
-      // Ao clicar na linha ou no numero da latencia, corta a conexao!
-      conexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
-      latenciaConexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
-
-      mapaLinhas.put(chave, new Pair<Line, Label>(conexao, latenciaConexao));
+      pesoConexao.setPrefSize(20, 20);
+      pesoConexao.setAlignment(Pos.CENTER);
+      pesoConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
+      pesoConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
+      paneRoteadores.getChildren().add(pesoConexao);
     });
   } // fim do metodo exibirConexao
-
-  /*
-   * Metodo: cortarConexao
-   * Funcao: Rompe um cabo fisico dinamicamente, cancela transicoes atuais e forca
-   * o recalculo
-   */
-  public void cortarConexao(Roteador r1, Roteador r2, String chaveLinha) {
-    System.out
-        .println("Cortando conexao entre roteador " + r1.getIdRoteador() + " e roteador " + r2.getIdRoteador() + "!");
-
-    // Interrompe todas as animacoes e limpa as filas de espera
-    reiniciarRede();
-    for (Roteador r : rede.getRoteadores()) {
-      r.getBufferPacotes().clear();
-    } // fim do for
-
-    // Mostra o Pop-out de aviso
-    Alert alerta = new Alert(Alert.AlertType.WARNING);
-    alerta.setTitle("Conexao Rompida!");
-    alerta.setHeaderText("Alerta de Falha!");
-    alerta.setContentText("O cabo entre o Roteador " + r1.getIdRoteador() + " e o Roteador " + r2.getIdRoteador()
-        + " foi rompido!\nTodos os pacotes em transito foram descartados. A rede ira recalcular as rotas agora.");
-    alerta.showAndWait();
-
-    // Remove a conexao logicamente da lista de cabos dos roteadores
-    r1.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r2.getIdRoteador());
-    r2.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r1.getIdRoteador());
-
-    // Remove a linha e a label visualmente da tela
-    Pair<Line, Label> componentes = mapaLinhas.get(chaveLinha);
-    if (componentes != null) {
-      paneRoteadores.getChildren().removeAll(componentes.getKey(), componentes.getValue());
-      mapaLinhas.remove(chaveLinha);
-    }
-
-    // Força toda a rede recalcular suas conexões
-    for (Roteador r : rede.getRoteadores()) {
-      r.setEcosRecebidos(0);
-      r.getTabelaRoteamento().clear();
-      r.getTabelaRoteamento().put(r.getIdRoteador(), new Aresta(r, 0));
-      r.iniciarDescobertaDeVizinhos();
-    } // fim do for
-
-    atualizarTabelasNaTela();
-    verificarStatusDaRede();
-  } // fim do metodo
 
   /*
    * Metodo: exibirPacote
@@ -360,16 +286,7 @@ public class BackboneController implements Initializable {
    */
   public void exibirPacote(Pacote pacote, Roteador rOrigem, Roteador rDestino) {
     Platform.runLater(() -> {
-
-      ImageView imageViewPacote = new ImageView();
-      // muda a imagem de acordo com o tipo de pacote enviado
-      if (pacote instanceof PacoteEcho) {
-        imageViewPacote.setImage(IMAGEM_PACOTE_ECHO_REQUEST);
-      } else if (pacote instanceof PacoteVetor) {
-        imageViewPacote.setImage(IMAGEM_PACOTE_VETOR);
-      } else {
-        imageViewPacote.setImage(IMAGEM_PACOTE);
-      } // fim do if
+      ImageView imageViewPacote = new ImageView(IMAGEM_PACOTE);
       imageViewPacote.setFitWidth(30);
       imageViewPacote.setFitHeight(30);
       Path caminho = new Path();
@@ -388,16 +305,10 @@ public class BackboneController implements Initializable {
       animacao.setAutoReverse(true);
       arrayAnimacoes.add(animacao);
 
-      // bloqueia o botao de enviar quando tiver alguma animacao ocorrendo
-      if (buttonIniciar != null)
-        buttonIniciar.setDisable(true);
-
       // Quando a animacao acabar o roteador recebe o pacote e o processa
       animacao.setOnFinished(e -> {
         paneRoteadores.getChildren().remove(imageViewPacote);
         rDestino.receberPacote(pacote);
-        arrayAnimacoes.remove(animacao);
-        verificarStatusDaRede();
       });
 
       animacao.play();
@@ -425,17 +336,17 @@ public class BackboneController implements Initializable {
 
     rede.carregarArquivo(ARQUIVO, this);
 
+    for (Roteador r : rede.getRoteadores()) {
+      r.setDaemon(true);
+      r.start();
+    } // fim do for
+
     Platform.runLater(() -> {
       paneRoteadores.getChildren().removeIf(elemento -> !(elemento instanceof VBox));
       choiceOrigem.getItems().clear();
       choiceDestino.getItems().clear();
 
       desenharRede(ARQUIVO);
-
-      for (Roteador r : rede.getRoteadores()) {
-        r.setDaemon(true);
-        r.start();
-      } // fim do for
 
       // Itera sobre os roteador para colocar na choiceBox
       for (Roteador r : rede.getRoteadores()) {
@@ -453,29 +364,58 @@ public class BackboneController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public void iniciarEnvio() {// Verificações de segurança
-    if (choiceOrigem.getValue() == null || choiceDestino.getValue() == null)
+  public void iniciarEnvio() {
+    reiniciarRede();
+
+    // Caso o roteador de origem ou de destino nao sejam selecionado nao eh iniciado
+    // a simulacao
+    if (choiceOrigem.getValue() == null || choiceDestino.getValue() == null) {
+      System.out.println("Erro: Selecione todos os campos antes de enviar!");
       return;
+    } // fim do if
+
     int idOrigem = choiceOrigem.getValue();
     int idDestino = choiceDestino.getValue();
-    if (idOrigem == idDestino)
+
+    // Caso o roteador de origem e destino sejam o mesmo nao eh iniciado a simulacao
+    if (idOrigem == idDestino) {
+      System.out.println("Erro: Selecione um roteador de destino diferente do roteador de origem!");
       return;
+    } // fim do if
 
-    // Limpa apenas o visual da entrega anterior na tela (O Pokemon e o Custo)
-    paneRoteadores.getChildren().remove(GENGAR);
-    Pacote.setCustoTotalDeEnvio(0);
-    atualizarCustoTotalDoCaminho(0);
+    // Itera para encerrar as threads de todos os roteadores e limpa os buffers
+    for (Roteador roteador : rede.getRoteadores()) {
+      roteador.desligar();
+      roteador.getBufferPacotes().clear();
+    } // fim do for
 
-    // Cria o pacote e entrega diretamente para o roteador de origem!
-    Pacote pacoteDados = new Pacote(idOrigem, idDestino);
-    Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+    // Limpa a tela de log para o novo calculo
+    if (logController != null) {
+      logController.limparLog();
+    }
 
-    System.out.println(">> Iniciando envio de DADOS do R" + idOrigem + " para R" + idDestino);
-    rOrigem.enviarPacoteDados(pacoteDados);
+    Pacote primeiroPacote = new Pacote(idOrigem, idDestino);
 
-    // Trava o botão para o usuário não floodar a rede com múltiplos pacotes
-    if (buttonIniciar != null)
-      buttonIniciar.setDisable(true);
+    // itera sobre os roteadores para definir os algoritmos e ligalos
+    for (Roteador roteador : rede.getRoteadores()) {
+      roteador.calcularDijkstra(rede.getRoteadores());
+      roteador.ligar();
+    } // fim do for
+
+    System.out.println("Caminho calculado!");
+    double esperaTotal = desenharMenorCaminho(idOrigem, idDestino);
+
+    // Cria um cronometro para o pacote esperar
+    javafx.animation.PauseTransition pausaDoPacote = new javafx.animation.PauseTransition(
+        javafx.util.Duration.seconds(esperaTotal + 0.2));
+
+    pausaDoPacote.setOnFinished(e -> {
+      // O pacote so sai da origem quando o cronometro termina
+      Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
+      rOrigem.enviarPacote(primeiroPacote);
+    });
+
+    pausaDoPacote.play();
   } // fim do metodo iniciarEnvio
 
   /*
@@ -495,7 +435,7 @@ public class BackboneController implements Initializable {
       Roteador roteadorAtual = rede.getRoteadores().get(atual - 1);
 
       // Pega o roteador que recebera o pacote
-      Integer proximo = roteadorAtual.getTabelaRoteamento().get(idDestino).getDestino().getIdRoteador();
+      Integer proximo = roteadorAtual.getTabelaProximoSalto().get(idDestino);
 
       if (proximo == null)
         break;
@@ -503,7 +443,7 @@ public class BackboneController implements Initializable {
       // Pega a conexao entre os roteadores
       int idMin = Math.min(atual, proximo);
       int idMax = Math.max(atual, proximo);
-      Line linhaCaminho = mapaLinhas.get(idMin + "-" + idMax).getKey();
+      Line linhaCaminho = mapaLinhas.get(idMin + "-" + idMax);
 
       // Destaca a conexao de vermelho e deixa mais grossa
       if (linhaCaminho != null) {
@@ -534,6 +474,7 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   public void reiniciarRede() {
+    pacotesChegados = -1;
     Pacote.setCustoTotalDeEnvio(0);
     atualizarCustoTotalDoCaminho(0);
 
@@ -541,9 +482,9 @@ public class BackboneController implements Initializable {
     paneRoteadores.getChildren().remove(GENGAR);
 
     // Itera sobre a conexoes para deixar na cor padrao
-    for (Pair<Line, Label> par : mapaLinhas.values()) {
-      par.getKey().setStroke(Color.WHITE);
-      par.getKey().setStrokeWidth(1);
+    for (Line linha : mapaLinhas.values()) {
+      linha.setStroke(Color.WHITE);
+      linha.setStrokeWidth(1);
     } // fim do for
 
     // Itera sobre o array de animacoes para desliga-las
@@ -612,71 +553,63 @@ public class BackboneController implements Initializable {
   } // fim do metodo exibirGengar
 
   /*
-   * Metodo: atualizarTabelasNaTela
-   * Funcao: Lê a tabela de cada roteador e desenha no painel lateral
+   * Metodo: inicializarTelaLog
+   * Funcao: Carrega a tela de log na memoria ao abrir o programa
+   * Parametros:
+   * Retorno:
    */
-  public void atualizarTabelasNaTela() {
-    if (paneTabelasLateral == null || !paneTabelasLateral.isVisible())
-      return;
+  public void inicializarTelaLog() {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource(FxmlRotas.TELA_LOG));
+      Parent root = loader.load();
 
-    Platform.runLater(() -> {
-      vboxTabelas.getChildren().clear(); // Limpa as tabelas antigas
+      // Captura o controlador para podermos enviar as mensagens depois
+      logController = loader.getController();
 
-      for (Roteador r : rede.getRoteadores()) {
-        VBox cardRoteador = new VBox(5);
-        cardRoteador.setStyle("-fx-background-color: #333333; -fx-padding: 10; -fx-background-radius: 8;");
+      stageLog = new Stage();
+      stageLog.setTitle("ROTEAMENTO POR MENOR CAMINHO - LOG");
+      Image icon = new Image(getClass().getResourceAsStream("../view/img/icon.png"));
+      stageLog.getIcons().add(icon);
+      stageLog.setScene(new Scene(root));
 
-        Label titulo = new Label("Tabela do Roteador " + r.getIdRoteador());
-        titulo.setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold; -fx-font-size: 14px;");
-        cardRoteador.getChildren().add(titulo);
+      // Em vez de destruir a janela ao clicar no X, apenas a esconde
+      stageLog.setOnCloseRequest(e -> {
+        e.consume(); // Cancela o evento padrao de fechar
+        stageLog.hide(); // Apenas esconde
+      });
 
-        // Cabecalho da Tabela
-        Label cabecalho = new Label(String.format("%-7s | %-6s | %-6s", "Destino", "Custo", "Salto"));
-        cabecalho.setStyle("-fx-text-fill: white; -fx-font-family: monospace; -fx-font-weight: bold;");
-        cardRoteador.getChildren().add(cabecalho);
-
-        // Linhas da Tabela
-        for (Map.Entry<Integer, Aresta> linha : r.getCopiaSeguraTabelaRoteamento().entrySet()) {
-          int destino = linha.getKey();
-          Aresta aresta = linha.getValue();
-
-          String custoStr = (aresta != null) ? String.valueOf(aresta.getLatencia()) : "Inf";
-          String saltoStr = (aresta != null && aresta.getDestino() != null)
-              ? String.valueOf(aresta.getDestino().getIdRoteador())
-              : "-";
-
-          Label labelLinha = new Label(String.format("%-7d | %-6s | %-6s", destino, custoStr, saltoStr));
-          labelLinha.setStyle("-fx-text-fill: #bdc3c7; -fx-font-family: monospace;");
-          cardRoteador.getChildren().add(labelLinha);
-        } // fim do for
-
-        vboxTabelas.getChildren().add(cardRoteador);
-      }
-    });
-  }
+    } catch (Exception e) {
+      System.out.println("Erro ao carregar a tela de Log em segundo plano!");
+      e.printStackTrace();
+    } // fim do try-catch
+  } // fim do metodo inicializarTelaLog
 
   /*
-   * Metodo: verificarStatusDaRede
-   * Funcao: Checa se há pacotes voando ou em fila. Se a rede estiver em paz,
-   * libera o botão.
+   * Metodo: abrirLog
+   * Funcao: Abre popout mostrando o log
+   * Parametros:
+   * Retorno: void
    */
-  public void verificarStatusDaRede() {
-    Platform.runLater(() -> {
-      boolean ocupado = !arrayAnimacoes.isEmpty();
+  public void abrirLog() {
+    if (stageLog != null) {
+      if (!stageLog.isShowing()) {
+        stageLog.show(); // Abre a janela se estiver escondida
+      } else {
+        stageLog.toFront(); // Traz para a frente se ja estiver aberta, mas por tras da janela principal
+      } // fim do if
+    } // fim do if
+  } // fim do metodo abrirLog
 
-      // Checa se as filas estão vazias
-      for (Roteador r : rede.getRoteadores()) {
-        if (!r.getBufferPacotes().isEmpty()) {
-          ocupado = true;
-          break;
-        }
-      }
-
-      // Se tiver pacote voando ou na fila, desativa o botão. Se não, libera!
-      if (buttonIniciar != null) {
-        buttonIniciar.setDisable(ocupado);
-      }
-    });
-  } // fim do metodo verificarStatusDaRede
+  /*
+   * Metodo: enviarParaLog
+   * Funcao: Recebe mensagens dos roteadores e repassa para o LogController
+   * Parametros: mensagem = log do algoritmo / tipo = se eh um titulo, destaque ou texto normal
+   * Retorno: void
+   */
+  public void enviarParaLog(String mensagem, String tipo) {
+    if (logController != null) {
+      logController.adicionarLog(mensagem, tipo);
+    } // fim do if
+  } // fim do metodo enviarParaLog
 
 }
