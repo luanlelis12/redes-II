@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 29 04 2026
+* Ultima alteracao.: 03 05 2026
 * Nome.............: BackboneController.java
 * Funcao...........: Controller para gerenciar entre tela do backbone do programa e os models 
 *************************************************************** */
@@ -64,7 +64,7 @@ public class BackboneController implements Initializable {
   TextFlow textoLog;
 
   private Backbone rede = new Backbone();
-  private int quantRoteadores = 0, pacotesChegados = 0;
+  private int quantRoteadores = 0;
   private double anguloDosRoteadores = 0, centroDaTopologiaX, centroDaTopologiaY;
 
   private final String ARQUIVO = "backbone.txt";
@@ -87,23 +87,23 @@ public class BackboneController implements Initializable {
   private final ImageView HAUNTER = new ImageView(IMAGEM_HAUNTER), GENGAR = new ImageView(IMAGEM_GENGAR);
 
   private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>();
-  private Map<String, Pair<Line,Label>> mapaLinhas = new HashMap<>();
+  private Map<String, Pair<Line, Label>> mapaLinhas = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O BackboneController foi carregado corretamente!");
     rede.carregarArquivo(ARQUIVO, this);
 
-    for (Roteador r : rede.getRoteadores()) {
-      r.setDaemon(true);
-      r.start();
-    } // fim do for
-
     Platform.runLater(() -> {
 
       inicializarTelaLog();
-
       desenharRede(ARQUIVO);
+
+      for (Roteador r : rede.getRoteadores()) {
+        r.setDaemon(true);
+        r.start();
+      } // fim do for
+
       // Itera sobre os roteador para colocar na choiceBox
       for (Roteador r : rede.getRoteadores()) {
         choiceOrigem.getItems().add(r.getIdRoteador());
@@ -263,19 +263,18 @@ public class BackboneController implements Initializable {
       Line conexao = new Line(posicaoR1[0], posicaoR1[1], posicaoR2[0], posicaoR2[1]);
       conexao.setStroke(Color.WHITE);
 
-      
       paneRoteadores.getChildren().add(conexao);
       conexao.toBack();
-      
+
       Label latenciaConexao = new Label("" + latencia + ";");
       latenciaConexao.setStyle(
-        "-fx-font-weight: bold; -fx-background-color: gray; -fx-text-fill: white; -fx-border-radius: 50%; -fx-background-radius: 50%;");
-        latenciaConexao.setPrefSize(40, 20);
-        latenciaConexao.setAlignment(Pos.CENTER);
-        latenciaConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
-        latenciaConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
-        paneRoteadores.getChildren().add(latenciaConexao);
-      
+          "-fx-font-weight: bold; -fx-background-color: gray; -fx-text-fill: white; -fx-border-radius: 50%; -fx-background-radius: 50%;");
+      latenciaConexao.setPrefSize(40, 20);
+      latenciaConexao.setAlignment(Pos.CENTER);
+      latenciaConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
+      latenciaConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
+      paneRoteadores.getChildren().add(latenciaConexao);
+
       mapaLinhas.put(chave, new Pair<Line, Label>(conexao, latenciaConexao));
     });
   } // fim do metodo exibirConexao
@@ -339,17 +338,17 @@ public class BackboneController implements Initializable {
 
     rede.carregarArquivo(ARQUIVO, this);
 
-    for (Roteador r : rede.getRoteadores()) {
-      r.setDaemon(true);
-      r.start();
-    } // fim do for
-
     Platform.runLater(() -> {
       paneRoteadores.getChildren().removeIf(elemento -> !(elemento instanceof VBox));
       choiceOrigem.getItems().clear();
       choiceDestino.getItems().clear();
 
       desenharRede(ARQUIVO);
+
+      for (Roteador r : rede.getRoteadores()) {
+        r.setDaemon(true);
+        r.start();
+      } // fim do for
 
       // Itera sobre os roteador para colocar na choiceBox
       for (Roteador r : rede.getRoteadores()) {
@@ -403,7 +402,7 @@ public class BackboneController implements Initializable {
     for (Roteador roteador : rede.getRoteadores()) {
       roteador.ligar();
     } // fim do for
-    
+
     Roteador rOrigem = rede.getRoteadores().get(idOrigem - 1);
     rOrigem.enviarPacoteDados(primeiroPacote);
   } // fim do metodo iniciarEnvio
@@ -464,7 +463,6 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   public void reiniciarRede() {
-    pacotesChegados = -1;
     Pacote.setCustoTotalDeEnvio(0);
     atualizarCustoTotalDoCaminho(0);
 
@@ -472,7 +470,7 @@ public class BackboneController implements Initializable {
     paneRoteadores.getChildren().remove(GENGAR);
 
     // Itera sobre a conexoes para deixar na cor padrao
-    for (Pair<Line,Label> par : mapaLinhas.values()) {
+    for (Pair<Line, Label> par : mapaLinhas.values()) {
       par.getKey().setStroke(Color.WHITE);
       par.getKey().setStrokeWidth(1);
     } // fim do for
@@ -593,7 +591,8 @@ public class BackboneController implements Initializable {
   /*
    * Metodo: enviarParaLog
    * Funcao: Recebe mensagens dos roteadores e repassa para o LogController
-   * Parametros: mensagem = log do algoritmo / tipo = se eh um titulo, destaque ou texto normal
+   * Parametros: mensagem = log do algoritmo / tipo = se eh um titulo, destaque ou
+   * texto normal
    * Retorno: void
    */
   public void enviarParaLog(String mensagem, String tipo) {

@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 28 03 2026
+* Ultima alteracao.: 03 05 2026
 * Nome.............: Roteador.java
 * Funcao...........: Executa as operacoes do roteador como enviar e processar os pacotes
 *************************************************************** */
@@ -119,8 +119,8 @@ public class Roteador extends Thread {
         if (conexao.getDestino().getIdRoteador() == idVizinho) {
           instanciaVizinho = conexao.getDestino();
           break;
-        }
-      }
+        } // fim do if
+      } // fim do for
 
       if (instanciaVizinho != null) {
         tabelaRoteamento.put(idVizinho, new Aresta(instanciaVizinho, latencia));
@@ -128,9 +128,9 @@ public class Roteador extends Thread {
         System.out.println("Roteador " + idRoteador + " registrou vizinho R" + idVizinho + " na tabela!");
         controller.enviarParaLog(
             "  -> R" + idRoteador + " confirmou conexao com R" + idVizinho + " (Latencia: " + latencia + ")", "NORMAL");
-      }
+      } // fim do if
     } else {
-      int idOrigem = pacote.getIdRoteadorCriador();
+      int idOrigem = pacote.getIdRoteadorOrigem();
 
       for (Aresta conexao : conexoes) {
         if (conexao.getDestino().getIdRoteador() == idOrigem) {
@@ -141,10 +141,10 @@ public class Roteador extends Thread {
           System.out.println("Roteador " + idRoteador + " enviando REPLY para R" + idOrigem);
           transmitirParaVizinho(reply, conexao.getDestino());
           break;
-        }
-      }
-    }
-  }
+        } // fim do if
+      } // fim do for
+    }// fim do if
+  } // fim do metodo tratarEcho
 
   public void tratarVetor(PacoteVetor pacote) {
     // TODO Auto-generated method stub

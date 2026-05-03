@@ -2,21 +2,20 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 24 03 2026
-* Ultima alteracao.: 12 04 2026
+* Ultima alteracao.: 03 05 2026
 * Nome.............: Pacote.java
 * Funcao...........: Pacote enviado entre os roteadores
 *************************************************************** */
 package model;
 
 public class Pacote {
-    private int idRoteadorOrigemAnterior;
+    private int idRoteadorOrigem;
     private int idRoteadorDestino;
-    private int idRoteadorCriador;
 
     private static int custoTotalDeEnvio = 0;
 
     public Pacote(int idRoteadorOrigem, int idRoteadorDestino) {
-        this.idRoteadorOrigemAnterior = idRoteadorOrigem;
+        this.idRoteadorOrigem = idRoteadorOrigem;
         this.idRoteadorDestino = idRoteadorDestino;
     }
 
@@ -28,12 +27,12 @@ public class Pacote {
         this.idRoteadorDestino = idRoteadorDestino;
     }
 
-    public int getIdRoteadorCriador() {
-        return idRoteadorCriador;
+    public int getIdRoteadorOrigem() {
+        return idRoteadorOrigem;
     }
 
-    public void setIdRoteadorCriador(int idRoteadorCriador) {
-        this.idRoteadorCriador = idRoteadorCriador;
+    public void setIdRoteadorOrigem(int idRoteadorOrigem) {
+        this.idRoteadorOrigem = idRoteadorOrigem;
     }
 
     public static int getCustoTotalDeEnvio() {
