@@ -9,38 +9,38 @@
 package model;
 
 public class Pacote {
-    private int idRoteadorOrigem;
-    private int idRoteadorDestino;
+  private int idRoteadorOrigem;
+  private int idRoteadorDestino;
 
-    private static int custoTotalDeEnvio = 0;
+  private static int custoTotalDeEnvio = 0;
 
-    public Pacote(int idRoteadorOrigem, int idRoteadorDestino) {
-        this.idRoteadorOrigem = idRoteadorOrigem;
-        this.idRoteadorDestino = idRoteadorDestino;
-    }
+  public Pacote(int idRoteadorOrigem, int idRoteadorDestino) {
+    this.idRoteadorOrigem = idRoteadorOrigem;
+    this.idRoteadorDestino = idRoteadorDestino;
+  }
 
-    public int getIdRoteadorDestino() {
-        return idRoteadorDestino;
-    }
+  public int getIdRoteadorDestino() {
+    return idRoteadorDestino;
+  }
 
-    public void setIdRoteadorDestino(int idRoteadorDestino) {
-        this.idRoteadorDestino = idRoteadorDestino;
-    }
+  public void setIdRoteadorDestino(int idRoteadorDestino) {
+    this.idRoteadorDestino = idRoteadorDestino;
+  }
 
-    public int getIdRoteadorOrigem() {
-        return idRoteadorOrigem;
-    }
+  public int getIdRoteadorOrigem() {
+    return idRoteadorOrigem;
+  }
 
-    public void setIdRoteadorOrigem(int idRoteadorOrigem) {
-        this.idRoteadorOrigem = idRoteadorOrigem;
-    }
+  public void setIdRoteadorOrigem(int idRoteadorOrigem) {
+    this.idRoteadorOrigem = idRoteadorOrigem;
+  }
 
-    public static int getCustoTotalDeEnvio() {
-        return custoTotalDeEnvio;
-    }
+  public static int getCustoTotalDeEnvio() {
+    return custoTotalDeEnvio;
+  }
 
-    public static void setCustoTotalDeEnvio(int custoTotalDeEnvio) {
-        Pacote.custoTotalDeEnvio = custoTotalDeEnvio;
-    }
+  public static void setCustoTotalDeEnvio(int custoTotalDeEnvio) {
+    Pacote.custoTotalDeEnvio = custoTotalDeEnvio;
+  }
 
 }

@@ -12,23 +12,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PacoteVetor extends Pacote {
-    private Map<Integer, Integer> vetorDistancias;
+  private Map<Integer, Integer> vetorDistancias;
 
-    public PacoteVetor(int idOrigem, int idDestino, Map<Integer, Integer> vetorDistancias) {
-        super(idOrigem, idDestino);
-        if (vetorDistancias != null) {
-            this.vetorDistancias = new HashMap<>(vetorDistancias);
-        } else {
-            this.vetorDistancias = new HashMap<>();
-        } // fim do if
-    }
+  public PacoteVetor(int idOrigem, int idDestino, Map<Integer, Integer> vetorDistancias) {
+    super(idOrigem, idDestino);
+    if (vetorDistancias != null) {
+      this.vetorDistancias = new HashMap<>(vetorDistancias);
+    } else {
+      this.vetorDistancias = new HashMap<>();
+    } // fim do if
+  }
 
-    public Map<Integer, Integer> getVetorDistancias() {
-        return vetorDistancias;
-    }
+  public Map<Integer, Integer> getVetorDistancias() {
+    return vetorDistancias;
+  }
 
-    public void setVetorDistancias(Map<Integer, Integer> vetorDistancias) {
-        this.vetorDistancias = vetorDistancias;
-    }
+  public void setVetorDistancias(Map<Integer, Integer> vetorDistancias) {
+    this.vetorDistancias = vetorDistancias;
+  }
 
 }

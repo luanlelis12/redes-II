@@ -115,6 +115,8 @@ public class Roteador extends Thread {
   /*
    * Metodo: tratarEcho
    * Funcao: Avalia o pacote Echo e direciona para a rotina correta
+   * Parametros: pacote = pacote echo recebido
+   * Retorno: void
    */
   public void tratarEcho(PacoteEcho pacote) {
     if (pacote.isReply()) {
@@ -161,6 +163,13 @@ public class Roteador extends Thread {
     } // fim do if
   } // fim do metodo tratarEcho
 
+  /*
+   * Metodo: tratarVetor
+   * Funcao: recebe a tabela do vizinho e atualiza a tabela caso tenha um caminho
+   * melhor
+   * Parametros: pacote = Pacote com a tabela
+   * Retorno: void
+   */
   public void tratarVetor(PacoteVetor pacote) {
     int idVizinho = pacote.getIdRoteadorOrigem();
     Map<Integer, Integer> vetorDoVizinho = pacote.getVetorDistancias();
@@ -177,15 +186,13 @@ public class Roteador extends Thread {
     for (Map.Entry<Integer, Integer> entrada : vetorDoVizinho.entrySet()) {
       int destinoFinal = entrada.getKey();
       int custoDoVizinhoAoDestino = entrada.getValue();
-
       int custoPossivel = meuCustoAteVizinho + custoDoVizinhoAoDestino;
-
       Aresta minhaRotaAtual = tabelaRoteamento.get(destinoFinal);
 
       if (minhaRotaAtual == null || custoPossivel < minhaRotaAtual.getLatencia()) {
         synchronized (tabelaRoteamento) {
           tabelaRoteamento.put(destinoFinal, new Aresta(instanciaVizinho, custoPossivel));
-        }
+        } // fim do synchronized
         mudouAlgumaCoisa = true;
       } // fim do if
     } // fim do for
@@ -217,6 +224,8 @@ public class Roteador extends Thread {
    * Metodo: enviarVetorParaVizinhos
    * Funcao: Pega a tabela de roteamento e envia uma copia para TODOS os vizinhos
    * diretos
+   * Parametros:
+   * Retorno: void
    */
   public void enviarVetorParaVizinhos() {
     Map<Integer, Integer> tabela = new HashMap<>();
@@ -241,6 +250,8 @@ public class Roteador extends Thread {
   /*
    * Metodo: enviarPacoteDados
    * Funcao: Consulta a tabela de roteamento para encaminhar o pacote de usuario
+   * Parametros: pacote = pacote recebido
+   * Retorno: void
    */
   public void enviarPacoteDados(Pacote pacote) {
     int idDestino = pacote.getIdRoteadorDestino();
@@ -267,6 +278,9 @@ public class Roteador extends Thread {
   /*
    * Metodo: transmitirParaVizinho
    * Funcao: inicializa a animacao de envio de pacote
+   * Parametros: pacote = pacote para enviar, vizinho = roteador vizinho que
+   * recebera o pacote
+   * Retorno: void
    */
   private void transmitirParaVizinho(Pacote pacote, Roteador vizinho) {
     controller.exibirPacote(pacote, this, vizinho);
@@ -275,18 +289,18 @@ public class Roteador extends Thread {
   /*
    * Metodo: iniciarDescobertaDeVizinhos
    * Funcao: Envia um Echo Request para todas as portas fisicas (conexoes)
+   * Parametros:
+   * Retorno: void
    */
   public void iniciarDescobertaDeVizinhos() {
     System.out.println("Roteador " + idRoteador + ": iniciando descoberta (Echo Request)...");
 
     for (Aresta conexao : conexoes) {
       Roteador vizinho = conexao.getDestino();
-
       PacoteEcho request = new PacoteEcho(this.idRoteador, vizinho.getIdRoteador(), conexao.getLatencia());
-
       transmitirParaVizinho(request, vizinho);
-    }
-  }
+    } // fim do for
+  } // fim do metodo iniciarDescobertaDeVizinhos
 
   /*
    * Metodo: receberPacote
@@ -311,14 +325,13 @@ public class Roteador extends Thread {
 
   /*
    * Metodo: getCopiaSeguraTabelaRoteamento
-   * Funcao: Retorna um clone da tabela para evitar
-   * ConcurrentModificationException na Interface Grafica
+   * Funcao: Retorna um clone da tabela para evitar problema na tabela
    */
   public Map<Integer, Aresta> getCopiaSeguraTabelaRoteamento() {
     synchronized (tabelaRoteamento) {
       return new HashMap<>(tabelaRoteamento);
-    }
-  }
+    } // fim do synchronized
+  } // fim do metodo getCopiaSeguraTabelaRoteamento
 
   /*
    * Metodo: iniciarEnvioPeriodico
@@ -338,10 +351,10 @@ public class Roteador extends Thread {
           if (ecosRecebidos >= conexoes.size() && conexoes.size() > 0) {
             System.out.println("Roteador " + idRoteador + ": Disparando atualizacao periodica de rotas!");
             enviarVetorParaVizinhos();
-          }
+          } // fim do if
         } catch (Exception e) {
           System.out.println("Erro no Timer do Roteador " + idRoteador + " (ignorado).");
-        }
+        } // fim do try-catch
       } // fim do run
     }, 10000, 10000);
   } // fim do metodo iniciarEnvioPeriodico

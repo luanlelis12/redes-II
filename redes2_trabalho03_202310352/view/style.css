@@ -49,7 +49,7 @@
     -fx-background-size:  cover;
 }
 
-.paneLog {
-    -fx-background-image: url('file:view/img/bgLog.png');
-    -fx-background-size:  cover;
+.paneSobre {
+    -fx-background-image: url('file:view/img/bgSobre.png');
+    -fx-background-size: cover;
 }

@@ -9,28 +9,28 @@
 package model;
 
 public class PacoteEcho extends Pacote {
-    private boolean isReply; // false = Request, true = Reply
-    private int latenciaDaAresta;
-    
-    public PacoteEcho(int idRoteadorOrigem, int idRoteadorDestino, int latenciaDaAresta) {
-        super(idRoteadorOrigem, idRoteadorDestino);
-        this.latenciaDaAresta = latenciaDaAresta;
-    }
+  private boolean isReply; // false = Request, true = Reply
+  private int latenciaDaAresta;
+  
+  public PacoteEcho(int idRoteadorOrigem, int idRoteadorDestino, int latenciaDaAresta) {
+    super(idRoteadorOrigem, idRoteadorDestino);
+    this.latenciaDaAresta = latenciaDaAresta;
+  }
 
-    public boolean isReply() {
-        return isReply;
-    }
+  public boolean isReply() {
+    return isReply;
+  }
 
-    public void setReply(boolean isReply) {
-        this.isReply = isReply;
-    }
+  public void setReply(boolean isReply) {
+    this.isReply = isReply;
+  }
 
-    public int getLatenciaDaAresta() {
-        return latenciaDaAresta;
-    }
+  public int getLatenciaDaAresta() {
+    return latenciaDaAresta;
+  }
 
-    public void setLatenciaDaAresta(int latenciaDaAresta) {
-        this.latenciaDaAresta = latenciaDaAresta;
-    }
-    
+  public void setLatenciaDaAresta(int latenciaDaAresta) {
+    this.latenciaDaAresta = latenciaDaAresta;
+  }
+  
 }
