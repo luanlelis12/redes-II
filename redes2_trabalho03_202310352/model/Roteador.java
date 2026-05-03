@@ -20,14 +20,14 @@ import javafx.scene.image.ImageView;
 
 public class Roteador extends Thread {
   private int idRoteador;
-  private volatile boolean rodando = true;
-  private BackboneController controller;
-  private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
-  private double[] coordenadaXY;
   private ImageView imageView;
+  private double[] coordenadaXY;
+  private int ecosRecebidos = 0;
+  private BackboneController controller;
+  private volatile boolean rodando = true;
 
   private Map<Integer, Aresta> tabelaRoteamento = new HashMap<>();
-
+  private BlockingQueue<Pacote> bufferPacotes = new LinkedBlockingQueue<>();
   private ArrayList<Aresta> conexoes = new ArrayList<>();
 
   public Roteador(int idRoteador, BackboneController controller) {
@@ -111,7 +111,7 @@ public class Roteador extends Thread {
    */
   public void tratarEcho(PacoteEcho pacote) {
     if (pacote.isReply()) {
-      int idVizinho = pacote.getIdRoteadorDestino();
+      int idVizinho = pacote.getIdRoteadorOrigem();
       int latencia = pacote.getLatenciaDaAresta();
 
       Roteador instanciaVizinho = null;
@@ -129,13 +129,21 @@ public class Roteador extends Thread {
         controller.enviarParaLog(
             "  -> R" + idRoteador + " confirmou conexao com R" + idVizinho + " (Latencia: " + latencia + ")", "NORMAL");
       } // fim do if
+      
+      ecosRecebidos++;
+
+      // Verifica se ja recebeu resposta de TODOS os vizinhos
+      if (ecosRecebidos == conexoes.size()) {
+        System.out.println("Roteador " + idRoteador + " terminou o Echo. Iniciando Vetor de Distancia!");
+        enviarVetorParaVizinhos();
+      } // fim do if
     } else {
       int idOrigem = pacote.getIdRoteadorOrigem();
 
       for (Aresta conexao : conexoes) {
         if (conexao.getDestino().getIdRoteador() == idOrigem) {
 
-          PacoteEcho reply = new PacoteEcho(this.idRoteador, idOrigem, conexao.getLatencia());
+          PacoteEcho reply = new PacoteEcho(this.idRoteador, idOrigem, pacote.getLatenciaDaAresta());
           reply.setReply(true);
 
           System.out.println("Roteador " + idRoteador + " enviando REPLY para R" + idOrigem);
@@ -143,7 +151,7 @@ public class Roteador extends Thread {
           break;
         } // fim do if
       } // fim do for
-    }// fim do if
+    } // fim do if
   } // fim do metodo tratarEcho
 
   public void tratarVetor(PacoteVetor pacote) {
@@ -174,19 +182,23 @@ public class Roteador extends Thread {
    * diretos
    */
   public void enviarVetorParaVizinhos() {
-    Map<Integer, Integer> tabela = new HashMap<>();
-    for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
-      tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
-    } // fim do for
+    System.out.println("teste");
+    for(Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
+      System.out.println("Roteador "+idRoteador+" | Vizinho de busca: " + entrada.getKey() + ", vizinho para qual enviar: " + entrada.getValue().getDestino().getIdRoteador() + ", latencia: "+entrada.getValue().getLatencia());
+    }
+    // Map<Integer, Integer> tabela = new HashMap<>();
+    // for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
+    //   tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
+    // } // fim do for
 
-    for (Aresta conexao : conexoes) {
-      Roteador vizinho = conexao.getDestino();
+    // for (Aresta conexao : conexoes) {
+    //   Roteador vizinho = conexao.getDestino();
 
-      PacoteVetor pacoteVetor = new PacoteVetor(this.idRoteador, vizinho.getIdRoteador(), tabela);
+    //   PacoteVetor pacoteVetor = new PacoteVetor(this.idRoteador, vizinho.getIdRoteador(), tabela);
 
-      System.out.println("Roteador " + idRoteador + " enviando VETOR (Fofoca) para vizinho " + vizinho.getIdRoteador());
-      transmitirParaVizinho(pacoteVetor, vizinho);
-    } // fim do for
+    //   System.out.println("Roteador " + idRoteador + " enviando VETOR (Fofoca) para vizinho " + vizinho.getIdRoteador());
+    //   transmitirParaVizinho(pacoteVetor, vizinho);
+    // } // fim do for
   } // fim do metodo enviarVetorParaVizinhos
 
   /*
@@ -267,12 +279,28 @@ public class Roteador extends Thread {
     this.idRoteador = idRoteador;
   }
 
-  public boolean isRodando() {
-    return rodando;
+  public ImageView getImageView() {
+    return imageView;
   }
 
-  public void setRodando(boolean rodando) {
-    this.rodando = rodando;
+  public void setImageView(ImageView imageView) {
+    this.imageView = imageView;
+  }
+
+  public double[] getCoordenadaXY() {
+    return coordenadaXY;
+  }
+
+  public void setCoordenadaXY(double[] coordenadaXY) {
+    this.coordenadaXY = coordenadaXY;
+  }
+
+  public int getEcosRecebidos() {
+    return ecosRecebidos;
+  }
+
+  public void setEcosRecebidos(int ecosRecebidos) {
+    this.ecosRecebidos = ecosRecebidos;
   }
 
   public BackboneController getController() {
@@ -283,28 +311,12 @@ public class Roteador extends Thread {
     this.controller = controller;
   }
 
-  public BlockingQueue<Pacote> getBufferPacotes() {
-    return bufferPacotes;
+  public boolean isRodando() {
+    return rodando;
   }
 
-  public void setBufferPacotes(BlockingQueue<Pacote> bufferPacotes) {
-    this.bufferPacotes = bufferPacotes;
-  }
-
-  public double[] getCoordenadaXY() {
-    return coordenadaXY;
-  }
-
-  public void setCoordenadaXY(double[] coordenadaXY) {
-    this.coordenadaXY = Arrays.copyOf(coordenadaXY, coordenadaXY.length);
-  }
-
-  public ImageView getImageView() {
-    return imageView;
-  }
-
-  public void setImageView(ImageView imageView) {
-    this.imageView = imageView;
+  public void setRodando(boolean rodando) {
+    this.rodando = rodando;
   }
 
   public Map<Integer, Aresta> getTabelaRoteamento() {
@@ -313,6 +325,14 @@ public class Roteador extends Thread {
 
   public void setTabelaRoteamento(Map<Integer, Aresta> tabelaRoteamento) {
     this.tabelaRoteamento = tabelaRoteamento;
+  }
+
+  public BlockingQueue<Pacote> getBufferPacotes() {
+    return bufferPacotes;
+  }
+
+  public void setBufferPacotes(BlockingQueue<Pacote> bufferPacotes) {
+    this.bufferPacotes = bufferPacotes;
   }
 
   public ArrayList<Aresta> getConexoes() {

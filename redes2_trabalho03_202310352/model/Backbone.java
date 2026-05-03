@@ -94,9 +94,7 @@ public class Backbone {
    */
   public void gerarConexao(Roteador r1, Roteador r2, int latencia01, int latencia02) {
     r1.addVizinho(r2, latencia01);
-    r1.getTabelaRoteamento().put(r2.getIdRoteador(), null);
     r2.addVizinho(r1, latencia02);
-    r2.getTabelaRoteamento().put(r1.getIdRoteador(), null);
   } // fim do metodo gerarConexao
 
   public ArrayList<Roteador> getRoteadores() {
