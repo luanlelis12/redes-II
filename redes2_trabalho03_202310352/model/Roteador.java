@@ -189,7 +189,10 @@ public class Roteador extends Thread {
       int custoPossivel = meuCustoAteVizinho + custoDoVizinhoAoDestino;
       Aresta minhaRotaAtual = tabelaRoteamento.get(destinoFinal);
 
-      if (minhaRotaAtual == null || custoPossivel < minhaRotaAtual.getLatencia()) {
+      boolean isMesmoVizinho = minhaRotaAtual != null && minhaRotaAtual.getDestino().getIdRoteador() == idVizinho;
+
+      if (minhaRotaAtual == null || custoPossivel < minhaRotaAtual.getLatencia()
+          || (isMesmoVizinho && custoPossivel != minhaRotaAtual.getLatencia())) {
         synchronized (tabelaRoteamento) {
           tabelaRoteamento.put(destinoFinal, new Aresta(instanciaVizinho, custoPossivel));
         } // fim do synchronized
@@ -257,21 +260,29 @@ public class Roteador extends Thread {
     int idDestino = pacote.getIdRoteadorDestino();
     Aresta rota = tabelaRoteamento.get(idDestino);
 
-    if (rota != null && rota.getDestino() != null) {
+    if (rota != null && rota.getDestino() != null && rota.getLatencia() < 9999) {
       Roteador vizinho = rota.getDestino();
-      System.out.println("Roteador " + idRoteador + ": Enviando dados para roteador " + vizinho.getIdRoteador()
-          + " | Destino Final: roteador " + idDestino);
+      boolean caboExiste = false;
       int latencia = 0;
       for (Aresta conexao : conexoes) {
         if (conexao.getDestino().getIdRoteador() == vizinho.getIdRoteador()) {
           latencia = conexao.getLatencia();
+          caboExiste = true;
           break;
         } // fim do if
       } // fim do for
-      Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + latencia);
-      transmitirParaVizinho(pacote, vizinho);
+      if (caboExiste) {
+        System.out.println("Roteador " + idRoteador + ": Enviando dados para roteador " + vizinho.getIdRoteador()
+            + " | Destino Final: roteador " + idDestino);
+        Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + latencia);
+        transmitirParaVizinho(pacote, vizinho);
+      } else {
+        System.out.println("Roteador " + idRoteador + ": Tentou enviar, mas o cabo para " + vizinho.getIdRoteador()
+            + " foi cortado! Pacote descartado.");
+      } // fim do if
     } else {
-      System.out.println("Roteador " + idRoteador + ": Rota para " + idDestino + " desconhecida! Descartando pacote.");
+      System.out.println(
+          "Roteador " + idRoteador + ": Rota para " + idDestino + " desconhecida ou inalcançável! Descartando pacote.");
     } // fim do if
   } // fim do metodo enviarPacoteDados
 

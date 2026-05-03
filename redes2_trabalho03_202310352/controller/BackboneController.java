@@ -340,13 +340,22 @@ public class BackboneController implements Initializable {
       mapaLinhas.remove(chaveLinha);
     }
 
-    // Forca toda a rede recalcular suas conexoes
-    for (Roteador r : rede.getRoteadores()) {
-      r.setEcosRecebidos(0);
-      r.getTabelaRoteamento().clear();
-      r.getTabelaRoteamento().put(r.getIdRoteador(), new Aresta(r, 0));
-      r.iniciarDescobertaDeVizinhos();
-    } // fim do for
+    synchronized (r1.getTabelaRoteamento()) {
+      for (Map.Entry<Integer, Aresta> entrada : r1.getTabelaRoteamento().entrySet()) {
+        if (entrada.getValue().getDestino().getIdRoteador() == r2.getIdRoteador()) {
+          entrada.setValue(new Aresta(r2, 9999)); 
+        }
+      }
+    }
+    synchronized (r2.getTabelaRoteamento()) {
+      for (Map.Entry<Integer, Aresta> entrada : r2.getTabelaRoteamento().entrySet()) {
+        if (entrada.getValue().getDestino().getIdRoteador() == r1.getIdRoteador()) {
+          entrada.setValue(new Aresta(r1, 9999));
+        }
+      }
+    }
+    r1.enviarVetorParaVizinhos();
+    r2.enviarVetorParaVizinhos();
 
     atualizarTabelasNaTela();
     verificarStatusDaRede();
