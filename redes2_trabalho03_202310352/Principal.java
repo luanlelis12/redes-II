@@ -18,7 +18,6 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import controller.BackboneController;
 import controller.SobreController;
-import controller.LogController;
 
 public class Principal extends Application {
 
@@ -30,7 +29,7 @@ public class Principal extends Application {
     Parent root = loader.load();
 
     // Configura a cena
-    primaryStage.setTitle("ROTEAMENTO POR MENOR CAMINHO");
+    primaryStage.setTitle("ROTEAMENTO POR VETOR DISTANCIA");
     primaryStage.setScene(new Scene(root));
     Image icon = new Image(getClass().getResourceAsStream("view/img/icon.png"));
     primaryStage.getIcons().add(icon);

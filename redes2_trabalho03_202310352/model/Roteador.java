@@ -44,9 +44,7 @@ public class Roteador extends Thread {
     while (rodando) {
       try {
         Pacote pacoteAtual = bufferPacotes.take();
-
         processaPacote(pacoteAtual);
-
       } catch (InterruptedException e) {
         System.out.println("Roteador " + idRoteador + ": desligado.");
         rodando = false;
@@ -123,13 +121,13 @@ public class Roteador extends Thread {
       } // fim do for
 
       if (instanciaVizinho != null) {
-        tabelaRoteamento.put(idVizinho, new Aresta(instanciaVizinho, latencia));
-
+        synchronized (tabelaRoteamento) {
+          tabelaRoteamento.put(idVizinho, new Aresta(instanciaVizinho, latencia));
+        }
+        controller.atualizarTabelasNaTela();
         System.out.println("Roteador " + idRoteador + " registrou vizinho R" + idVizinho + " na tabela!");
-        controller.enviarParaLog(
-            "  -> R" + idRoteador + " confirmou conexao com R" + idVizinho + " (Latencia: " + latencia + ")", "NORMAL");
       } // fim do if
-      
+
       ecosRecebidos++;
 
       // Verifica se ja recebeu resposta de TODOS os vizinhos
@@ -155,9 +153,39 @@ public class Roteador extends Thread {
   } // fim do metodo tratarEcho
 
   public void tratarVetor(PacoteVetor pacote) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'tratarVetor'");
-  }
+    int idVizinho = pacote.getIdRoteadorOrigem();
+    Map<Integer, Integer> vetorDoVizinho = pacote.getVetorDistancias();
+
+    Aresta rotaParaVizinho = tabelaRoteamento.get(idVizinho);
+    if (rotaParaVizinho == null)
+      return;
+
+    int meuCustoAteVizinho = rotaParaVizinho.getLatencia();
+    Roteador instanciaVizinho = rotaParaVizinho.getDestino();
+
+    boolean mudouAlgumaCoisa = false;
+
+    for (Map.Entry<Integer, Integer> entrada : vetorDoVizinho.entrySet()) {
+      int destinoFinal = entrada.getKey();
+      int custoDoVizinhoAoDestino = entrada.getValue();
+
+      int custoPossivel = meuCustoAteVizinho + custoDoVizinhoAoDestino;
+
+      Aresta minhaRotaAtual = tabelaRoteamento.get(destinoFinal);
+
+      if (minhaRotaAtual == null || custoPossivel < minhaRotaAtual.getLatencia()) {
+        synchronized (tabelaRoteamento) {
+          tabelaRoteamento.put(destinoFinal, new Aresta(instanciaVizinho, custoPossivel));
+        }
+        mudouAlgumaCoisa = true;
+      } // fim do if
+    } // fim do for
+
+    if (mudouAlgumaCoisa) {
+      controller.atualizarTabelasNaTela();
+      enviarVetorParaVizinhos();
+    } // fim do if
+  } // fim do metodo tratarVetor
 
   /*
    * Metodo: tratarDados
@@ -166,11 +194,11 @@ public class Roteador extends Thread {
    * Retorno: void
    */
   public void tratarDados(Pacote pacote) {
+    controller.atualizarCustoTotalDoCaminho(Pacote.getCustoTotalDeEnvio());
     if (pacote.getIdRoteadorDestino() == idRoteador) {
       controller.exibirGengar(idRoteador);
       System.out.println("Roteador " + idRoteador + ": Pacote chegou ao destino!!\nCusto total de envio: "
           + Pacote.getCustoTotalDeEnvio());
-      controller.atualizarCustoTotalDoCaminho(Pacote.getCustoTotalDeEnvio());
     } else {
       enviarPacoteDados(pacote);
     } // fim do if
@@ -182,23 +210,22 @@ public class Roteador extends Thread {
    * diretos
    */
   public void enviarVetorParaVizinhos() {
-    System.out.println("teste");
-    for(Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
-      System.out.println("Roteador "+idRoteador+" | Vizinho de busca: " + entrada.getKey() + ", vizinho para qual enviar: " + entrada.getValue().getDestino().getIdRoteador() + ", latencia: "+entrada.getValue().getLatencia());
-    }
-    // Map<Integer, Integer> tabela = new HashMap<>();
-    // for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
-    //   tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
-    // } // fim do for
+    Map<Integer, Integer> tabela = new HashMap<>();
 
-    // for (Aresta conexao : conexoes) {
-    //   Roteador vizinho = conexao.getDestino();
+    // Monta o vetor (Destino -> Custo)
+    for (Map.Entry<Integer, Aresta> entrada : tabelaRoteamento.entrySet()) {
+      tabela.put(entrada.getKey(), entrada.getValue().getLatencia());
+    } // fim do for
 
-    //   PacoteVetor pacoteVetor = new PacoteVetor(this.idRoteador, vizinho.getIdRoteador(), tabela);
+    // Manda para todos os vizinhos
+    for (Aresta conexao : conexoes) {
+      Roteador vizinho = conexao.getDestino();
+      PacoteVetor pacoteVetor = new PacoteVetor(this.idRoteador, vizinho.getIdRoteador(), tabela);
 
-    //   System.out.println("Roteador " + idRoteador + " enviando VETOR (Fofoca) para vizinho " + vizinho.getIdRoteador());
-    //   transmitirParaVizinho(pacoteVetor, vizinho);
-    // } // fim do for
+      System.out
+          .println("Roteador " + idRoteador + ": enviando tabela para roteador vizinho " + vizinho.getIdRoteador());
+      transmitirParaVizinho(pacoteVetor, vizinho);
+    } // fim do for
   } // fim do metodo enviarVetorParaVizinhos
 
   /*
@@ -209,17 +236,19 @@ public class Roteador extends Thread {
     int idDestino = pacote.getIdRoteadorDestino();
     Aresta rota = tabelaRoteamento.get(idDestino);
 
-    // SEGURANÇA: Só tenta enviar se a rota existe na tabela e tem um próximo salto
-    // válido
     if (rota != null && rota.getDestino() != null) {
       Roteador vizinho = rota.getDestino();
-
-      System.out.println("Roteador " + idRoteador + " roteando DADOS para " + vizinho.getIdRoteador()
-          + " | Destino Final: " + idDestino);
-
-      Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + rota.getLatencia());
+      System.out.println("Roteador " + idRoteador + ": Enviando dados para roteador " + vizinho.getIdRoteador()
+          + " | Destino Final: roteador " + idDestino);
+      int latencia = 0;
+      for (Aresta conexao : conexoes) {
+        if (conexao.getDestino().getIdRoteador() == vizinho.getIdRoteador()) {
+          latencia = conexao.getLatencia();
+          break;
+        } // fim do if
+      } // fim do for
+      Pacote.setCustoTotalDeEnvio(Pacote.getCustoTotalDeEnvio() + latencia);
       transmitirParaVizinho(pacote, vizinho);
-
     } else {
       System.out.println("Roteador " + idRoteador + ": Rota para " + idDestino + " desconhecida! Descartando pacote.");
     } // fim do if
@@ -238,8 +267,7 @@ public class Roteador extends Thread {
    * Funcao: Envia um Echo Request para todas as portas fisicas (conexoes)
    */
   public void iniciarDescobertaDeVizinhos() {
-    System.out.println("Roteador " + idRoteador + " iniciando descoberta (Echo Request)...");
-    controller.enviarParaLog("[Roteador " + idRoteador + "] Iniciou a descoberta de vizinhos.", "TITULO");
+    System.out.println("Roteador " + idRoteador + ": iniciando descoberta (Echo Request)...");
 
     for (Aresta conexao : conexoes) {
       Roteador vizinho = conexao.getDestino();
@@ -270,6 +298,19 @@ public class Roteador extends Thread {
   public void addVizinho(Roteador vizinho, int latencia) {
     this.conexoes.add(new Aresta(vizinho, latencia));
   } // fim do addVizinho
+
+  /*
+   * Metodo: getCopiaSeguraTabelaRoteamento
+   * Funcao: Retorna um clone da tabela para evitar
+   * ConcurrentModificationException na Interface Grafica
+   */
+  public Map<Integer, Aresta> getCopiaSeguraTabelaRoteamento() {
+    // O 'synchronized' garante que a thread do Roteador pause a escrita
+    // por 1 milissegundo apenas para fazer a cópia com segurança
+    synchronized (tabelaRoteamento) {
+      return new HashMap<>(tabelaRoteamento);
+    }
+  }
 
   public int getIdRoteador() {
     return idRoteador;

@@ -35,12 +35,9 @@
     -fx-background-image: url('img/buttonSobreSelected.png');
 }
 
-.buttonLog {
-    -fx-background-image: url('img/buttonLog.png');
-}
-
-.buttonLog:hover {
-    -fx-background-image: url('img/buttonLogSelected.png');
+.buttonIniciar:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
 }
 
 .quadroPacotes {
