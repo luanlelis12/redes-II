@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox prefHeight="570.0" prefWidth="1275.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BackboneController">  <children>
+    <AnchorPane fx:id="paneConfiguracoes" minHeight="0.0" minWidth="-Infinity" prefHeight="570.0" prefWidth="240.0" style="-fx-border-color: #232323;" styleClass="paneConfiguracoes">
+      <children>
+        <VBox layoutY="77.0" prefHeight="456.0" prefWidth="240.0" spacing="80.0">
+          <children>
+            <VBox prefHeight="75.0" prefWidth="240.0">
+              <children>
+                <Label alignment="CENTER" prefHeight="40.0" prefWidth="240.0" text="ORIGEM -&gt; DESTINO" textAlignment="CENTER" textFill="WHITE">
+                  <font>
+                    <Font name="System Bold" size="20.0" />
+                  </font>
+                </Label>
+                <HBox prefWidth="240.0">
+                  <children>
+                    <ChoiceBox fx:id="choiceOrigem" prefHeight="35.0" prefWidth="120.0">
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor></ChoiceBox>
+                    <ChoiceBox fx:id="choiceDestino" prefHeight="35.0" prefWidth="120.0">
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor></ChoiceBox>
+                  </children>
+                </HBox>
+              </children>
+            </VBox>
+            <VBox prefHeight="207.0" prefWidth="240.0" spacing="5.0">
+              <children>
+                <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#abrirSobre" prefHeight="69.0" prefWidth="240.0" styleClass="buttonSobre" />
+                <Button fx:id="buttonReloadBackbone" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#recarregarBackbone" prefHeight="69.0" prefWidth="240.0" styleClass="buttonRecarregar" />
+                <Button ellipsisString="" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#iniciarEnvio" prefHeight="69.0" prefWidth="240.0" styleClass="buttonIniciar" />
+              </children>
+            </VBox>
+          </children>
+        </VBox>
+      </children></AnchorPane>
+    <AnchorPane fx:id="paneRoteadores" minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="735.0" style="-fx-background-image: url('file:view/img/background.png'); -fx-background-size: cover;">
+      <children>
+        <VBox prefHeight="65.0" prefWidth="200.0" styleClass="quadroPacotes">
+          <children>
+            <Label alignment="CENTER" prefHeight="32.5" prefWidth="200.0" text="CUSTO DO CAMINHO:" textAlignment="CENTER" textFill="WHITE">
+              <font>
+                <Font name="System Bold" size="18.0" />
+              </font>
+            </Label>
+            <Label fx:id="labelCustoCaminho" alignment="CENTER" prefHeight="32.5" prefWidth="200.0" text="0" textAlignment="CENTER" textFill="WHITE">
+              <font>
+                <Font size="18.0" />
+              </font></Label>
+          </children>
+        </VBox>
+      </children></AnchorPane>
+    <VBox fx:id="paneTabelasLateral" prefHeight="570.0" prefWidth="300.0" style="-fx-background-color: #222222;">
+      <children>
+        <Label alignment="CENTER" prefWidth="320.0" text="TABELAS DE ROTEAMENTO" textFill="WHITE">
+          <font>
+            <Font name="System Bold" size="18.0" />
+          </font>
+          <VBox.margin>
+            <Insets bottom="20.0" top="30.0" />
+          </VBox.margin>
+        </Label>
+        <ScrollPane fitToWidth="true" style="-fx-background: #222222; -fx-border-color: #222222;" VBox.vgrow="ALWAYS">
+          <content>
+            <VBox fx:id="vboxTabelas" spacing="15.0" style="-fx-background-color: #222222;">
+              <padding>
+                <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+              </padding>
+            </VBox>
+          </content>
+        </ScrollPane>
+      </children>
+    </VBox>
+  </children>
+</HBox>

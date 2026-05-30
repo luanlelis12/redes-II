@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="700.0" styleClass="paneSobre" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SobreController">
+  <children>
+    <VBox layoutX="50.0" layoutY="30.0" prefWidth="600.0" spacing="20.0">
+      <children>
+        <TextFlow fx:id="textoSobre" prefWidth="600.0" style="-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 20; -fx-background-radius: 10;" />
+        <VBox fx:id="vboxLegenda" spacing="10.0" style="-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 20; -fx-background-radius: 10;" />
+      </children>
+    </VBox>
+  </children>
+</AnchorPane>
