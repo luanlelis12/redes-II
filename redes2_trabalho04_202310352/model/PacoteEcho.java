@@ -2,19 +2,19 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 29 04 2026
-* Ultima alteracao.: 29 04 2026
-* Nome.............: PacoteVetor.java
+* Ultima alteracao.: 31 05 2026
+* Nome.............: PacoteEcho.java
 * Funcao...........: Pacote de ping enviado entre os roteadores
 *************************************************************** */
 package model;
 
 public class PacoteEcho extends Pacote {
-  private boolean isReply; // false = Request, true = Reply
-  private int latenciaDaAresta;
-  
-  public PacoteEcho(int idRoteadorOrigem, int idRoteadorDestino, int latenciaDaAresta) {
+  private boolean isReply;
+  private int latenciaIda;
+  private int latenciaVolta;
+
+  public PacoteEcho(int idRoteadorOrigem, int idRoteadorDestino) {
     super(idRoteadorOrigem, idRoteadorDestino);
-    this.latenciaDaAresta = latenciaDaAresta;
   }
 
   public boolean isReply() {
@@ -25,12 +25,19 @@ public class PacoteEcho extends Pacote {
     this.isReply = isReply;
   }
 
-  public int getLatenciaDaAresta() {
-    return latenciaDaAresta;
+  public int getLatenciaIda() {
+    return latenciaIda;
   }
 
-  public void setLatenciaDaAresta(int latenciaDaAresta) {
-    this.latenciaDaAresta = latenciaDaAresta;
+  public void setLatenciaIda(int latenciaIda) {
+    this.latenciaIda = latenciaIda;
   }
-  
+
+  public int getLatenciaVolta() {
+    return latenciaVolta;
+  }
+
+  public void setLatenciaVolta(int latenciaVolta) {
+    this.latenciaVolta = latenciaVolta;
+  }
 }

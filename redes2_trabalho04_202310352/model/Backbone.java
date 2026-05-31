@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 29 03 2026
+* Ultima alteracao.: 31 05 2026
 * Nome.............: Backbone.java
 * Funcao...........: Fazer a leitura do arquivo txt e criar os roteadores e suas conexoes
 *************************************************************** */

@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 03 05 2026
+* Ultima alteracao.: 31 05 2026
 * Nome.............: Principal.java
 * Funcao...........: Executar os algoritmos de roteamento por inundacao num rede simulada
 *************************************************************** */
@@ -29,7 +29,7 @@ public class Principal extends Application {
     Parent root = loader.load();
 
     // Configura a cena
-    primaryStage.setTitle("ROTEAMENTO POR VETOR DISTANCIA");
+    primaryStage.setTitle("ROTEAMENTO POR ESTADO DE ENLACE");
     primaryStage.setScene(new Scene(root));
     Image icon = new Image(getClass().getResourceAsStream("view/img/icon.png"));
     primaryStage.getIcons().add(icon);

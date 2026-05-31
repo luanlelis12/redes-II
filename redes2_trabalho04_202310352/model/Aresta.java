@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 24 03 2026
-* Ultima alteracao.: 29 03 2026
+* Ultima alteracao.: 31 05 2026
 * Nome.............: Aresta.java
 * Funcao...........: Conexao entre os roteadores
 *************************************************************** */

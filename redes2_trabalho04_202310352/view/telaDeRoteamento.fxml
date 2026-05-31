@@ -47,7 +47,7 @@
           </children>
         </VBox>
       </children></AnchorPane>
-    <AnchorPane fx:id="paneRoteadores" minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="735.0" style="-fx-background-image: url('file:view/img/background.png'); -fx-background-size: cover;">
+    <AnchorPane fx:id="paneRoteadores" HBox.hgrow="ALWAYS" minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="735.0" style="-fx-background-image: url('file:view/img/background.png'); -fx-background-size: cover;">
       <children>
         <VBox prefHeight="65.0" prefWidth="200.0" styleClass="quadroPacotes">
           <children>
@@ -63,7 +63,7 @@
           </children>
         </VBox>
       </children></AnchorPane>
-    <VBox fx:id="paneTabelasLateral" prefHeight="570.0" prefWidth="300.0" style="-fx-background-color: #222222;">
+    <VBox fx:id="paneTabelasLateral" HBox.hgrow="ALWAYS" prefHeight="570.0" prefWidth="300.0" style="-fx-background-color: #222222;">
       <children>
         <Label alignment="CENTER" prefWidth="320.0" text="TABELAS DE ROTEAMENTO" textFill="WHITE">
           <font>

@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 16 03 2026
-* Ultima alteracao.: 03 05 2026
+* Ultima alteracao.: 31 05 2026
 * Nome.............: BackboneController.java
 * Funcao...........: Controller para gerenciar entre tela do backbone do programa e os models 
 *************************************************************** */
@@ -48,9 +48,11 @@ import model.Aresta;
 import model.Backbone;
 import model.Pacote;
 import model.PacoteEcho;
+import model.PacoteHello;
 import model.PacoteLSP;
 import model.Roteador;
 import util.FxmlRotas;
+import javafx.animation.PauseTransition;
 
 public class BackboneController implements Initializable {
   // Elementos do javaFx
@@ -79,6 +81,7 @@ public class BackboneController implements Initializable {
 
   private final String ARQUIVO = "backbone.txt";
 
+  // Imagens utilizadas no trabalho
   private final Image IMAGEM_ROTEADOR = new Image("file:view/img/roteador.png"),
       IMAGEM_ROTEADOR_ORIGEM = new Image("file:view/img/roteadorOrigem.png"),
       IMAGEM_ROTEADOR_DESTINO = new Image("file:view/img/roteadorDestino.png"),
@@ -89,15 +92,18 @@ public class BackboneController implements Initializable {
       IMAGEM_HAUNTER = new Image("file:view/img/haunter.png"),
       IMAGEM_GENGAR = new Image("file:view/img/gengar.png");
 
-  private final double RAIO = 250, RAIO_POKEMON = 180, LARGURA_ROTEADOR = IMAGEM_ROTEADOR.getWidth(),
+  private double RAIO = 250, RAIO_POKEMON = 180;
+
+  private final double LARGURA_ROTEADOR = IMAGEM_ROTEADOR.getWidth(),
       ALTURA_ROTEADOR = IMAGEM_ROTEADOR.getHeight(), LARGURA_HAUNTER = IMAGEM_HAUNTER.getWidth(),
       ALTURA_HAUNTER = IMAGEM_HAUNTER.getHeight(),
       LARGURA_GENGAR = IMAGEM_GENGAR.getWidth(), ALTURA_GENGAR = IMAGEM_GENGAR.getHeight();
 
   private final ImageView HAUNTER = new ImageView(IMAGEM_HAUNTER), GENGAR = new ImageView(IMAGEM_GENGAR);
 
-  private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>();
-  private Map<String, Pair<Line, Label>> mapaLinhas = new HashMap<>();
+  private ArrayList<PathTransition> arrayAnimacoes = new ArrayList<>(); // Array com as animacoes de envio de pacote
+  private Map<String, Pair<Line, Label>> mapaLinhas = new HashMap<>(); // Map das conexoes entre roteadores
+  private Map<String, Integer> latencia = new HashMap<>(); // Map das latencias das conexoes
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -157,6 +163,24 @@ public class BackboneController implements Initializable {
         } // fim do if
       });
 
+      PauseTransition delayResponsividade = new PauseTransition(Duration.millis(300));
+
+      // Aplica a propriedade de responsividade no programa
+      paneRoteadores.widthProperty().addListener((obs, oldVal, newVal) -> {
+        if (oldVal.doubleValue() > 0) { // Ignora o carregamento inicial
+          delayResponsividade.setOnFinished(e -> recarregarBackbone());
+          delayResponsividade.playFromStart();
+        } // fim do if
+      });
+
+      // Aplica a propriedade de responsividade no programa
+      paneRoteadores.heightProperty().addListener((obs, oldVal, newVal) -> {
+        if (oldVal.doubleValue() > 0) { // Ignora o carregamento inicial
+          delayResponsividade.setOnFinished(e -> recarregarBackbone());
+          delayResponsividade.playFromStart();
+        } // fim do if
+      });
+
     });
   } // fim do initialize
 
@@ -168,8 +192,13 @@ public class BackboneController implements Initializable {
    * Retorno: void
    */
   private void desenharRede(String caminho) {
-    centroDaTopologiaX = paneRoteadores.getPrefWidth() / 2;
-    centroDaTopologiaY = paneRoteadores.getPrefHeight() / 2;
+
+    centroDaTopologiaX = paneRoteadores.getWidth() / 2;
+    centroDaTopologiaY = paneRoteadores.getHeight() / 2;
+
+    RAIO = Math.min(centroDaTopologiaX, centroDaTopologiaY) * 0.80;
+    RAIO_POKEMON = RAIO * 0.75;
+
     quantRoteadores = rede.getRoteadores().size();
 
     anguloDosRoteadores = 360 / quantRoteadores;
@@ -258,10 +287,8 @@ public class BackboneController implements Initializable {
       String chave = idMin + "-" + idMax;
 
       if (mapaLinhas.containsKey(chave)) {
-        Label label = mapaLinhas.get(chave).getValue();
-        label.setText(label.getText() + latencia);
         return;
-      }
+      } // fim do if
 
       double[] posicaoR1 = r1.getCoordenadaXY();
       double[] posicaoR2 = r2.getCoordenadaXY();
@@ -271,10 +298,20 @@ public class BackboneController implements Initializable {
       paneRoteadores.getChildren().add(conexao);
       conexao.toBack();
 
-      Label latenciaConexao = new Label("" + latencia + ";");
+      // Criar a etiqueta preparada para multiplas linhas
+      Label latenciaConexao = new Label("Pings...\nAguarde");
+
+      // Um estilo mais quadrado, fundo um pouco transparente e adaptavel
       latenciaConexao.setStyle(
-          "-fx-font-weight: bold; -fx-background-color: gray; -fx-text-fill: white; -fx-border-radius: 50%; -fx-background-radius: 50%;");
-      latenciaConexao.setPrefSize(40, 20);
+          "-fx-font-weight: bold; " +
+              "-fx-background-color: rgba(60, 60, 60, 0.85); " +
+              "-fx-text-fill: white; " +
+              "-fx-border-radius: 6px; " +
+              "-fx-background-radius: 6px; " +
+              "-fx-padding: 4px; " +
+              "-fx-font-size: 11px;");
+
+      // Removemos o setPrefSize para ele se adaptar ao tamanho do texto sozinho
       latenciaConexao.setAlignment(Pos.CENTER);
       latenciaConexao.setLayoutX((posicaoR1[0] + posicaoR2[0]) / 2);
       latenciaConexao.setLayoutY((posicaoR1[1] + posicaoR2[1]) / 2);
@@ -298,74 +335,86 @@ public class BackboneController implements Initializable {
 
       latenciaConexao.setCursor(Cursor.HAND);
       // Ao clicar na linha ou no numero da latencia, corta a conexao!
-      // conexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
-      // latenciaConexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
+      conexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
+      latenciaConexao.setOnMouseClicked(e -> cortarConexao(r1, r2, chave));
 
       mapaLinhas.put(chave, new Pair<Line, Label>(conexao, latenciaConexao));
     });
   } // fim do metodo exibirConexao
 
-  // /*
-  //  * Metodo: cortarConexao
-  //  * Funcao: Permite que o usuario corte uma das conexoes da backbone
-  //  * Parametros: r1 = roteador, r2 = roteador, chaveLinha = conexao
-  //  * Retorno: void
-  //  */
-  // public void cortarConexao(Roteador r1, Roteador r2, String chaveLinha) {
-  //   System.out
-  //       .println("Cortando conexao entre roteador " + r1.getIdRoteador() + " e roteador " + r2.getIdRoteador() + "!");
+  /*
+   * Metodo: cortarConexao
+   * Funcao: Permite que o usuario corte uma das conexoes da backbone
+   * Parametros: r1 = roteador, r2 = roteador, chaveLinha = conexao
+   * Retorno: void
+   */
+  public void cortarConexao(Roteador r1, Roteador r2, String chaveLinha) {
+    System.out
+        .println("Cortando conexao entre roteador " + r1.getIdRoteador() + " e roteador " + r2.getIdRoteador() + "!");
 
-  //   // Interrompe todas as animacoes e limpa as filas de espera
-  //   reiniciarRede();
-  //   for (Roteador r : rede.getRoteadores()) {
-  //     r.getBufferPacotes().clear();
-  //   } // fim do for
+    // Interrompe todas as animacoes e limpa as filas de espera
+    reiniciarRede();
+    for (Roteador r : rede.getRoteadores()) {
+      r.getBufferPacotes().clear();
+    } // fim do for
 
-  //   // Mostra o Pop-out de aviso
-  //   Alert alerta = new Alert(Alert.AlertType.WARNING);
-  //   alerta.setTitle("Conexao Rompida!");
-  //   alerta.setHeaderText("Alerta de Falha!");
-  //   alerta.setContentText("O cabo entre o Roteador " + r1.getIdRoteador() + " e o Roteador " + r2.getIdRoteador()
-  //       + " foi rompido!\nTodos os pacotes em transito foram descartados. A rede ira recalcular as rotas agora.");
-  //   alerta.showAndWait();
+    // Remove a conexao logicamente da lista de cabos dos roteadores
+    r1.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r2.getIdRoteador());
+    r2.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r1.getIdRoteador());
 
-  //   // Remove a conexao logicamente da lista de cabos dos roteadores
-  //   r1.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r2.getIdRoteador());
-  //   r2.getConexoes().removeIf(c -> c.getDestino().getIdRoteador() == r1.getIdRoteador());
+    // Remove a linha e a label visualmente da tela
+    Pair<Line, Label> componentes = mapaLinhas.get(chaveLinha);
+    if (componentes != null) {
+      paneRoteadores.getChildren().removeAll(componentes.getKey(), componentes.getValue());
+      mapaLinhas.remove(chaveLinha);
+    }
 
-  //   // Remove a linha e a label visualmente da tela
-  //   Pair<Line, Label> componentes = mapaLinhas.get(chaveLinha);
-  //   if (componentes != null) {
-  //     paneRoteadores.getChildren().removeAll(componentes.getKey(), componentes.getValue());
-  //     mapaLinhas.remove(chaveLinha);
-  //   }
+    // Bloqueia a tabela de roteamento para que nenhuma outra thread tente ler ou
+    // escrever ao mesmo tempo
+    synchronized (r1.getTabelaRoteamento()) {
+      for (Map.Entry<Integer, Aresta> entrada : r1.getTabelaRoteamento().entrySet()) {
+        if (entrada.getValue().getDestino().getIdRoteador() == r2.getIdRoteador()) {
+          Aresta rotaMorta = new Aresta(r2, 9999);
+          rotaMorta.setLatencia(9999); // Atualiza a latencia para a interface entender a falha
+          entrada.setValue(rotaMorta); // Substitui a rota antiga pela rota morta na tabela
+        } // fim do if
+      } // fim do for
+    } // fim do syncronized
 
-  //   synchronized (r1.getTabelaRoteamento()) {
-  //     for (Map.Entry<Integer, Aresta> entrada : r1.getTabelaRoteamento().entrySet()) {
-  //       if (entrada.getValue().getDestino().getIdRoteador() == r2.getIdRoteador()) {
-  //         entrada.setValue(new Aresta(r2, 9999));
-  //       } // fim do if
-  //     } // fim do for
-  //   } // fim do syncronized
-  //   synchronized (r2.getTabelaRoteamento()) {
-  //     for (Map.Entry<Integer, Aresta> entrada : r2.getTabelaRoteamento().entrySet()) {
-  //       if (entrada.getValue().getDestino().getIdRoteador() == r1.getIdRoteador()) {
-  //         entrada.setValue(new Aresta(r1, 9999));
-  //       } // fim do if
-  //     } // fim do for
-  //   } // fim do syncronized
-  //   r1.enviarVetorParaVizinhos();
-  //   r2.enviarVetorParaVizinhos();
+    // Bloqueia a tabela de roteamento para que nenhuma outra thread tente ler ou
+    // escrever ao mesmo tempo
+    synchronized (r2.getTabelaRoteamento()) {
+      for (Map.Entry<Integer, Aresta> entrada : r2.getTabelaRoteamento().entrySet()) {
+        if (entrada.getValue().getDestino().getIdRoteador() == r1.getIdRoteador()) {
+          Aresta rotaMorta = new Aresta(r1, 9999);
+          rotaMorta.setLatencia(9999); // Atualiza a latencia para a interface entender a falha
+          entrada.setValue(rotaMorta); // Substitui a rota antiga pela rota morta na tabela
+        } // fim do if
+      } // fim do for
+    } // fim do syncronized
 
-  //   atualizarTabelasNaTela();
-  //   verificarStatusDaRede();
-  // } // fim do metodo cortarConexao
+    r1.inundarLSP();
+    r2.inundarLSP();
+
+    atualizarTabelasNaTela();
+    verificarStatusDaRede();
+
+    // Mostra o Pop-out de aviso
+    Alert alerta = new Alert(Alert.AlertType.WARNING);
+    alerta.setTitle("Conexao Rompida!");
+    alerta.setHeaderText("Alerta de Falha!");
+    alerta.setContentText("O cabo entre o Roteador " + r1.getIdRoteador() + " e o Roteador " + r2.getIdRoteador()
+        + " foi rompido!\nTodos os pacotes em transito foram descartados. A rede ira recalcular as rotas agora.");
+    alerta.show();
+  } // fim do metodo cortarConexao
 
   /*
    * Metodo: atualizarLatenciaVisual
-   * Funcao: Atualiza o texto na interface grafica para refletir o ping real medido
+   * Funcao: Atualiza o texto na interface grafica mostrando a latencia da conexao
+   * Parametros: idR1 = roteador, idR2 = roteador, rtt = latencia
+   * Retorno: void
    */
-  public void atualizarLatenciaVisual(int idR1, int idR2, int novaLatencia) {
+  public void atualizarLatenciaVisual(int idR1, int idR2, int rtt) {
     Platform.runLater(() -> {
       int idMin = Math.min(idR1, idR2);
       int idMax = Math.max(idR1, idR2);
@@ -373,10 +422,10 @@ public class BackboneController implements Initializable {
 
       if (mapaLinhas.containsKey(chave)) {
         Label label = mapaLinhas.get(chave).getValue();
-        label.setText(novaLatencia + "ms"); // Muda o texto para mostrar o novo ping
-      }
+        label.setText(rtt + "ms"); // Exibe a media do RTT
+      } // fim do if
     });
-  } // fim do metodo atualizarLatenciaVisual
+  }
 
   /*
    * Metodo: exibirPacote
@@ -389,14 +438,19 @@ public class BackboneController implements Initializable {
     Platform.runLater(() -> {
 
       ImageView imageViewPacote = new ImageView();
+
       // muda a imagem de acordo com o tipo de pacote enviado
-      if (pacote instanceof PacoteEcho) {
-        imageViewPacote.setImage(escolherPacoteEcho((PacoteEcho) pacote));
+      if (pacote instanceof PacoteHello) {
+        imageViewPacote.setImage(IMAGEM_PACOTE_ECHO_REQUEST);
+      } else if (pacote instanceof PacoteEcho) {
+        PacoteEcho echo = (PacoteEcho) pacote;
+        imageViewPacote.setImage(echo.isReply() ? IMAGEM_PACOTE_ECHO_REPLY : IMAGEM_PACOTE_ECHO_REQUEST);
       } else if (pacote instanceof PacoteLSP) {
         imageViewPacote.setImage(IMAGEM_PACOTE_LSP);
       } else {
         imageViewPacote.setImage(IMAGEM_PACOTE);
-      } // fim do if
+      }
+
       imageViewPacote.setFitWidth(30);
       imageViewPacote.setFitHeight(30);
       Path caminho = new Path();
@@ -407,8 +461,23 @@ public class BackboneController implements Initializable {
       caminho.getElements().add(new MoveTo(posicaoR1[0], posicaoR1[1]));
       caminho.getElements().add(new LineTo(posicaoR2[0], posicaoR2[1]));
 
+      // Busca a latencia real da conexao atual para definir a velocidade
+      int latenciaDoCabo = 100; // Valor padrao de seguranca
+      for (Aresta conexao : rOrigem.getConexoes()) {
+        if (conexao.getDestino().getIdRoteador() == rDestino.getIdRoteador()) {
+          latenciaDoCabo = conexao.getLatencia();
+          break;
+        } // fim do if
+      } // fim do for
+
+      // Calcula o tempo da animacao para simular a latencia da conexao
+      double tempoSegundos = 0.5 + ((double) latenciaDoCabo / 500.0);
+
+      // Garante que por algum bug a animacao nao fuja do intervalo 0.5 a 1.5
+      tempoSegundos = Math.max(0.5, Math.min(1.5, tempoSegundos));
+
       PathTransition animacao = new PathTransition();
-      animacao.setDuration(Duration.seconds(1));
+      animacao.setDuration(Duration.seconds(tempoSegundos));
       animacao.setNode(imageViewPacote);
       animacao.setPath(caminho);
       animacao.setCycleCount(1);
@@ -463,6 +532,7 @@ public class BackboneController implements Initializable {
     } // fim do for
 
     mapaLinhas.clear();
+    latencia.clear();
     rede.carregarArquivo(ARQUIVO, this);
 
     Platform.runLater(() -> {

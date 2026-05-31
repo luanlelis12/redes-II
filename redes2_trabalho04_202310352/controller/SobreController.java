@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 26 03 2026
-* Ultima alteracao.: 11 04 2026
+* Ultima alteracao.: 31 05 2026
 * Nome.............: SobreController.java
 * Funcao...........: Controller para gerenciar a tela de sobre o programa
 *************************************************************** */
@@ -33,19 +33,19 @@ public class SobreController implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    Text titulo = new Text("Trabalho Pratico #03: Roteamento por Vetor de Distancia\n\n");
+    Text titulo = new Text("Trabalho Pratico #04: Roteamento por Estado de Enlace\n\n");
     titulo.setFont(Font.font("System", FontWeight.BOLD, 18));
     titulo.setFill(Color.WHITE);
 
     Text texto = new Text(
         "Disciplina: Redes de Computadores II | Prof. Marlos Marques\n" +
             "Discente: Luan Alves Lelis Costa\n\n" +
-            "O simulador implementa o algoritmo de Vetor de Distancia. Os roteadores mantem tabelas " +
-            "com a linha de saida e a metrica (retardo de tempo) para cada destino. O retardo eh lido do " +
-            "arquivo backbone.txt e descoberto via pacotes PING (Echo Request/Reply).\n\n" +
-            "As tabelas sao atualizadas periodicamente com os vizinhos a cada 10s. O programa permite " +
-            "escolher uma Origem e Destino graficamente, desabilitar links clicando sobre eles para forcar " +
-            "recalculos.");
+            "O simulador implementa o algoritmo de Estado de Enlace. Os roteadores primeiro se\n" +
+            "apresentam usando pacotes HELLO. Depois, monitoram ativamente a latencia de seus\n" +
+            "links locais usando pacotes ECHO (Ping) para calcular o RTT (Round Trip Time).\n\n" +
+            "Sempre que ha uma mudanca drastica na latencia, um Link State Packet (LSP) e gerado e\n" +
+            "inundado pela rede. Cada roteador monta o seu proprio mapa global da rede e executa o\n" +
+            "Algoritmo de Dijkstra para calcular os caminhos mais curtos e atualizar as rotas.");
     texto.setFont(Font.font("System", 14));
     texto.setFill(Color.WHITE);
 
@@ -56,12 +56,18 @@ public class SobreController implements Initializable {
     tituloLegenda.setFill(Color.WHITE);
     vboxLegenda.getChildren().add(tituloLegenda);
 
-    adicionarItemLegenda("pacoteEchoRequest.png", "Echo Request (PING: Descobrindo vizinho)");
-    adicionarItemLegenda("pacoteEchoReply.png", "Echo Reply (PING: Confirmacao de latencia)");
-    adicionarItemLegenda("pacoteVetor.png", "Pacote Vetor (Atualizacao periodica da tabela)");
+    adicionarItemLegenda("pacoteEchoRequest.png", "Hello / Echo Request (Apresentacao e Ida do Ping)");
+    adicionarItemLegenda("pacoteEchoReply.png", "Hello / Echo Reply (Confirmacao e Volta do Ping)");
+    adicionarItemLegenda("pacoteVetor.png", "Pacote LSP (Inundacao do estado do link)");
     adicionarItemLegenda("pacote.png", "Pacote de Dados (Mensagem do Usuario)");
   }
 
+  /*
+   * Metodo: adicionarItemLegenda
+   * Funcao: adiciona imagens na legenda da pagina sobre
+   * Parametros: nomeImagem = nome do arquivo de imagem, descricao = explica o que eh a imagem
+   * Retorno: void
+   */
   private void adicionarItemLegenda(String nomeImagem, String descricao) {
     try {
       ImageView img = new ImageView(new Image("file:view/img/" + nomeImagem));
@@ -78,6 +84,6 @@ public class SobreController implements Initializable {
       vboxLegenda.getChildren().add(linha);
     } catch (Exception e) {
       System.out.println("Erro ao carregar imagem da legenda: " + nomeImagem);
-    }
-  }
+    } // fim do try-catch
+  } // fim do metodo adicionarItemLegenda
 }
