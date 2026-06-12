@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Line?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="683.0" prefWidth="1024.0" styleClass="menuInicial" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button layoutX="637.0" layoutY="293.0" mnemonicParsing="false" prefHeight="98.0" prefWidth="130.0" styleClass="butt" text="Button" />
+      <Button layoutX="301.0" layoutY="604.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="60.0" styleClass="buttonFechar" />
+      <Button layoutX="662.0" layoutY="604.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="60.0" styleClass="buttonInfo" />
+      <ImageView fitHeight="335.0" fitWidth="335.0" layoutX="202.0" layoutY="175.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/logoMsn.png" />
+         </image>
+      </ImageView>
+      <Line endX="-100.0" endY="346.0" layoutX="716.0" layoutY="225.0" startX="-100.0" startY="-127.0" stroke="WHITE" strokeWidth="4.0" />
+   </children>
+</AnchorPane>

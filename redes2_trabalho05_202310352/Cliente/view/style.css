@@ -1,0 +1,39 @@
+.menuInicial {
+  -fx-background-image: url("img/bgMenuInicial.png");
+  -fx-background-color: #2731a5;
+  -fx-background-size: cover;
+  -fx-background-repeat: no-repeat;
+  -fx-background-position: center center;
+}
+
+.button {
+  -fx-background-color: transparent;
+}
+
+.button:hover {
+  -fx-cursor: hand;
+}
+
+.buttonFechar {
+  -fx-background-image: url("img/buttonFechar.png");
+}
+
+.buttonInfo {
+  -fx-background-image: url("img/buttonInfo.png");
+}
+
+.buttonFechar:hover {
+  -fx-background-image: url("img/buttonFecharHover.png");
+}
+
+.buttonInfo:hover {
+  -fx-background-image: url("img/buttonInfoHover.png");
+}
+
+.buttonFechar:pressed {
+  -fx-background-image: url("img/buttonFecharPressed.png");
+}
+
+.buttonInfo:pressed {
+  -fx-background-image: url("img/buttonInfoPressed.png");
+}
