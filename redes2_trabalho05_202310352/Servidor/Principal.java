@@ -7,8 +7,12 @@
 * Funcao...........: 
 *******************************************************************/
 
-package Servidor;
+import model.Servidor;
 
 public class Principal {
+
+  public static void main(String[] args) {
+    Servidor s = new Servidor();
+  }
 
 }

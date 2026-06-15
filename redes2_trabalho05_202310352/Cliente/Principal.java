@@ -14,13 +14,16 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
+import controller.clienteController;
+import controller.menuInicialController;
+
 public class Principal extends Application {
 
   @Override
   public void start(Stage primaryStage) throws Exception {
 
     // Carrega o arquivo FXML da tela principal
-    FXMLLoader loader = new FXMLLoader(getClass().getResource("view/chat.fxml"));
+    FXMLLoader loader = new FXMLLoader(getClass().getResource("view/menuInicial.fxml"));
     Parent root = loader.load();
 
     // Configura a cena

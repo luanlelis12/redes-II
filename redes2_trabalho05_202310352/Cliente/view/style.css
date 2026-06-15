@@ -22,6 +22,10 @@
   -fx-background-image: url("img/buttonInfo.png");
 }
 
+.buttonIniciar {
+  -fx-background-image: url("img/buttonIniciar.png");
+}
+
 .buttonFechar:hover {
   -fx-background-image: url("img/buttonFecharHover.png");
 }
@@ -30,10 +34,18 @@
   -fx-background-image: url("img/buttonInfoHover.png");
 }
 
+.buttonIniciar:hover {
+  -fx-background-image: url("img/buttonIniciarHover.png");
+}
+
 .buttonFechar:pressed {
   -fx-background-image: url("img/buttonFecharPressed.png");
 }
 
 .buttonInfo:pressed {
   -fx-background-image: url("img/buttonInfoPressed.png");
+}
+
+.buttonIniciar:pressed {
+  -fx-background-image: url("img/buttonIniciarPressed.png");
 }

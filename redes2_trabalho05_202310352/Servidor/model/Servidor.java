@@ -7,7 +7,7 @@
 * Funcao...........: 
 *******************************************************************/
 
-package Servidor.model;
+package model;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
