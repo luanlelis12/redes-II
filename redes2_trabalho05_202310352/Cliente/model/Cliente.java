@@ -9,6 +9,31 @@
 
 package model;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
 public class Cliente {
-  
+  final int PORTA_UDP = 8080;
+  final int PORTA_TCP = 8081;
+
+  public Cliente() {
+
+    try {
+      DatagramSocket conexaoCliente = new DatagramSocket();// conexao nao eh o melhor nome
+      InetAddress enderecoIPServidor = InetAddress.getByName("192.168.1.2");
+
+      byte[] dadosSaida = new byte[1024];
+      String mensagemEnviada = new String("MUITO FACIL ;-)");// substituir por APDU+mensagem
+      byte[] saida = mensagemEnviada.getBytes();
+
+      DatagramPacket pacoteEnviado = new DatagramPacket(saida, saida.length,
+          enderecoIPServidor, PORTA_UDP);
+
+    } catch (Exception e) {
+      // TODO: handle exception
+    }
+
+  }
+
 }
