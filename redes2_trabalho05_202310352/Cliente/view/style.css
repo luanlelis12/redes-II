@@ -18,6 +18,22 @@
   -fx-background-image: url("img/buttonFechar.png");
 }
 
+.buttonFecharChat {
+  -fx-background-image: url("img/buttonClose.png");
+}
+
+.buttonMinimizar {
+  -fx-background-image: url("img/buttonMinimizar.png");
+}
+
+.buttonEnviar {
+  -fx-background-image: url("img/buttonEnviar.png");
+}
+
+.buttonEnviarDes {
+  -fx-background-image: url("img/buttonEnviarDes.png");
+}
+
 .buttonInfo {
   -fx-background-image: url("img/buttonInfo.png");
 }
@@ -38,6 +54,18 @@
   -fx-background-image: url("img/buttonIniciarHover.png");
 }
 
+.buttonFecharChat:hover {
+  -fx-background-image: url("img/buttonCloseHover.png");
+}
+
+.buttonMinimizar:hover {
+  -fx-background-image: url("img/buttonMinimizarHover.png");
+}
+
+.buttonEnviar:hover {
+  -fx-background-image: url("img/buttonEnviarHover.png");
+}
+
 .buttonFechar:pressed {
   -fx-background-image: url("img/buttonFecharPressed.png");
 }
@@ -48,4 +76,24 @@
 
 .buttonIniciar:pressed {
   -fx-background-image: url("img/buttonIniciarPressed.png");
+}
+
+.buttonFecharChat:pressed {
+  -fx-background-image: url("img/buttonClosePressed.png");
+}
+
+.buttonMinimizar:pressed {
+  -fx-background-image: url("img/buttonMinimizarPressed.png");
+}
+
+.buttonEnviar:pressed {
+  -fx-background-image: url("img/buttonEnviarPressed.png");
+}
+
+.chat {
+  -fx-background-image: url("img/bgChat.png");
+}
+
+.grupos {
+  -fx-background-image: url("img/bgGrupos.png");
 }

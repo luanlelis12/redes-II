@@ -5,39 +5,36 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="683.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.clienteController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="670.0" prefWidth="1320.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.clienteController">
    <children>
-      <VBox prefHeight="683.0" prefWidth="240.0">
+      <AnchorPane prefHeight="670.0" prefWidth="360.0" styleClass="grupos">
          <children>
-            <TextField fx:id="nomeGrupoField" />
-            <Button mnemonicParsing="false" onAction="#criarGrupo" prefHeight="25.0" prefWidth="83.0" text="criar grupo" />
-            <Button mnemonicParsing="false" text="entrar grupo" />
+            <VBox layoutX="40.0" layoutY="270.0" prefHeight="360.0" prefWidth="280.0">
+               <children>
+                  <ScrollPane fitToWidth="true" prefHeight="360.0" prefWidth="280.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefHeight="360.0" prefWidth="280.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </ScrollPane>
+                  <TextField fx:id="nomeGrupoField" prefWidth="150.0" />
+                  <Button mnemonicParsing="false" onAction="#entrarGrupo" text="Entrar grupo" />
+               </children>
+            </VBox>
          </children>
-      </VBox>
-      <VBox layoutX="240.0" prefHeight="683.0" prefWidth="784.0">
+      </AnchorPane>
+      <AnchorPane layoutX="360.0" prefHeight="670.0" prefWidth="960.0" styleClass="chat">
          <children>
-            <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
-               <children>
-                  <Button mnemonicParsing="false" text="Button" />
-                  <Text fx:id="nomeGrupo" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
-               </children>
-            </HBox>
-            <ScrollPane fitToWidth="true" prefHeight="750.0" prefWidth="784.0">
-               <content>
-                  <VBox prefWidth="408.0" />
-               </content>
-            </ScrollPane>
-            <HBox prefWidth="200.0">
-               <children>
-                  <TextArea fx:id="caixaDeMensagem" prefWidth="666.0" />
-                  <Button fx:id="enviarMensagemButton" mnemonicParsing="false" onAction="#enviarMensagem" text="Button" />
-               </children>
-            </HBox>
+            <Button layoutX="910.0" layoutY="10.0" mnemonicParsing="false" onAction="#fecharAplicacao" prefHeight="40.0" prefWidth="40.0" styleClass="buttonFecharChat" />
+            <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#minimizarTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonMinimizar" />
+            <Button fx:id="enviarButton" layoutX="820.0" layoutY="550.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="120.0" styleClass="buttonEnviarDes" />
+            <TextArea fx:id="mensagemField" layoutX="40.0" layoutY="560.0" prefHeight="70.0" prefWidth="770.0" />
          </children>
-      </VBox>
+      </AnchorPane>
    </children>
 </AnchorPane>
