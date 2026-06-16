@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -13,15 +13,7 @@
          <children>
             <VBox layoutX="40.0" layoutY="270.0" prefHeight="360.0" prefWidth="280.0">
                <children>
-                  <ScrollPane fitToWidth="true" prefHeight="360.0" prefWidth="280.0">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefHeight="360.0" prefWidth="280.0" />
-                           </children>
-                        </AnchorPane>
-                    </content>
-                  </ScrollPane>
+                  <ListView fx:id="listaDeGrupos" prefHeight="360.0" prefWidth="280.0" />
                   <TextField fx:id="nomeGrupoField" prefWidth="150.0" />
                   <Button mnemonicParsing="false" onAction="#entrarGrupo" text="Entrar grupo" />
                </children>
@@ -32,7 +24,7 @@
          <children>
             <Button layoutX="910.0" layoutY="10.0" mnemonicParsing="false" onAction="#fecharAplicacao" prefHeight="40.0" prefWidth="40.0" styleClass="buttonFecharChat" />
             <Button layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#minimizarTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonMinimizar" />
-            <Button fx:id="enviarButton" layoutX="820.0" layoutY="550.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="120.0" styleClass="buttonEnviarDes" />
+            <Button fx:id="enviarButton" layoutX="820.0" layoutY="550.0" mnemonicParsing="false" onAction="#enviarMensagem" prefHeight="80.0" prefWidth="120.0" styleClass="buttonEnviarDes" />
             <TextArea fx:id="mensagemField" layoutX="40.0" layoutY="560.0" prefHeight="70.0" prefWidth="770.0" />
          </children>
       </AnchorPane>

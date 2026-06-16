@@ -26,13 +26,14 @@ public class Cliente extends Thread {
   private InetAddress ipServidor;
   private DatagramSocket endpointCliente;
 
+
   public Cliente(String nome, String ipServidor) {
     try {
       this.nome = nome;
       ipCliente = InetAddress.getLocalHost();
       this.ipServidor = InetAddress.getByName(ipServidor);
       endpointCliente = new DatagramSocket(PORTA_UDP);
-      System.out.println("Cliente criado: nome = " + nome);
+      System.out.println("CLIENTE estabelecido: nome = " + nome + " / ip = " + ipCliente);
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel inicializar o cliente");
     }
@@ -40,20 +41,22 @@ public class Cliente extends Thread {
 
   @Override
   public synchronized void start() {
-    try {
-      while (true) {
-        byte[] dadosEntrada = new byte[1024];
+    new Thread(() -> {
+      try {
+        while (true) {
+          byte[] dadosEntrada = new byte[1024];
+          
+          DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
+          System.out.println("O cliente esta esperando uma mensagem...");
+          endpointCliente.receive(pacoteRecebido);
 
-        DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
-        endpointCliente.receive(pacoteRecebido);
-
-        String apduRecebida = new String(pacoteRecebido.getData());
-        processarApdu(apduRecebida);
+          String apduRecebida = new String(pacoteRecebido.getData());
+          // processarApdu(apduRecebida);
+        }
+      } catch (Exception e) {
+        System.out.println("ERRO: Nao foi possivel receber a mensagem!");
       }
-    } catch (Exception e) {
-      System.out.println("ERRO: Nao foi possivel receber a mensagem!");
-    }
-    super.start();
+    }).start();
   }
 
   /*
@@ -73,6 +76,7 @@ public class Cliente extends Thread {
 
       saida.writeObject(apdu);
       saida.flush();
+      socketCliente.close();
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel entrar no grupo!");
     }
@@ -95,6 +99,7 @@ public class Cliente extends Thread {
 
       saida.writeObject(apdu);
       saida.flush();
+      socketCliente.close();
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel sair do grupo!");
     }
@@ -119,15 +124,5 @@ public class Cliente extends Thread {
       System.out.println("ERRO: Nao foi possivel enviar a mensagem!");
     }
   } // fim do metodo enviarMensagem
-
-  /*
-   * Metodo: processarApdu
-   * Funcao: Pegar a APDU recebida e determinar qual eh o comando realizar
-   * Parametros: apduRecebida = APDU enviada pelo servidor
-   * Retorno: void
-   */
-  public void processarApdu(String apduRecebida) {
-    String[] partes = apduRecebida.split("~~");
-  } // fim do metodo processarApdu
 
 }

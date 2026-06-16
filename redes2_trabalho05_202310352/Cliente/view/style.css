@@ -42,6 +42,10 @@
   -fx-background-image: url("img/buttonIniciar.png");
 }
 
+.buttonAlert {
+  -fx-background-image: url("img/buttonAlert.png");
+}
+
 .buttonFechar:hover {
   -fx-background-image: url("img/buttonFecharHover.png");
 }
@@ -64,6 +68,10 @@
 
 .buttonEnviar:hover {
   -fx-background-image: url("img/buttonEnviarHover.png");
+}
+
+.buttonAlert:hover {
+  -fx-background-image: url("img/buttonAlertHover.png");
 }
 
 .buttonFechar:pressed {
@@ -90,10 +98,18 @@
   -fx-background-image: url("img/buttonEnviarPressed.png");
 }
 
+.buttonAlert:pressed {
+  -fx-background-image: url("img/buttonAlertPressed.png");
+}
+
 .chat {
   -fx-background-image: url("img/bgChat.png");
 }
 
 .grupos {
   -fx-background-image: url("img/bgGrupos.png");
+}
+
+.alert {
+  -fx-background-image: url("img/bgAlert.png");
 }

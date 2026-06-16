@@ -31,15 +31,15 @@ import util.processadorTexto;
 public class clienteController implements Initializable {
 
   @FXML
-  Button enviarMensagemButton;
+  private Button enviarMensagemButton;
   @FXML
-  Button enviarButton;
+  private Button enviarButton;
   @FXML
-  TextArea caixaDeMensagem;
+  private TextArea caixaDeMensagem;
   @FXML
-  TextField nomeGrupoField;
+  private TextField nomeGrupoField;
   @FXML
-  TextArea mensagemField;
+  private TextArea mensagemField;
 
   private static Cliente cliente;
 
@@ -86,7 +86,7 @@ public class clienteController implements Initializable {
   /*
    * Metodo: enviarMensagem
    * Funcao: envia para a classe cliente a mensagem que o usuario quer enviar
-   * Parametros: 
+   * Parametros:
    * Retorno: void
    */
   public void enviarMensagem() {
@@ -94,14 +94,14 @@ public class clienteController implements Initializable {
     mensagemField.clear();
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
-
+    System.out.println("Enviando mensagem: " + mensagem);
     cliente.enviarMensagem("teste", mensagem);
   } // fim do metodo enviarMensagem
 
   /*
    * Metodo: entrarGrupo
    * Funcao: envia para a classe cliente o grupo que o usuario quer entrar
-   * Parametros: 
+   * Parametros:
    * Retorno: void
    */
   public void entrarGrupo() {
@@ -125,7 +125,7 @@ public class clienteController implements Initializable {
   /*
    * Metodo: fecharAplicacao
    * Funcao: fechar a aplicacao
-   * Parametros: 
+   * Parametros:
    * Retorno: void
    */
   public void fecharAplicacao() {

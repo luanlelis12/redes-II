@@ -12,7 +12,8 @@ import model.Servidor;
 public class Principal {
 
   public static void main(String[] args) {
-    Servidor s = new Servidor();
+    Servidor servidor = new Servidor();
+    servidor.start();
   }
 
 }

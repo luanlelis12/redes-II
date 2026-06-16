@@ -28,8 +28,8 @@ public class Servidor extends Thread {
   public Servidor() {
     try {
       ipServidor = InetAddress.getLocalHost();
-      DatagramSocket endpointServidor = new DatagramSocket(PORTA_UDP, ipServidor);
-      System.out.println("SERVIDOR estabelecido ip = " + ipServidor);
+      endpointServidor = new DatagramSocket(PORTA_UDP, ipServidor);
+      System.out.println("SERVIDOR estabelecido: ip = " + ipServidor);
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel iniciar o servidor!");
     }
@@ -42,13 +42,15 @@ public class Servidor extends Thread {
       try {
         ServerSocket servidor = new ServerSocket(PORTA_TCP);
         while (true) {
+          System.out.println("O SERVIDOR esta esperando receber alguma conexao...");
           Socket conexao = servidor.accept();
           new Thread(() -> {
             ObjectInputStream entrada;
             try {
               entrada = new ObjectInputStream(conexao.getInputStream());
-              System.out.println((String) entrada.readObject());
-              System.out.println("APDU recebida:" + entrada);
+              String apduRecebida = (String) entrada.readObject();
+              System.out.println("APDU recebida: " + apduRecebida);
+              processarApdu(apduRecebida);
             } catch (IOException | ClassNotFoundException e) {
               System.out.println("ERRO: Nao foi possivel receber a APDU do cliente!");
             }
@@ -64,23 +66,50 @@ public class Servidor extends Thread {
         byte[] dadosEntrada = new byte[1024];
 
         DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
+        System.out.println("O SERVIDOR esta esperando receber algum pacote...");
         endpointServidor.receive(pacoteRecebido);
 
         String apduRecebida = new String(pacoteRecebido.getData());
         new Thread(() -> {
-          System.out.println("APDU recebida:" + apduRecebida);
+          System.out.println("APDU recebida: " + apduRecebida);
+          processarApdu(apduRecebida);
         }).start();
       }
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel iniciar o socket UDP!");
     }
-
-    super.start();
   }
 
-  private void processarApdu(String apduRecebida) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'processarApdu'");
-  }
+  /*
+   * Metodo: processarApdu
+   * Funcao: Pegar a APDU recebida e determinar qual eh o comando realizar
+   * Parametros: apduRecebida = APDU enviada pelo servidor
+   * Retorno: void
+   */
+  public void processarApdu(String apduRecebida) {
+    String[] partes = apduRecebida.split("~~");
+    switch (partes[0]) {
+      case "JOIN":
+
+        break;
+      case "LEAVE":
+
+        break;
+      case "SEND":
+        byte[] dadosEnviados = new byte[1024];
+
+        dadosEnviados = apduRecebida.getBytes();
+
+        // DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipCliente, PORTA_UDP);
+        // endpointServidor.send(datagramaEnviado);
+        break;
+      case "SENDPVT":
+
+        break;
+
+      default:
+        break;
+    }
+  } // fim do metodo processarApdu
 
 }

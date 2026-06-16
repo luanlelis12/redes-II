@@ -11,6 +11,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
@@ -27,6 +28,7 @@ public class Principal extends Application {
     Parent root = loader.load();
 
     // Configura a cena
+    primaryStage.initStyle(StageStyle.UNDECORATED);
     primaryStage.setTitle("cliente");
     primaryStage.setScene(new Scene(root));
 
@@ -39,7 +41,7 @@ public class Principal extends Application {
   }
 
   public static void main(String[] args) {
-    launch(args); 
+    launch(args);
   }
 
 }

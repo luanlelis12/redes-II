@@ -20,12 +20,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextField;
-import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import model.Cliente;
+import javafx.stage.StageStyle;
 import util.processadorTexto;
 
 public class menuInicialController implements Initializable {
@@ -43,13 +41,23 @@ public class menuInicialController implements Initializable {
     nomeCliente = processadorTexto.inserirFlagEscape(nomeCliente);
 
     if (nomeCliente == null || nomeCliente.trim().isEmpty()) {
-      Alert alerta = new Alert(AlertType.WARNING);
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
 
-      alerta.setTitle("NOME VAZIO");
-      alerta.setHeaderText("Nenhum nome foi inserido");
-      alerta.setContentText("Digite o seu nome para entrar na aplicacao.");
+        alertController controladorDoAlerta = loader.getController();
 
-      alerta.show();
+        controladorDoAlerta.setDetalhes("tituloErro", "mensagemErro");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("Erro ao carregar o alerta!");
+      }
       return;
     } // fim do if
 
@@ -82,7 +90,7 @@ public class menuInicialController implements Initializable {
       Parent root = loader.load();
 
       Stage popOut = new Stage();
-      
+
       popOut.setScene(new Scene(root));
 
       popOut.show();
