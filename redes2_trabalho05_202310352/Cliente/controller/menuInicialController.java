@@ -25,6 +25,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.Cliente;
+import util.processadorTexto;
 
 public class menuInicialController implements Initializable {
 
@@ -38,6 +40,7 @@ public class menuInicialController implements Initializable {
 
   public void criarCliente(ActionEvent event) {
     String nomeCliente = nomeTextField.getText();
+    nomeCliente = processadorTexto.inserirFlagEscape(nomeCliente);
 
     if (nomeCliente == null || nomeCliente.trim().isEmpty()) {
       Alert alerta = new Alert(AlertType.WARNING);
@@ -49,6 +52,8 @@ public class menuInicialController implements Initializable {
       alerta.show();
       return;
     } // fim do if
+
+    clienteController.criarCliente(nomeCliente);
 
     try {
       Parent novaRaiz = FXMLLoader.load(getClass().getResource("/view/chat.fxml"));

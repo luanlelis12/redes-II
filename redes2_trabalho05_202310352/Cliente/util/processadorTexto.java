@@ -16,7 +16,6 @@ public class processadorTexto {
     return textoProcessado;
   } // fim do metodo inserirFlagEscape
 
-  
   public static String retirarFlagEscape(String texto) {
     String textoProcessado = "";
     boolean isEscape = true;

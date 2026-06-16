@@ -25,6 +25,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
+import model.Cliente;
 import util.processadorTexto;
 
 public class clienteController implements Initializable {
@@ -39,6 +40,8 @@ public class clienteController implements Initializable {
   TextField nomeGrupoField;
   @FXML
   TextArea mensagemField;
+
+  private static Cliente cliente;
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -69,14 +72,41 @@ public class clienteController implements Initializable {
       } // fim do if
     });
 
+  } // fim do metodo initialize
+
+  public static void criarCliente(String nome) {
+    try {
+      cliente = new Cliente(nome, "10.227.119.130");
+      cliente.start();
+    } catch (Exception e) {
+      System.out.println();
+    }
   }
 
+  /*
+   * Metodo: enviarMensagem
+   * Funcao: envia para a classe cliente a mensagem que o usuario quer enviar
+   * Parametros: 
+   * Retorno: void
+   */
   public void enviarMensagem() {
+    String mensagem = mensagemField.getText();
+    mensagemField.clear();
 
+    mensagem = processadorTexto.inserirFlagEscape(mensagem);
+
+    cliente.enviarMensagem("teste", mensagem);
   } // fim do metodo enviarMensagem
 
+  /*
+   * Metodo: entrarGrupo
+   * Funcao: envia para a classe cliente o grupo que o usuario quer entrar
+   * Parametros: 
+   * Retorno: void
+   */
   public void entrarGrupo() {
     String nomeGrupo = nomeGrupoField.getText();
+    nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
 
     if (nomeGrupo == null || nomeGrupo.trim().isEmpty()) {
       Alert alerta = new Alert(AlertType.WARNING);
@@ -88,14 +118,28 @@ public class clienteController implements Initializable {
       alerta.show();
       return;
     } // fim do if
+
+    cliente.entrarGrupo(nomeGrupo);
   } // fim do metodo entrarGrupo
 
+  /*
+   * Metodo: fecharAplicacao
+   * Funcao: fechar a aplicacao
+   * Parametros: 
+   * Retorno: void
+   */
   public void fecharAplicacao() {
     System.out.println("Fechando aplicacao");
     Platform.exit();
     System.exit(0);
   } // fim do metodo fecharAplicacao
 
+  /*
+   * Metodo: minimizarTela
+   * Funcao: minimizar a tela
+   * Parametros: event = evento que ativou o metodo
+   * Retorno: void
+   */
   public void minimizarTela(ActionEvent event) {
     Stage janela = (Stage) ((Node) event.getSource()).getScene().getWindow();
     janela.setIconified(true);
