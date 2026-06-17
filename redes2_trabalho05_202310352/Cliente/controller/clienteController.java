@@ -128,6 +128,7 @@ public class clienteController implements Initializable {
     }
   }
 
+
   /*
    * Metodo: enviarMensagem
    * Funcao: envia para a classe cliente a mensagem que o usuario quer enviar
@@ -242,6 +243,7 @@ public class clienteController implements Initializable {
     Label label = (Label) itemConversa.getChildren().get(1);
     String nomeGrupo = label.getText();
     System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
+    nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
     cliente.sairGrupo(nomeGrupo);
     itemConversa.getChildren().removeAll();
     vboxGrupos.getChildren().remove(itemConversa);
