@@ -139,14 +139,19 @@ public class Servidor extends Thread {
     }
   } // fim do metodo processarApdu
 
-  private void inserirNoGrupo(String grupo, String nome, InetAddress ipCliente) {
-    Usuario novoUsuario = new Usuario(ipCliente, nome, PORTA_TCP);
-    if (grupos.containsKey(grupo)) {
-      grupos.get(grupo).add(novoUsuario);
+  private void inserirNoGrupo(String nomeGrupo, String nomeUsuario, InetAddress ipCliente) {
+    Usuario novoUsuario = new Usuario(ipCliente, nomeUsuario, PORTA_TCP);
+    if (grupos.containsKey(nomeGrupo)) {
+      if (grupos.get(nomeGrupo).contains(novoUsuario)) {
+        System.out.println("SERVIDOR - " + nomeUsuario + " ja esta no grupo " + nomeGrupo + ".");
+      } else {
+        System.out.println("SERVIDOR - Adicionando " + nomeUsuario + " no grupo " + nomeGrupo + ".");
+        grupos.get(nomeGrupo).add(novoUsuario);
+      }
     } else {
       ArrayList<Usuario> listaUsuario = new ArrayList<>();
       listaUsuario.add(novoUsuario);
-      grupos.put(grupo, listaUsuario);
+      grupos.put(nomeGrupo, listaUsuario);
     }
   }
 
@@ -161,9 +166,13 @@ public class Servidor extends Thread {
 
   }
 
-  private void enviarMensagem(String mensagem, String grupo, String nome) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'enviarMensagem'");
+  private void enviarMensagem(String mensagem, String nomeGrupo, String nomeUsuario) {
+    ArrayList<Usuario> listaDeUsuarios = grupos.get(nomeGrupo);
+    for (Usuario usuario : listaDeUsuarios) {
+      if (usuario.getNome() != nomeUsuario) {
+
+      }
+    }
   }
 
 }
