@@ -10,7 +10,7 @@
   -fx-background-color: transparent;
 }
 
-.button:hover {
+.button:hover, .itemConversa:hover {
   -fx-cursor: hand;
 }
 
@@ -112,4 +112,8 @@
 
 .alert {
   -fx-background-image: url("img/bgAlert.png");
+}
+
+.balaoDeDialogo {
+  -fx-background-color: #2731a5;
 }
