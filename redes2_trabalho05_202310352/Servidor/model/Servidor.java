@@ -51,6 +51,7 @@ public class Servidor extends Thread {
         while (true) {
           System.out.println("SERVIDOR - esperando receber alguma conexao...");
           Socket conexao = servidor.accept();
+          System.out.println("SERVIDOR - estabelecendo conexao com ip = " + conexao.getInetAddress() + ".");
           new Thread(() -> {
             ObjectInputStream entrada;
             try {
@@ -75,6 +76,7 @@ public class Servidor extends Thread {
         DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
         System.out.println("SERVIDOR - esperando receber algum pacote...");
         endpointServidor.receive(pacoteRecebido);
+        System.out.println("SERVIDOR - recebendo pacote do ip = "+ pacoteRecebido.getAddress() +".");
 
         String apduRecebida = new String(pacoteRecebido.getData());
         new Thread(() -> {
@@ -149,6 +151,7 @@ public class Servidor extends Thread {
         grupos.get(nomeGrupo).add(novoUsuario);
       }
     } else {
+      System.out.println("SERVIDOR - Criando novo grupo " + nomeGrupo + " adicionando usuario " + nomeUsuario + ".");
       ArrayList<Usuario> listaUsuario = new ArrayList<>();
       listaUsuario.add(novoUsuario);
       grupos.put(nomeGrupo, listaUsuario);
@@ -170,7 +173,19 @@ public class Servidor extends Thread {
     ArrayList<Usuario> listaDeUsuarios = grupos.get(nomeGrupo);
     for (Usuario usuario : listaDeUsuarios) {
       if (usuario.getNome() != nomeUsuario) {
+        try {
+          byte[] dadosEnviados = new byte[1024];
 
+          String apdu = new String("SEND~~" + nomeGrupo + "~~" + nomeUsuario + "~~" + mensagem + "\n");
+          dadosEnviados = apdu.getBytes();
+
+          DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, usuario.getIp(),
+              PORTA_UDP);
+          System.out.println("SERVIDOR - enviando mensagem para usuario " + usuario.getNome());
+          endpointServidor.send(datagramaEnviado);
+        } catch (Exception e) {
+          System.out.println("ERRO: Nao foi possivel enviar a mensagem!");
+        }
       }
     }
   }

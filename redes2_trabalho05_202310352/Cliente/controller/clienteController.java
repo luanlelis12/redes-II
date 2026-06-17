@@ -62,10 +62,10 @@ public class clienteController implements Initializable {
   @FXML
   private VBox vboxGrupos;
   @FXML
-  private VBox conversaVBox;
+  private static VBox conversaVBox;
 
   private static Cliente cliente;
-  private String grupoSelecionado = null;
+  private static String grupoSelecionado = null;
   private ArrayList<String> grupos = new ArrayList<>();
 
   @Override
@@ -101,7 +101,7 @@ public class clienteController implements Initializable {
 
   public static void criarCliente(String nome) {
     try {
-      cliente = new Cliente(nome, "10.227.119.130");
+      cliente = new Cliente(nome, "10.227.119.229");
       cliente.start();
     } catch (Exception e) {
       System.out.println();
@@ -122,15 +122,27 @@ public class clienteController implements Initializable {
     String mensagem = mensagemField.getText();
     mensagemField.clear();
 
-    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "",true);
+    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "", true);
     conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
     System.out.println("Cliente: enviando mensagem \"" + mensagem + "\"");
-    // cliente.enviarMensagem("teste", mensagem);
+    cliente.enviarMensagem(grupoSelecionado, mensagem);
   } // fim do metodo enviarMensagem
 
-  public HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
+  public static void receberMensagem(String mensagem, String nomeRemetente, String grupo) {
+
+    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, nomeRemetente, false);
+    conversaVBox.getChildren().add(balaoDeDialogo);
+
+    mensagem = processadorTexto.inserirFlagEscape(mensagem);
+    System.out
+        .println("Cliente: recebendo mensagem \"" + mensagem + "\" de " + nomeRemetente + " no grupo " + grupo + ".");
+    cliente.enviarMensagem(grupoSelecionado, mensagem);
+
+  }
+
+  public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
 
     VBox balao = new VBox(5);
 
@@ -200,7 +212,7 @@ public class clienteController implements Initializable {
 
     grupos.add(nomeGrupo);
     adicionarGrupoNaTela(nomeGrupo);
-    // cliente.entrarGrupo(nomeGrupoProcessado);
+    cliente.entrarGrupo(nomeGrupoProcessado);
   } // fim do metodo entrarGrupo
 
   public void adicionarGrupoNaTela(String nomeDoGrupo) {

@@ -16,6 +16,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import controller.clienteController;
+
 public class Cliente extends Thread {
 
   private final int PORTA_UDP = 8080;
@@ -25,7 +27,6 @@ public class Cliente extends Thread {
   private InetAddress ipCliente;
   private InetAddress ipServidor;
   private DatagramSocket endpointCliente;
-
 
   public Cliente(String nome, String ipServidor) {
     try {
@@ -45,18 +46,29 @@ public class Cliente extends Thread {
       try {
         while (true) {
           byte[] dadosEntrada = new byte[1024];
-          
+
           DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
           System.out.println("O cliente esta esperando uma mensagem...");
           endpointCliente.receive(pacoteRecebido);
 
           String apduRecebida = new String(pacoteRecebido.getData());
-          // processarApdu(apduRecebida);
+          System.out.println("CLIENTE - Recebeu apdu " + apduRecebida);
+          new Thread(() -> {
+            processarApdu(apduRecebida);
+          });
         }
       } catch (Exception e) {
         System.out.println("ERRO: Nao foi possivel receber a mensagem!");
       }
     }).start();
+  }
+
+  private void processarApdu(String apduRecebida) {
+    String[] partes = apduRecebida.split("~~");
+    String grupo = partes[1];
+    String nome = partes[2];
+    String mensagem = partes[3];
+    clienteController.receberMensagem(mensagem, nome, grupo);
   }
 
   /*
