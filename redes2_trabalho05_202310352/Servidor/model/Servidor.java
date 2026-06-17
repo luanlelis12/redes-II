@@ -18,7 +18,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 public class Servidor extends Thread {
@@ -31,6 +33,7 @@ public class Servidor extends Thread {
   private static Semaphore mutex = new Semaphore(1);
 
   private Map<String, ArrayList<Usuario>> grupos = new HashMap<>();
+  // private Set<Grupo> grupos = new HashSet<Grupo>();
 
   public Servidor() {
     try {
@@ -49,23 +52,23 @@ public class Servidor extends Thread {
       try {
         ServerSocket servidor = new ServerSocket(PORTA_TCP);
         while (true) {
-          System.out.println("SERVIDOR - esperando receber alguma conexao...");
+          System.out.println("SERVIDOR TCP - esperando receber alguma conexao...");
           Socket conexao = servidor.accept();
-          System.out.println("SERVIDOR - estabelecendo conexao com ip = " + conexao.getInetAddress() + ".");
+          System.out.println("SERVIDOR TCP - estabelecendo conexao com ip = " + conexao.getInetAddress() + ".");
           new Thread(() -> {
             ObjectInputStream entrada;
             try {
               entrada = new ObjectInputStream(conexao.getInputStream());
               String apduRecebida = (String) entrada.readObject();
-              System.out.println("APDU recebida: " + apduRecebida);
+              System.out.println("SERVIDOR TCP - APDU recebida: " + apduRecebida);
               processarApdu(apduRecebida, conexao.getInetAddress());
             } catch (IOException | ClassNotFoundException e) {
-              System.out.println("ERRO: Nao foi possivel receber a APDU do cliente!");
+              System.out.println("SERVIDOR TCP - ERRO: Nao foi possivel receber a APDU do cliente!");
             }
           }).start();
         }
       } catch (Exception e) {
-        System.out.println("ERRO: Nao foi possivel iniciar o socket TCP!");
+        System.out.println("SERVIDOR TCP - ERRO: Nao foi possivel iniciar o socket TCP!");
       }
     }).start();
 
@@ -74,18 +77,18 @@ public class Servidor extends Thread {
         byte[] dadosEntrada = new byte[1024];
 
         DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
-        System.out.println("SERVIDOR - esperando receber algum pacote...");
+        System.out.println("SERVIDOR UDP - esperando receber algum pacote...");
         endpointServidor.receive(pacoteRecebido);
-        System.out.println("SERVIDOR - recebendo pacote do ip = "+ pacoteRecebido.getAddress() +".");
-
+        System.out.println("SERVIDOR UDP - recebendo pacote do ip = "+ pacoteRecebido.getAddress() +".");
+        // COLOCAR UM BUFFER
         String apduRecebida = new String(pacoteRecebido.getData());
         new Thread(() -> {
-          System.out.println("APDU recebida: " + apduRecebida);
+          System.out.println("SERVIDOR UDP - APDU recebida: " + apduRecebida);
           processarApdu(apduRecebida, pacoteRecebido.getAddress());
         }).start();
       }
     } catch (Exception e) {
-      System.out.println("ERRO: Nao foi possivel iniciar o socket UDP!");
+      System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel iniciar o socket UDP!");
     }
   }
 
@@ -166,7 +169,6 @@ public class Servidor extends Thread {
         System.out.println("SERVIDOR - Removendo o usuario " + nomeUsuario);
       }
     }
-
   }
 
   private void enviarMensagem(String mensagem, String nomeGrupo, String nomeUsuario) {
@@ -188,43 +190,6 @@ public class Servidor extends Thread {
         }
       }
     }
-  }
-
-}
-
-class Usuario {
-  InetAddress ip;
-  String nome;
-  int porta;
-
-  public Usuario(InetAddress ip, String nome, int porta) {
-    this.ip = ip;
-    this.nome = nome;
-    this.porta = porta;
-  }
-
-  public InetAddress getIp() {
-    return ip;
-  }
-
-  public void setIp(InetAddress ip) {
-    this.ip = ip;
-  }
-
-  public String getNome() {
-    return nome;
-  }
-
-  public void setNome(String nome) {
-    this.nome = nome;
-  }
-
-  public int getPorta() {
-    return porta;
-  }
-
-  public void setPorta(int porta) {
-    this.porta = porta;
   }
 
 }

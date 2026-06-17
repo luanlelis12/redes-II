@@ -35,6 +35,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -63,6 +64,11 @@ public class clienteController implements Initializable {
   private VBox vboxGrupos;
   @FXML
   private static VBox conversaVBox;
+  @FXML
+  private Pane barraSuperior;
+
+  private double xOffset = 0;
+  private double yOffset = 0;
 
   private static Cliente cliente;
   private static String grupoSelecionado = null;
@@ -97,6 +103,20 @@ public class clienteController implements Initializable {
       } // fim do if
     });
 
+    if (barraSuperior != null) {
+      barraSuperior.setOnMousePressed(event -> {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
+      });
+
+      barraSuperior.setOnMouseDragged(event -> {
+        Stage janela = (Stage) barraSuperior.getScene().getWindow();
+
+        janela.setX(event.getScreenX() - xOffset);
+        janela.setY(event.getScreenY() - yOffset);
+      });
+    }
+
   } // fim do metodo initialize
 
   public static void criarCliente(String nome) {
@@ -122,24 +142,27 @@ public class clienteController implements Initializable {
     String mensagem = mensagemField.getText();
     mensagemField.clear();
 
-    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "", true);
-    conversaVBox.getChildren().add(balaoDeDialogo);
+    // HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "", true);
+    // conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
-    System.out.println("Cliente: enviando mensagem \"" + mensagem + "\"");
+    System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
     cliente.enviarMensagem(grupoSelecionado, mensagem);
   } // fim do metodo enviarMensagem
 
   public static void receberMensagem(String mensagem, String nomeRemetente, String grupo) {
 
-    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, nomeRemetente, false);
-    conversaVBox.getChildren().add(balaoDeDialogo);
+    if (grupoSelecionado == null)
+      return;
 
-    mensagem = processadorTexto.inserirFlagEscape(mensagem);
+    mensagem = processadorTexto.retirarFlagEscape(mensagem);
+    nomeRemetente = processadorTexto.retirarFlagEscape(nomeRemetente);
+    grupo = processadorTexto.retirarFlagEscape(grupo);
+    // HBox balaoDeDialogo = criarBalaoDialogo(mensagem, nomeRemetente, false);
+    // conversaVBox.getChildren().add(balaoDeDialogo);
+
     System.out
-        .println("Cliente: recebendo mensagem \"" + mensagem + "\" de " + nomeRemetente + " no grupo " + grupo + ".");
-    cliente.enviarMensagem(grupoSelecionado, mensagem);
-
+        .println("CLIENTE - recebendo mensagem \"" + mensagem + "\" de " + nomeRemetente + " no grupo " + grupo + ".");
   }
 
   public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
@@ -215,6 +238,15 @@ public class clienteController implements Initializable {
     cliente.entrarGrupo(nomeGrupoProcessado);
   } // fim do metodo entrarGrupo
 
+  public void sairGrupo(AnchorPane itemConversa) {
+    Label label = (Label) itemConversa.getChildren().get(1);
+    String nomeGrupo = label.getText();
+    System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
+    cliente.sairGrupo(nomeGrupo);
+    itemConversa.getChildren().removeAll();
+    vboxGrupos.getChildren().remove(itemConversa);
+  }
+
   public void adicionarGrupoNaTela(String nomeDoGrupo) {
     try {
       AnchorPane itemConversa = new AnchorPane();
@@ -232,7 +264,17 @@ public class clienteController implements Initializable {
       nomeConversa.setLayoutX(70);
       nomeConversa.setLayoutY(20);
 
-      itemConversa.getChildren().addAll(iconConversa, nomeConversa);
+      Button sairConversa = new Button("S");
+
+      sairConversa.setLayoutX(220);
+      sairConversa.setLayoutY(10);
+      sairConversa.setPrefSize(50, 50);
+
+      sairConversa.setOnAction(event -> {
+        sairGrupo(itemConversa);
+      });
+
+      itemConversa.getChildren().addAll(iconConversa, nomeConversa, sairConversa);
 
       itemConversa.setOnMouseClicked(null);
       itemConversa.getStyleClass().add("itemConversa");
@@ -241,14 +283,14 @@ public class clienteController implements Initializable {
       itemConversa.setMinSize(280, 70);
 
       itemConversa.setOnMouseClicked(event -> {
-        grupoSelecionado = nomeDoGrupo;
-        conversaSelecionadaLabel.setText(grupoSelecionado);
+        grupoSelecionado = processadorTexto.inserirFlagEscape(nomeDoGrupo);
+        conversaSelecionadaLabel.setText(nomeDoGrupo);
       });
 
       vboxGrupos.getChildren().add(itemConversa);
 
     } catch (Exception e) {
-      System.out.println("Erro ao carregar o visual do grupo!");
+      System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");
     }
   } // fim do metodo adicionarGrupoNaTela
 
@@ -270,7 +312,7 @@ public class clienteController implements Initializable {
    * Retorno: void
    */
   public void fecharAplicacao() {
-    System.out.println("Fechando aplicacao");
+    System.out.println("CLIENTE - Fechando aplicacao");
     Platform.exit();
     System.exit(0);
   } // fim do metodo fecharAplicacao

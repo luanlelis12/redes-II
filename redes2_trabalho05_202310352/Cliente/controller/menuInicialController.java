@@ -56,12 +56,13 @@ public class menuInicialController implements Initializable {
 
         janelaAlerta.show();
       } catch (IOException e) {
-        System.out.println("Erro ao carregar o alerta!");
+        System.out.println("CLIENTE - Erro: Nao foi possivel carregar o alerta!");
       }
       return;
     } // fim do if
 
     clienteController.criarCliente(nomeCliente);
+    System.out.println("CLIENTE - criando usuario " + nomeCliente + ".");
 
     try {
       Parent novaRaiz = FXMLLoader.load(getClass().getResource("/view/chat.fxml"));
@@ -72,14 +73,13 @@ public class menuInicialController implements Initializable {
       primaryStage.setScene(novaCena);
       primaryStage.show();
     } catch (IOException e) {
-      System.out.println("Erro ao tentar trocar de tela: " + e.getMessage());
-      e.printStackTrace();
+      System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela: ");
     } // fim do try-catch
 
   } // fim do metodo criarCliente
 
   public void fecharAplicacao() {
-    System.out.println("Fechando aplicacao");
+    System.out.println("CLIENTE - Fechando aplicacao.");
     Platform.exit();
     System.exit(0);
   } // fim do metodo fecharAplicacao
@@ -95,8 +95,7 @@ public class menuInicialController implements Initializable {
 
       popOut.show();
     } catch (IOException e) {
-      System.out.println("Erro ao tentar trocar de tela: " + e.getMessage());
-      e.printStackTrace();
+      System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela: ");
     } // fim do try-catch
 
   }

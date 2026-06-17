@@ -48,7 +48,7 @@ public class Cliente extends Thread {
           byte[] dadosEntrada = new byte[1024];
 
           DatagramPacket pacoteRecebido = new DatagramPacket(dadosEntrada, dadosEntrada.length);
-          System.out.println("O cliente esta esperando uma mensagem...");
+          System.out.println("CLIENTE - esperando uma mensagem...");
           endpointCliente.receive(pacoteRecebido);
 
           String apduRecebida = new String(pacoteRecebido.getData());
@@ -58,18 +58,25 @@ public class Cliente extends Thread {
           });
         }
       } catch (Exception e) {
-        System.out.println("ERRO: Nao foi possivel receber a mensagem!");
+        System.out.println("CLIENTE - ERRO: Nao foi possivel receber a mensagem!");
       }
     }).start();
   }
 
+  /*
+   * Metodo: entrarGrupo
+   * Funcao:
+   * Parametros:
+   * Retorno: void
+   */
   private void processarApdu(String apduRecebida) {
     String[] partes = apduRecebida.split("~~");
     String grupo = partes[1];
     String nome = partes[2];
     String mensagem = partes[3];
+    System.out.println("Mensagem recebida de " + nome + " no grupo " + grupo);
     clienteController.receberMensagem(mensagem, nome, grupo);
-  }
+  } // fim do processo
 
   /*
    * Metodo: entrarGrupo
@@ -85,13 +92,14 @@ public class Cliente extends Thread {
       ObjectOutputStream saida = new ObjectOutputStream(saida1);
 
       String apdu = new String("JOIN~~" + grupo + "~~" + nome + "\n");
-
+      
+      System.out.println("CLIENTE - Enviando APDU JOIN para o servidor");
       saida.writeObject(apdu);
       saida.flush();
       socketCliente.close();
     } catch (Exception e) {
-      System.out.println("ERRO: Nao foi possivel entrar no grupo!");
-    }
+      System.out.println("CLIENTE - ERRO: Nao foi possivel entrar no grupo!");
+    } // fim try-catch
   } // fim do metodo entrarGrupo
 
   /*
@@ -109,12 +117,13 @@ public class Cliente extends Thread {
 
       String apdu = new String("LEAVE~~" + grupo + "~~" + nome + "\n");
 
+      System.out.println("CLIENTE - Enviando APDU LEAVE para o servidor");
       saida.writeObject(apdu);
       saida.flush();
       socketCliente.close();
     } catch (Exception e) {
-      System.out.println("ERRO: Nao foi possivel sair do grupo!");
-    }
+      System.out.println("CLIENTE - ERRO: Nao foi possivel sair do grupo!");
+    } // fim try-catch
   } // fim do metodo sairGrupo
 
   /*
@@ -130,11 +139,12 @@ public class Cliente extends Thread {
       String apdu = new String("SEND~~" + grupo + "~~" + nome + "~~" + mensagem + "\n");
       dadosEnviados = apdu.getBytes();
 
+      System.out.println("CLIENTE - Enviando APDU SEND para o servidor");
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
       endpointCliente.send(datagramaEnviado);
     } catch (Exception e) {
-      System.out.println("ERRO: Nao foi possivel enviar a mensagem!");
-    }
+      System.out.println("CLIENTE - ERRO: Nao foi possivel enviar a mensagem!");
+    } // fim try-catch
   } // fim do metodo enviarMensagem
 
 }
