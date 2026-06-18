@@ -38,8 +38,8 @@ public class Servidor extends Thread {
   public Servidor() {
     try {
       ipServidor = InetAddress.getLocalHost();
-      endpointServidor = new DatagramSocket(PORTA_UDP, ipServidor);
-      System.out.println("SERVIDOR estabelecido: ip = " + ipServidor);
+      endpointServidor = new DatagramSocket(PORTA_UDP);
+      System.out.println("SERVIDOR estabelecido: ip = " + ipServidor + ".");
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel iniciar o servidor!");
     }
@@ -59,8 +59,8 @@ public class Servidor extends Thread {
             ObjectInputStream entrada;
             try {
               entrada = new ObjectInputStream(conexao.getInputStream());
-              String apduRecebida = (String) entrada.readObject();
-              System.out.println("SERVIDOR TCP - APDU recebida: " + apduRecebida);
+              String apduRecebida = ((String) entrada.readObject()).trim();
+              System.out.println("SERVIDOR TCP - APDU recebida: " + apduRecebida + ".");
               processarApdu(apduRecebida, conexao.getInetAddress());
             } catch (IOException | ClassNotFoundException e) {
               System.out.println("SERVIDOR TCP - ERRO: Nao foi possivel receber a APDU do cliente!");
@@ -81,9 +81,9 @@ public class Servidor extends Thread {
         endpointServidor.receive(pacoteRecebido);
         System.out.println("SERVIDOR UDP - recebendo pacote do ip = " + pacoteRecebido.getAddress() + ".");
         // COLOCAR UM BUFFER
-        String apduRecebida = new String(pacoteRecebido.getData());
+        String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
         new Thread(() -> {
-          System.out.println("SERVIDOR UDP - APDU recebida: " + apduRecebida);
+          System.out.println("SERVIDOR UDP - APDU recebida: " + apduRecebida + ".");
           processarApdu(apduRecebida, pacoteRecebido.getAddress());
         }).start();
       }
@@ -109,7 +109,7 @@ public class Servidor extends Thread {
           inserirNoGrupo(grupo, nome, ipCliente);
           mutex.release();
         } catch (Exception e) {
-          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU JOIN");
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU JOIN.");
         }
         break;
       case "LEAVE":
@@ -120,7 +120,7 @@ public class Servidor extends Thread {
           sairDoGrupo(grupo, nome);
           mutex.release();
         } catch (Exception e) {
-          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LEAVE");
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LEAVE.");
         }
         break;
       case "SEND":
@@ -132,7 +132,7 @@ public class Servidor extends Thread {
           enviarMensagem(mensagem, grupo, nome);
           mutex.release();
         } catch (Exception e) {
-          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND");
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
         }
         break;
       case "SENDPVT":
@@ -152,9 +152,9 @@ public class Servidor extends Thread {
       if (apdu.charAt(i) == '{') {
         i++;
       } else if (apdu.charAt(i) == '~') {
-        list.add(apdu.substring(indice, i));
+        list.add(apdu.substring(indice, i).trim());
         i++;
-        indice = i+1;
+        indice = i + 1;
       }
     }
     list.add(apdu.substring(indice, apdu.length()));
@@ -199,7 +199,7 @@ public class Servidor extends Thread {
   public void enviarMensagem(String mensagem, String nomeGrupo, String nomeUsuario) {
     ArrayList<Usuario> listaDeUsuarios = grupos.get(nomeGrupo);
     for (Usuario usuario : listaDeUsuarios) {
-      if (usuario.getNome() != nomeUsuario) {
+      if (!(usuario.getNome().equals(nomeUsuario))) {
         try {
           byte[] dadosEnviados = new byte[1024];
 
@@ -208,7 +208,8 @@ public class Servidor extends Thread {
 
           DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, usuario.getIp(),
               PORTA_UDP);
-          System.out.println("SERVIDOR UDP - enviando mensagem para usuario " + usuario.getNome());
+          System.out.println(
+              "SERVIDOR UDP - enviando mensagem para usuario " + usuario.getNome() + " ip = " + usuario.getIp() + ".");
           endpointServidor.send(datagramaEnviado);
         } catch (Exception e) {
           System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar a mensagem!");
