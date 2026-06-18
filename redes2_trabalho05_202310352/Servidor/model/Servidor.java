@@ -39,7 +39,7 @@ public class Servidor extends Thread {
     try {
       ipServidor = InetAddress.getLocalHost();
       endpointServidor = new DatagramSocket(PORTA_UDP);
-      System.out.println("SERVIDOR estabelecido: ip = " + ipServidor + ".");
+      System.out.println("SERVIDOR estabelecido: ip = " + ipServidor);
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel iniciar o servidor!");
     }

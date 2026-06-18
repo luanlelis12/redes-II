@@ -11,6 +11,7 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
@@ -63,19 +64,23 @@ public class clienteController implements Initializable {
   @FXML
   private VBox vboxGrupos;
   @FXML
-  private static VBox conversaVBox;
+  private VBox conversaVBox;
   @FXML
   private Pane barraSuperior;
 
   private double xOffset = 0;
   private double yOffset = 0;
 
+  private static clienteController instancia;
+
   private static Cliente cliente;
   private static String grupoSelecionado = null;
   private ArrayList<String> grupos = new ArrayList<>();
+  private HashMap<String, ArrayList<HBox>> historicoMensagens = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
+    instancia = this;
     System.out.println("O Controller foi carregado corretamente!");
 
     mensagemField.setOnKeyPressed((KeyEvent event) -> {
@@ -121,7 +126,7 @@ public class clienteController implements Initializable {
 
   public static void criarCliente(String nome) {
     try {
-      cliente = new Cliente(nome, "10.227.119.229");
+      cliente = new Cliente(nome, "10.227.119.185");
       cliente.start();
     } catch (Exception e) {
       System.out.println();
@@ -142,27 +147,41 @@ public class clienteController implements Initializable {
     String mensagem = mensagemField.getText();
     mensagemField.clear();
 
-    // HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "", true);
-    // conversaVBox.getChildren().add(balaoDeDialogo);
+    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
+    
+    String grupoPuro = processadorTexto.retirarFlagEscape(grupoSelecionado);
+    historicoMensagens.get(grupoPuro).add(balaoDeDialogo);
+
+    conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
     System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
     cliente.enviarMensagem(grupoSelecionado, mensagem);
-  } // fim do metodo enviarMensagem
+  }
 
   public static void receberMensagem(String mensagem, String nomeRemetente, String grupo) {
 
-    if (grupoSelecionado == null)
-      return;
+    grupo = grupo.trim();
+    mensagem = mensagem.trim();
+    nomeRemetente = nomeRemetente.trim();
 
-    mensagem = processadorTexto.retirarFlagEscape(mensagem);
-    nomeRemetente = processadorTexto.retirarFlagEscape(nomeRemetente);
-    grupo = processadorTexto.retirarFlagEscape(grupo);
-    // HBox balaoDeDialogo = criarBalaoDialogo(mensagem, nomeRemetente, false);
-    // conversaVBox.getChildren().add(balaoDeDialogo);
+    final String msgFinal = processadorTexto.retirarFlagEscape(mensagem);
+    final String nomeFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
+    final String grupoFinal = processadorTexto.retirarFlagEscape(grupo);
+
+    Platform.runLater(() -> {
+      HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
+
+      if (instancia.historicoMensagens.containsKey(grupoFinal)) {
+        instancia.historicoMensagens.get(grupoFinal).add(balaoDeDialogo);
+      }
+      if (grupoSelecionado != null && processadorTexto.retirarFlagEscape(grupoSelecionado).equals(grupoFinal)) {
+        instancia.conversaVBox.getChildren().add(balaoDeDialogo);
+      }
+    });
 
     System.out
-        .println("CLIENTE - recebendo mensagem \"" + mensagem + "\" de " + nomeRemetente + " no grupo " + grupo + ".");
+        .println("CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " no grupo " + grupoFinal + ".");
   }
 
   public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
@@ -264,6 +283,7 @@ public class clienteController implements Initializable {
     String nomeGrupo = label.getText();
     System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
     nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
+    grupos.remove(nomeGrupo);
     cliente.sairGrupo(nomeGrupo);
     itemConversa.getChildren().removeAll();
     vboxGrupos.getChildren().remove(itemConversa);
@@ -304,9 +324,17 @@ public class clienteController implements Initializable {
       itemConversa.setPrefSize(280, 70);
       itemConversa.setMinSize(280, 70);
 
+      if (!historicoMensagens.containsKey(nomeDoGrupo)) {
+        historicoMensagens.put(nomeDoGrupo, new ArrayList<HBox>());
+      }
+
       itemConversa.setOnMouseClicked(event -> {
         grupoSelecionado = processadorTexto.inserirFlagEscape(nomeDoGrupo);
         conversaSelecionadaLabel.setText(nomeDoGrupo);
+
+        conversaVBox.getChildren().clear();
+
+        conversaVBox.getChildren().addAll(historicoMensagens.get(nomeDoGrupo));
       });
 
       vboxGrupos.getChildren().add(itemConversa);

@@ -15,6 +15,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import controller.clienteController;
 
@@ -51,11 +52,11 @@ public class Cliente extends Thread {
           System.out.println("CLIENTE - esperando uma mensagem...");
           endpointCliente.receive(pacoteRecebido);
 
-          String apduRecebida = new String(pacoteRecebido.getData());
+          String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
           System.out.println("CLIENTE - Recebeu apdu " + apduRecebida);
           new Thread(() -> {
             processarApdu(apduRecebida);
-          });
+          }).start();
         }
       } catch (Exception e) {
         System.out.println("CLIENTE - ERRO: Nao foi possivel receber a mensagem!");
@@ -70,12 +71,24 @@ public class Cliente extends Thread {
    * Retorno: void
    */
   private void processarApdu(String apduRecebida) {
-    String[] partes = apduRecebida.split("~~");
-    String grupo = partes[1];
-    String nome = partes[2];
-    String mensagem = partes[3];
-    System.out.println("Mensagem recebida de " + nome + " no grupo " + grupo);
-    clienteController.receberMensagem(mensagem, nome, grupo);
+    System.out.println("oi");
+    ArrayList<String> list = new ArrayList<>();
+    int indice = 0;
+    boolean ehFlag = true;
+    for (int i = 0; i < apduRecebida.length(); i++) {
+      if (apduRecebida.charAt(i) == '{') {
+        i++;
+      } else if (apduRecebida.charAt(i) == '~') {
+        list.add(apduRecebida.substring(indice, i).trim());
+        i++;
+        indice = i + 1;
+      }
+    }
+    list.add(apduRecebida.substring(indice, apduRecebida.length()));
+    int resultSize = list.size();
+    String[] result = new String[resultSize];
+    String[] partes = list.subList(0, resultSize).toArray(result);
+    clienteController.receberMensagem(partes[3], partes[2], partes[1]);
   } // fim do processo
 
   /*
@@ -92,7 +105,7 @@ public class Cliente extends Thread {
       ObjectOutputStream saida = new ObjectOutputStream(saida1);
 
       String apdu = new String("JOIN~~" + grupo + "~~" + nome + "\n");
-      
+
       System.out.println("CLIENTE - Enviando APDU JOIN para o servidor");
       saida.writeObject(apdu);
       saida.flush();
