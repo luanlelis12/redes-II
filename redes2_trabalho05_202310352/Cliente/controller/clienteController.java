@@ -128,7 +128,6 @@ public class clienteController implements Initializable {
     }
   }
 
-
   /*
    * Metodo: enviarMensagem
    * Funcao: envia para a classe cliente a mensagem que o usuario quer enviar
@@ -233,6 +232,27 @@ public class clienteController implements Initializable {
       }
       return;
     } // fim do if
+
+    if (grupos.contains(nomeGrupo)) {
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+
+        controladorDoAlerta.setDetalhes("Voce ja esta nesse grupo.", "Voce ja esta nesse grupo.");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("Erro ao carregar o alerta!");
+      }
+      return;
+    }
 
     grupos.add(nomeGrupo);
     adicionarGrupoNaTela(nomeGrupo);
