@@ -77,8 +77,8 @@ public class clienteController implements Initializable {
   private double xOffset = 0;
   private double yOffset = 0;
 
-  private final String GRUPO = "grupo";
-  private final String PRIVADO = "priv";
+  private static final String GRUPO = "grupo";
+  private static final String PRIVADO = "priv";
 
   private static clienteController instancia;
 
@@ -200,7 +200,12 @@ public class clienteController implements Initializable {
 
     final String msgFinal = processadorTexto.retirarFlagEscape(mensagem);
     final String nomeFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
-    final String nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeConversa);
+    final String nomeConversaFinal;
+    if (tipoConversa.equals(GRUPO)) {
+      nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeConversa);
+    } else {
+      nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
+    }
 
     Platform.runLater(() -> {
       HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
