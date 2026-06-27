@@ -192,7 +192,7 @@ public class clienteController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public static void receberMensagem(String mensagem, String nomeRemetente, String nomeConversa, String tipoConversa) {
+  public static void receberMensagem(String mensagem, String nomeConversa, String nomeRemetente, String tipoConversa) {
 
     nomeConversa = nomeConversa.trim();
     mensagem = mensagem.trim();
@@ -220,7 +220,8 @@ public class clienteController implements Initializable {
 
     System.out
         .println(
-            "CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " na conversa " + nomeConversaFinal + ".");
+            "CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " na conversa " + nomeConversaFinal
+                + ".");
   }
 
   public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
