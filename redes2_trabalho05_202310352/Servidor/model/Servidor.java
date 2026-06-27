@@ -142,10 +142,10 @@ public class Servidor extends Thread {
       case "SEND":
         try {
           String grupo = partes[1];
-          String nome = partes[2];
+          String usuarioRemetente = partes[2];
           String mensagem = partes[3];
           mutex.acquire();
-          enviarMensagem(mensagem, grupo, nome);
+          enviarMensagem(mensagem, grupo, usuarioRemetente);
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
@@ -153,11 +153,11 @@ public class Servidor extends Thread {
         break;
       case "SENDPVT":
         try {
-          String usuario = partes[1];
-          String nome = partes[2];
+          String usuarioDestino = partes[1];
+          String usuarioRemetente = partes[2];
           String mensagem = partes[3];
           mutex.acquire();
-          enviarMensagem(mensagem, usuario, nome);
+          enviarMensagemPrivado(mensagem, usuarioDestino, usuarioRemetente);
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SENDPVT.");
@@ -297,12 +297,12 @@ public class Servidor extends Thread {
     }
   }
 
-  public void enviarMensagemPrivado(String mensagem, String nomeUsuarioDestino, String nomeUsuario) {
+  public void enviarMensagemPrivado(String mensagem, String nomeUsuarioDestino, String nomeUsuarioRemetente) {
     Usuario usuarioDestino = usuariosOnline.get(nomeUsuarioDestino);
     try {
       byte[] dadosEnviados = new byte[1024];
 
-      String apdu = new String("SENDPVT~~" + nomeUsuarioDestino + "~~" + nomeUsuario + "~~" + mensagem + "\n");
+      String apdu = new String("SENDPVT~~" + nomeUsuarioDestino + "~~" + nomeUsuarioRemetente + "~~" + mensagem + "\n");
       dadosEnviados = apdu.getBytes();
 
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, usuarioDestino.getIp(),
