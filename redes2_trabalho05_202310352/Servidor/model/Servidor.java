@@ -87,14 +87,25 @@ public class Servidor extends Thread {
 
         String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
 
+        // ======= INTERCEPTA O BROADCAST DE DESCOBERTA =======
+        if (apduRecebida.equals("DISCOVER")) {
+          byte[] resposta = "DISCOVER_OK".getBytes();
+          // Responde diretamente para a porta e IP de quem gritou na rede
+          DatagramPacket pacoteResposta = new DatagramPacket(resposta, resposta.length, pacoteRecebido.getAddress(),
+              pacoteRecebido.getPort());
+          endpointServidor.send(pacoteResposta);
+          continue;
+        }
+        // ====================================================
+
         new Thread(() -> {
           System.out.println("SERVIDOR UDP - APDU recebida: " + apduRecebida + ".");
           processarApdu(apduRecebida, pacoteRecebido.getAddress(), null);
         }).start();
-      }
+      } // fim do while
     } catch (Exception e) {
       System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel iniciar o socket UDP!");
-    }
+    } // fim do try-catch
   }
 
   /*
