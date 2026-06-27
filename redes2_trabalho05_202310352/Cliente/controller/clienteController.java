@@ -219,7 +219,7 @@ public class clienteController implements Initializable {
 
     Platform.runLater(() -> {
       HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
-      
+
       // Verifica quem enviou a mensagem
       if (nomeFinal.equals("SERVIDOR")) {
         balaoDeDialogo = criarAvisoSistema(msgFinal);
@@ -381,9 +381,21 @@ public class clienteController implements Initializable {
       String nomeGrupo = label.getText();
       System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
 
-      nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
-      cliente.sairGrupo(nomeGrupo);
-    } // fim do if
+      grupos.remove(nomeGrupo);
+
+      if (conversaSelecionada != null) {
+        String nomeConversaAberta = processadorTexto.retirarFlagEscape(conversaSelecionada.getKey());
+
+        if (nomeConversaAberta.equals(nomeGrupo)) {
+          conversaVBox.getChildren().clear();
+          conversaSelecionadaLabel.setText("");
+          conversaSelecionada = null;
+        }
+      }
+
+      String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
+      cliente.sairGrupo(nomeGrupoProcessado);
+    }
 
     itemConversa.getChildren().clear();
     vboxGrupos.getChildren().remove(itemConversa);
@@ -468,25 +480,32 @@ public class clienteController implements Initializable {
 
   /*
    * Metodo: criarAvisoSistema
-   * Funcao: Cria um aviso centralizado, sem bordas, para eventos de entrada e
-   * saída
+   * Funcao: Cria um aviso centralizado com estilo Retro (Arcade/Win95)
    */
   public static HBox criarAvisoSistema(String mensagem) {
-    Label textoMsg = new Label(mensagem);
+    Label textoMsg = new Label(">>> " + mensagem + " <<<");
     textoMsg.setFont(new Font("System", 12));
 
-    textoMsg.setStyle(
-        "-fx-text-fill: #555555; -fx-font-style: italic; -fx-background-color: #e8e8e8; -fx-background-radius: 10px; -fx-padding: 4px 15px;");
+    String estiloRetroAlerta = "-fx-background-color: #fdf289; " +
+        "-fx-text-fill: #000000; " +
+        "-fx-font-weight: bold; " +
+        "-fx-border-color: #000000; " +
+        "-fx-border-width: 2px; " +
+        "-fx-padding: 5px 15px; " +
+        "-fx-effect: dropshadow(three-pass-box, #000000, 0, 0, 4, 4);";
+
+    textoMsg.setStyle(estiloRetroAlerta);
     textoMsg.setWrapText(true);
     textoMsg.setMaxWidth(380);
     textoMsg.setAlignment(Pos.CENTER);
 
     HBox linha = new HBox(textoMsg);
     linha.setAlignment(Pos.CENTER);
-    linha.setPadding(new Insets(10, 15, 10, 15));
+
+    linha.setPadding(new Insets(10, 15, 15, 15));
 
     return linha;
-  } // fim do metodo criarAvisoSistema
+  }
 
   /*
    * Metodo: abrirConversa
