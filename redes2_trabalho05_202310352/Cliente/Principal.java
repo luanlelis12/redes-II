@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 
 import controller.clienteController;
 import controller.menuInicialController;
+import controller.sobreController;
 
 public class Principal extends Application {
 

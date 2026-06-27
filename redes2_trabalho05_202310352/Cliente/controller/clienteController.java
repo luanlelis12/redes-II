@@ -24,8 +24,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
@@ -38,10 +36,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -138,6 +134,12 @@ public class clienteController implements Initializable {
 
   } // fim do metodo initialize
 
+  /*
+   * Metodo: criarCliente
+   * Funcao: Cria um cliente e verifica se ele foi aprovado criar esse cliente
+   * Parametros: nome = nome do usuario, ipServidor = id o servidor
+   * Retorno: retorna se foi aprovado a criacao
+   */
   public static boolean criarCliente(String nome, String ipServidor) {
     try {
       cliente = new Cliente(nome, ipServidor);
@@ -156,7 +158,7 @@ public class clienteController implements Initializable {
       e.printStackTrace();
       return false;
     }
-  }
+  } // fim do metodo criarCliente
 
   /*
    * Metodo: enviarMensagem
@@ -166,11 +168,16 @@ public class clienteController implements Initializable {
    */
   public void enviarMensagem() {
 
+    // Impede do usuario mandar mensagem sem selecionar alguma conversa
     if (conversaSelecionada == null)
       return;
 
     String mensagem = mensagemField.getText();
     mensagemField.clear();
+
+    // Impede do usuario mandar mensagem vazia
+    if (mensagem.equals(""))
+      return;
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
 
@@ -188,8 +195,10 @@ public class clienteController implements Initializable {
 
   /*
    * Metodo: receberMensagem
-   * Funcao:
-   * Parametros:
+   * Funcao: Recebe uma mensagem e armazena na conversa correta
+   * Parametros: mensagem = mensagem recebida, nomeConversa = nome do grupo ou
+   * usuario destinario, nomeRemetente = usuario que enviou a mensagem,
+   * tipoConversa = se foi mandada para um grupo ou no privado
    * Retorno: void
    */
   public static void receberMensagem(String mensagem, String nomeConversa, String nomeRemetente, String tipoConversa) {
@@ -201,67 +210,87 @@ public class clienteController implements Initializable {
     final String msgFinal = processadorTexto.retirarFlagEscape(mensagem);
     final String nomeFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
     final String nomeConversaFinal;
-    if (tipoConversa.equals(GRUPO)) {
+
+    if (tipoConversa.equals(GRUPO)) { // verifica se eh uma mensagem de grupo ou priv e define o nome da conversa
       nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeConversa);
     } else {
       nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
-    }
+    } // fim if-else
 
     Platform.runLater(() -> {
       HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
 
       Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
 
+      // Caso ele receba a mensagem de uma pessoa que ele nao conversou ainda eh
+      // criado a conversa
       if (!instancia.historicoMensagens.containsKey(chaveRecebida)) {
         instancia.adicionarConversaNaTela(nomeConversaFinal, tipoConversa);
-      }
+      } // fim if
 
       instancia.historicoMensagens.get(chaveRecebida).add(balaoDeDialogo);
 
       if (conversaSelecionada != null && conversaSelecionada.equals(chaveRecebida)) {
         instancia.conversaVBox.getChildren().add(balaoDeDialogo);
-      }
+      } // fim if
     });
 
     System.out
         .println(
             "CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " na conversa " + nomeConversaFinal
                 + ".");
-  }
+  } // fim do metodo receberMensagem
 
+  /*
+   * Metodo: criarBalaoDialogo
+   * Funcao: Exibir o balao de dialogo com a mensagem
+   * Parametros: mensagem = mensagem recebida, nomeRemetente = usuario que enviou
+   * a mensagem,
+   * enviadaPorMim = se foi mandada por ele mesmo
+   * Retorno: void
+   */
   public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
 
     VBox balao = new VBox(5);
 
     balao.setMinWidth(200);
-    balao.setMinHeight(50);
-    balao.setMaxWidth(450);
+    balao.setMaxWidth(400);
+    balao.setPadding(new Insets(10));
 
     if (!enviadaPorMim && nomeRemetente != null && !nomeRemetente.isEmpty()) {
       Label labelNome = new Label(nomeRemetente);
-      labelNome.setStyle("-fx-font-weight: bold;");
-      labelNome.setFont(new Font("Arial", 12));
+      labelNome.setStyle("-fx-font-weight: bold; -fx-text-fill: #0000aa;");
+      labelNome.setFont(new Font("System", 13));
       balao.getChildren().add(labelNome);
-    } // fim do if
+    }
 
     Label textoMsg = new Label(mensagem);
-    textoMsg.setFont(new Font("Arial", 14));
+    textoMsg.setFont(new Font("System", 14));
     textoMsg.setWrapText(true);
+
+    textoMsg.setMaxWidth(380);
 
     balao.getChildren().add(textoMsg);
 
     HBox linha = new HBox(balao);
-    linha.setPadding(new Insets(5, 15, 5, 15));
+
+    if (enviadaPorMim) {
+      linha.setPadding(new Insets(10, 25, 10, 15));
+    } else {
+      linha.setPadding(new Insets(10, 15, 10, 25));
+    }
+
+    String estiloRetroBase = "-fx-border-color: #000000; " +
+        "-fx-border-width: 2px; " +
+        "-fx-effect: dropshadow(three-pass-box, #000000, 0, 0, 4, 4); ";
 
     if (enviadaPorMim) {
       linha.setAlignment(Pos.CENTER_RIGHT);
-      balao.setStyle(
-          "-fx-background-color: #c6e7f8;");
+      balao.setStyle(estiloRetroBase + "-fx-background-color: #c6e7f8;");
     } else {
       linha.setAlignment(Pos.CENTER_LEFT);
-      balao.setStyle(
-          "-fx-background-color: #FFFFFF;");
-    } // fim do if
+      balao.setStyle(estiloRetroBase + "-fx-background-color: #FFFFFF;");
+    }
 
     return linha;
   } // fim do metodo criarBalaoDialogo
@@ -277,6 +306,7 @@ public class clienteController implements Initializable {
     nomeGrupoField.clear();
     String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
 
+    // Alert para impedir do usuario criar grupo com nome vazio
     if (nomeGrupoProcessado == null || nomeGrupoProcessado.trim().isEmpty()) {
       try {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
@@ -295,10 +325,11 @@ public class clienteController implements Initializable {
       } catch (IOException e) {
         System.out.println("Erro ao carregar o alerta!");
         e.printStackTrace();
-      }
+      } // fim do try-catch
       return;
     } // fim do if
 
+    // Alert para impedir do usuario criar grupo com nome repetido
     if (grupos.contains(nomeGrupo)) {
       try {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
@@ -317,9 +348,9 @@ public class clienteController implements Initializable {
       } catch (IOException e) {
         System.out.println("Erro ao carregar o alerta!");
         e.printStackTrace();
-      }
+      } // fim do try-catch
       return;
-    }
+    } // fim do if
 
     try {
       cliente.entrarGrupo(nomeGrupoProcessado);
@@ -327,9 +358,15 @@ public class clienteController implements Initializable {
       adicionarConversaNaTela(nomeGrupo, GRUPO);
     } catch (Exception e) {
       e.printStackTrace();
-    }
+    } // fim do try-catch
   } // fim do metodo entrarGrupo
 
+  /*
+   * Metodo: sairGrupo
+   * Funcao: tira o usuario da conversa e tira a conversa da interface
+   * Parametros: itemConversa = AnchorPane que contem o botao do grupo
+   * Retorno: void
+   */
   public void sairGrupo(AnchorPane itemConversa) {
     Label label = (Label) itemConversa.lookup("#nomeConversa");
 
@@ -339,39 +376,41 @@ public class clienteController implements Initializable {
 
       nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
       cliente.sairGrupo(nomeGrupo);
-    }
+    } // fim do if
 
     itemConversa.getChildren().clear();
     vboxGrupos.getChildren().remove(itemConversa);
-  }
+  } // fim do metodo sairGrupo
 
+  /*
+   * Metodo: criarConversa
+   * Funcao: cria uma conversa privada com outro usuario
+   * Parametros:
+   * Retorno: void
+   */
   public void criarConversa() {
     String nome = nomeUserField.getText();
 
+    // impede de criar conversa com alguem de nome vazio
     if (nome == null || nome.trim().isEmpty())
       return;
 
     nomeUserField.clear();
     adicionarConversaNaTela(nome, PRIVADO);
-  }
+  } // fim do metodo criarConversa
 
+  /*
+   * Metodo: criarConversa
+   * Funcao: cria uma conversa privada com outro usuario
+   * Parametros:
+   * Retorno: void
+   */
   public void adicionarConversaNaTela(String nomeConversa, String tipoConversa) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/grupoButton.fxml"));
       AnchorPane itemConversa = loader.load();
 
       ImageView icone = (ImageView) itemConversa.lookup("#iconeConversa");
-
-      if (tipoConversa.equals(PRIVADO)) {
-        String caminhoImagem = "/view/img/iconPriv.png";
-
-        try {
-          Image novaImagem = new Image(getClass().getResourceAsStream(caminhoImagem));
-          icone.setImage(novaImagem);
-        } catch (Exception e) {
-          System.out.println("Aviso: Imagem não encontrada, mantendo a foto padrão.");
-        }
-      }
 
       Label labelNome = (Label) itemConversa.lookup("#nomeConversa");
       if (labelNome != null) {
@@ -383,6 +422,19 @@ public class clienteController implements Initializable {
         sairConversa.setOnAction(event -> {
           sairGrupo(itemConversa);
         });
+      }
+
+      if (tipoConversa.equals(PRIVADO)) {
+        String caminhoImagem = "/view/img/iconPriv.png";
+
+        try {
+          Image novaImagem = new Image(getClass().getResourceAsStream(caminhoImagem));
+          icone.setImage(novaImagem);
+        } catch (Exception e) {
+          System.out.println("Aviso: Imagem não encontrada, mantendo a foto padrão.");
+        }
+
+        itemConversa.getChildren().remove(sairConversa);
       }
 
       Pair<String, String> chaveConversa = new Pair<>(nomeConversa, tipoConversa);

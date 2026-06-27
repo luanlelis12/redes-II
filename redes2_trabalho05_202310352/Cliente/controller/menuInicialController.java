@@ -21,6 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -29,11 +30,30 @@ import util.processadorTexto;
 public class menuInicialController implements Initializable {
 
   @FXML
-  TextField nomeTextField;
+  private TextField nomeTextField;
+  @FXML
+  private Pane barraSuperior;
+
+  private double xOffset = 0;
+  private double yOffset = 0;
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O Controller foi carregado corretamente!");
+
+    if (barraSuperior != null) {
+      barraSuperior.setOnMousePressed(event -> {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
+      });
+
+      barraSuperior.setOnMouseDragged(event -> {
+        Stage janela = (Stage) barraSuperior.getScene().getWindow();
+
+        janela.setX(event.getScreenX() - xOffset);
+        janela.setY(event.getScreenY() - yOffset);
+      });
+    } // fim do if
   }
 
   /*
@@ -138,20 +158,22 @@ public class menuInicialController implements Initializable {
 
   public void abrirSobre(ActionEvent event) {
     try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("view/menuInicial.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/sobre.fxml"));
       Parent root = loader.load();
 
-      Stage popOut = new Stage();
+      Stage janelaSobre = new Stage();
+      janelaSobre.setScene(new Scene(root));
 
-      popOut.setScene(new Scene(root));
+      janelaSobre.initStyle(StageStyle.UNDECORATED);
 
-      popOut.show();
+      janelaSobre.initModality(Modality.APPLICATION_MODAL);
+
+      janelaSobre.show();
     } catch (IOException e) {
-      System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela: ");
+      System.out.println("CLIENTE - Erro: Nao foi possivel carregar a tela Sobre: ");
       e.printStackTrace();
     } // fim do try-catch
-
-  }
+  } // fim do metodo abrirSobre
 
   /*
    * Metodo: descobrirServidor
@@ -183,7 +205,7 @@ public class menuInicialController implements Initializable {
         return ipEncontrado;
       }
     } catch (Exception e) {
-      System.out.println("CLIENTE - Servidor não encontrado (Timeout).");
+      System.out.println("CLIENTE - Servidor nao encontrado (Timeout).");
     }
     return null;
   }
