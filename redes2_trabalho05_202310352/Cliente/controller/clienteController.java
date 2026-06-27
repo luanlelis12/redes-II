@@ -147,6 +147,8 @@ public class clienteController implements Initializable {
         cliente.start(); // Só liga a Thread de escuta se o nome for aceite!
         return true;
       } else {
+        cliente.desligarCliente();
+        System.out.println("CLIENTE - Login desaprovado desligando conexao.");
         return false;
       }
 

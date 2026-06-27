@@ -58,6 +58,10 @@ public class Cliente extends Thread {
           endpointCliente.receive(pacoteRecebido);
 
           String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
+          
+          if (apduRecebida == "DISCOVER")
+            continue;
+          
           System.out.println("CLIENTE - Recebeu apdu " + apduRecebida);
           new Thread(() -> {
             processarApdu(apduRecebida);
@@ -257,6 +261,10 @@ public class Cliente extends Thread {
       System.out.println("CLIENTE - ERRO: Nao foi possivel fazer logout!");
       e.printStackTrace();
     }
+  }
+
+  public void desligarCliente() {
+    endpointCliente.close();
   }
 
 }
