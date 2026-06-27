@@ -43,6 +43,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Pair;
 import model.Cliente;
+import model.Conversa;
 import util.processadorTexto;
 
 public class clienteController implements Initializable {
@@ -79,9 +80,9 @@ public class clienteController implements Initializable {
   private static clienteController instancia;
 
   private static Cliente cliente;
+
   private static Pair<String, String> conversaSelecionada = null; // <nomeDaConversa,tipoDeConversa>
-  private ArrayList<String> grupos = new ArrayList<>();
-  private HashMap<Pair<String, String>, ArrayList<HBox>> historicoMensagens = new HashMap<>();
+  private HashMap<Pair<String, String>, Conversa> listaConversas = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -181,7 +182,7 @@ public class clienteController implements Initializable {
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
 
-    historicoMensagens.get(conversaSelecionada).add(balaoDeDialogo);
+    listaConversas.get(conversaSelecionada).adicionarMensagem(balaoDeDialogo);
     conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
@@ -228,14 +229,25 @@ public class clienteController implements Initializable {
       }
 
       Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
+      Conversa conversa = instancia.listaConversas.get(chaveRecebida);
 
-      // Caso ele receba a mensagem de uma pessoa que ele nao conversou ainda eh
-      // criado a conversa
-      if (!instancia.historicoMensagens.containsKey(chaveRecebida)) {
+      if (conversaSelecionada == null || !conversaSelecionada.equals(chaveRecebida)) {
+
+        // Pega o numero atual de notifiacoes
+        int contagemAtual = conversa.getNotificacoes();
+
+        // Adiciona +1 nas notificacoes
+        conversa.setNotificacoes(contagemAtual+1);;
+
+        System.out
+            .println("CLIENTE - " + nomeConversaFinal + " tem " + (contagemAtual + 1) + " novas mensagens.");
+      }
+      
+      if (!instancia.listaConversas.containsKey(chaveRecebida)) {
         instancia.adicionarConversaNaTela(nomeConversaFinal, tipoConversa);
       } // fim if
 
-      instancia.historicoMensagens.get(chaveRecebida).add(balaoDeDialogo);
+      conversa.adicionarMensagem(balaoDeDialogo);
 
       if (conversaSelecionada != null && conversaSelecionada.equals(chaveRecebida)) {
         instancia.conversaVBox.getChildren().add(balaoDeDialogo);
@@ -336,8 +348,10 @@ public class clienteController implements Initializable {
       return;
     } // fim do if
 
+    Pair<String, String> grupo = new Pair<>(nomeGrupo, GRUPO);
+
     // Alert para impedir do usuario criar grupo com nome repetido
-    if (grupos.contains(nomeGrupo)) {
+    if (listaConversas.containsKey(grupo)) {
       try {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
         Parent root = loader.load();
@@ -361,7 +375,7 @@ public class clienteController implements Initializable {
 
     try {
       cliente.entrarGrupo(nomeGrupoProcessado);
-      grupos.add(nomeGrupo);
+      listaConversas.put(grupo, new Conversa(nomeGrupo, GRUPO));
       adicionarConversaNaTela(nomeGrupo, GRUPO);
     } catch (Exception e) {
       e.printStackTrace();
@@ -380,8 +394,9 @@ public class clienteController implements Initializable {
     if (label != null) {
       String nomeGrupo = label.getText();
       System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
+      Pair<String,String> grupo = new Pair<String,String>(nomeGrupo, GRUPO);
 
-      grupos.remove(nomeGrupo);
+      listaConversas.remove(grupo);
 
       if (conversaSelecionada != null) {
         String nomeConversaAberta = processadorTexto.retirarFlagEscape(conversaSelecionada.getKey());
@@ -458,8 +473,8 @@ public class clienteController implements Initializable {
 
       Pair<String, String> chaveConversa = new Pair<>(nomeConversa, tipoConversa);
 
-      if (!historicoMensagens.containsKey(chaveConversa)) {
-        historicoMensagens.put(chaveConversa, new ArrayList<HBox>());
+      if (!listaConversas.containsKey(chaveConversa)) {
+        listaConversas.put(chaveConversa, new Conversa(nomeConversa, tipoConversa));
       }
 
       itemConversa.setOnMouseClicked(event -> {
@@ -514,12 +529,15 @@ public class clienteController implements Initializable {
    * Retorno: void
    */
   public void abrirConversa(String nomeConversa, String tipoConversa) {
-    conversaSelecionada = new Pair<>(processadorTexto.inserirFlagEscape(nomeConversa), tipoConversa);
+    conversaSelecionada = new Pair<>(nomeConversa, tipoConversa);
     conversaSelecionadaLabel.setText(nomeConversa);
+
+    // Zera o contador de notificações desta conversa na memória
+    listaConversas.get(conversaSelecionada).setNotificacoes(0);
+    System.out.println("Lidas as mensagens de: " + nomeConversa);
 
     // Usa o Pair inteiro para pescar as mensagens!
     conversaVBox.getChildren().clear();
-    conversaVBox.getChildren().addAll(historicoMensagens.get(conversaSelecionada));
   } // fim do metodo abrirConversa
 
   /*
@@ -544,13 +562,14 @@ public class clienteController implements Initializable {
 
     if (cliente != null) {
 
-      for (String nomeGrupo : grupos) {
-        System.out.println("CLIENTE - Desconectando do grupo: " + nomeGrupo);
 
-        String grupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
+      listaConversas.forEach((chave, valor) -> {
+        System.out.println("CLIENTE - Desconectando do grupo: " + valor.getNome());
+
+        String grupoProcessado = processadorTexto.inserirFlagEscape(valor.getNome());
 
         cliente.sairGrupo(grupoProcessado);
-      }
+      });
       cliente.fazerLogout();
 
       Platform.exit();

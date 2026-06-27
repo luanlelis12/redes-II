@@ -18,12 +18,36 @@
   -fx-background-image: url("img/buttonFechar.png");
 }
 
+.buttonFechar:hover {
+  -fx-background-image: url("img/buttonFecharHover.png");
+}
+
+.buttonFechar:pressed {
+  -fx-background-image: url("img/buttonFecharPressed.png");
+}
+
 .buttonFecharChat {
   -fx-background-image: url("img/buttonClose.png");
 }
 
+.buttonFecharChat:hover {
+  -fx-background-image: url("img/buttonCloseHover.png");
+}
+
+.buttonFecharChat:pressed {
+  -fx-background-image: url("img/buttonClosePressed.png");
+}
+
 .buttonMinimizar {
   -fx-background-image: url("img/buttonMinimizar.png");
+}
+
+.buttonMinimizar:hover {
+  -fx-background-image: url("img/buttonMinimizarHover.png");
+}
+
+.buttonMinimizar:pressed {
+  -fx-background-image: url("img/buttonMinimizarPressed.png");
 }
 
 .buttonEnviar {
@@ -34,93 +58,69 @@
   -fx-background-image: url("img/buttonEnviarDes.png");
 }
 
-.buttonInfo {
-  -fx-background-image: url("img/buttonInfo.png");
-}
-
-.buttonIniciar {
-  -fx-background-image: url("img/buttonIniciar.png");
-}
-
-.buttonAlert {
-  -fx-background-image: url("img/buttonAlert.png");
-}
-
-.buttonSair {
-  -fx-background-image: url("img/buttonSair.png");
-}
-
-.buttonGrupo {
-  -fx-background-image: url("img/grupoButton.png");
-}
-
-.buttonFechar:hover {
-  -fx-background-image: url("img/buttonFecharHover.png");
-}
-
-.buttonInfo:hover {
-  -fx-background-image: url("img/buttonInfoHover.png");
-}
-
-.buttonIniciar:hover {
-  -fx-background-image: url("img/buttonIniciarHover.png");
-}
-
-.buttonFecharChat:hover {
-  -fx-background-image: url("img/buttonCloseHover.png");
-}
-
-.buttonMinimizar:hover {
-  -fx-background-image: url("img/buttonMinimizarHover.png");
-}
-
 .buttonEnviar:hover {
   -fx-background-image: url("img/buttonEnviarHover.png");
-}
-
-.buttonAlert:hover {
-  -fx-background-image: url("img/buttonAlertHover.png");
-}
-
-.buttonSair:hover {
-  -fx-background-image: url("img/buttonSairHover.png");
-}
-
-.buttonGrupo:hover {
-  -fx-background-image: url("img/grupoButtonHover.png");
-  -fx-cursor: hand;
-}
-
-.buttonFechar:pressed {
-  -fx-background-image: url("img/buttonFecharPressed.png");
-}
-
-.buttonInfo:pressed {
-  -fx-background-image: url("img/buttonInfoPressed.png");
-}
-
-.buttonIniciar:pressed {
-  -fx-background-image: url("img/buttonIniciarPressed.png");
-}
-
-.buttonFecharChat:pressed {
-  -fx-background-image: url("img/buttonClosePressed.png");
-}
-
-.buttonMinimizar:pressed {
-  -fx-background-image: url("img/buttonMinimizarPressed.png");
 }
 
 .buttonEnviar:pressed {
   -fx-background-image: url("img/buttonEnviarPressed.png");
 }
 
+.buttonInfo {
+  -fx-background-image: url("img/buttonInfo.png");
+}
+
+.buttonInfo:hover {
+  -fx-background-image: url("img/buttonInfoHover.png");
+}
+
+.buttonInfo:pressed {
+  -fx-background-image: url("img/buttonInfoPressed.png");
+}
+
+.buttonIniciar {
+  -fx-background-image: url("img/buttonIniciar.png");
+}
+
+.buttonIniciar:hover {
+  -fx-background-image: url("img/buttonIniciarHover.png");
+}
+
+.buttonIniciar:pressed {
+  -fx-background-image: url("img/buttonIniciarPressed.png");
+}
+
+.buttonAlert {
+  -fx-background-image: url("img/buttonAlert.png");
+}
+
+.buttonAlert:hover {
+  -fx-background-image: url("img/buttonAlertHover.png");
+}
+
 .buttonAlert:pressed {
   -fx-background-image: url("img/buttonAlertPressed.png");
 }
 
+.buttonSair {
+  -fx-background-image: url("img/buttonSair.png");
+}
+
+.buttonSair:hover {
+  -fx-background-image: url("img/buttonSairHover.png");
+}
+
 .buttonSair:pressed {
   -fx-background-image: url("img/buttonSairPressed.png");
+}
+
+.buttonGrupo {
+  -fx-background-image: url("img/grupoButton.png");
+}
+
+.buttonGrupo:hover {
+  -fx-background-image: url("img/grupoButtonHover.png");
+  -fx-cursor: hand;
 }
 
 .buttonGrupo:pressed {
@@ -141,4 +141,8 @@
 
 .balaoDeDialogo {
   -fx-background-color: #2731a5;
+}
+
+.notificacaoLabel {
+  -fx-background-color: #f5e55a;
 }

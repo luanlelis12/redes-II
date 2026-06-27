@@ -1,0 +1,71 @@
+/* ***************************************************************
+* Autor............: Luan Alves Lelis Costa
+* Matricula........: 202310352
+* Inicio...........: 27/06/2026
+* Ultima alteracao.: 
+* Nome.............: Conversa.java
+* Funcao...........: 
+*******************************************************************/
+
+package model;
+
+import javafx.scene.layout.HBox;
+import java.util.ArrayList;
+
+public class Conversa {
+  private String nome;
+  private String tipo; // "grupo" ou "priv"
+  private ArrayList<HBox> historico;
+  private int notificacoes;
+
+  public Conversa(String nome, String tipo) {
+    this.nome = nome;
+    this.tipo = tipo;
+    this.historico = new ArrayList<>();
+    this.notificacoes = 0;
+  }
+
+  public void adicionarMensagem(HBox balao) {
+    this.historico.add(balao);
+  }
+
+  public void novaNotificacao() {
+    this.notificacoes++;
+  }
+
+  public void lerNotificacoes() {
+    this.notificacoes = 0;
+  }
+
+  public ArrayList<HBox> getHistorico() {
+    return historico;
+  }
+
+  public int getNotificacoes() {
+    return notificacoes;
+  }
+
+  public String getNome() {
+    return nome;
+  }
+
+  public String getTipo() {
+    return tipo;
+  }
+
+  public void setNome(String nome) {
+    this.nome = nome;
+  }
+
+  public void setTipo(String tipo) {
+    this.tipo = tipo;
+  }
+
+  public void setHistorico(ArrayList<HBox> historico) {
+    this.historico = historico;
+  }
+
+  public void setNotificacoes(int notificacoes) {
+    this.notificacoes = notificacoes;
+  }
+}

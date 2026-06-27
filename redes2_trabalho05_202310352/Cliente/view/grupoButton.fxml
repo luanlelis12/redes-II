@@ -20,5 +20,6 @@
             <Font size="18.0" />
          </font>
       </Label>
+      <Label fx:id="notificacaoLabel" layoutX="48.0" layoutY="10.0" prefHeight="20.0" prefWidth="20.0" styleClass="notificacaoLabel" textFill="WHITE" />
    </children>
 </AnchorPane>
