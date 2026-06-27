@@ -33,6 +33,7 @@ public class Principal extends Application {
     primaryStage.setScene(new Scene(root));
 
     primaryStage.setOnCloseRequest(evento -> {
+      
       Platform.exit();
       System.exit(0);
     });

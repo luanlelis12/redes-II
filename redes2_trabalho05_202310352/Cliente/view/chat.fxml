@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -26,15 +27,25 @@
                         </AnchorPane>
                     </content>
                   </ScrollPane>
-                  <TextField fx:id="nomeGrupoField" maxWidth="-Infinity" prefWidth="280.0" />
-                  <Button mnemonicParsing="false" onAction="#entrarGrupo" prefWidth="280.0" text="Entrar grupo" />
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="nomeGrupoField" maxWidth="-Infinity" prefWidth="280.0" />
+                        <Button mnemonicParsing="false" onAction="#entrarGrupo" prefWidth="280.0" text="Entrar grupo" />
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="nomeUserField" maxWidth="-Infinity" prefWidth="280.0" />
+                        <Button mnemonicParsing="false" onAction="#criarConversa" prefWidth="280.0" text="Criar Conversa" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>
       </AnchorPane>
       <AnchorPane layoutX="360.0" prefHeight="670.0" prefWidth="960.0" styleClass="chat">
          <children>
-            <ScrollPane fitToWidth="true" layoutX="40.0" layoutY="90.0" prefHeight="400.0" prefWidth="780.0">
+            <ScrollPane fx:id="conversaScrollPane" fitToWidth="true" layoutX="40.0" layoutY="90.0" prefHeight="400.0" prefWidth="780.0">
               <content>
                 <AnchorPane maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefWidth="790.0">
                      <children>
@@ -47,7 +58,7 @@
                </padding>
             </ScrollPane>
             <Button layoutX="910.0" layoutY="10.0" mnemonicParsing="false" onAction="#fecharAplicacao" prefHeight="40.0" prefWidth="40.0" styleClass="buttonFecharChat" />
-            <Button layoutX="860.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#minimizarTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonMinimizar" />
+            <Button layoutX="860.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#minimizarTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonMinimizar" />
             <Button fx:id="enviarButton" layoutX="820.0" layoutY="550.0" mnemonicParsing="false" onAction="#enviarMensagem" prefHeight="80.0" prefWidth="120.0" styleClass="buttonEnviarDes" />
             <TextArea fx:id="mensagemField" layoutX="40.0" layoutY="560.0" maxWidth="770.0" prefHeight="70.0" prefWidth="770.0" wrapText="true" />
             <Label fx:id="conversaSelecionadaLabel" layoutX="100.0" layoutY="10.0" maxHeight="40.0" prefHeight="40.0" textFill="WHITE">

@@ -57,11 +57,34 @@ public class menuInicialController implements Initializable {
         janelaAlerta.show();
       } catch (IOException e) {
         System.out.println("CLIENTE - Erro: Nao foi possivel carregar o alerta!");
+        e.printStackTrace();
       }
       return;
     } // fim do if
 
-    clienteController.criarCliente(nomeCliente);
+    boolean sucesso = clienteController.criarCliente(nomeCliente);
+
+    if (!sucesso) {
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+        controladorDoAlerta.setDetalhes("NOME EM USO", "Este nome ja esta sendo utilizado no servidor.");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("CLIENTE - Erro ao abrir alerta!");
+        e.printStackTrace();
+      }
+
+      return;
+    }
+
     System.out.println("CLIENTE - criando usuario " + nomeCliente + ".");
 
     try {
@@ -73,7 +96,8 @@ public class menuInicialController implements Initializable {
       primaryStage.setScene(novaCena);
       primaryStage.show();
     } catch (IOException e) {
-      System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela: ");
+      System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela");
+      e.printStackTrace();
     } // fim do try-catch
 
   } // fim do metodo criarCliente
@@ -96,6 +120,7 @@ public class menuInicialController implements Initializable {
       popOut.show();
     } catch (IOException e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel trocar de tela: ");
+      e.printStackTrace();
     } // fim do try-catch
 
   }

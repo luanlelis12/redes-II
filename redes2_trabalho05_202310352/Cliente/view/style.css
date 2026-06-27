@@ -46,6 +46,14 @@
   -fx-background-image: url("img/buttonAlert.png");
 }
 
+.buttonSair {
+  -fx-background-image: url("img/buttonSair.png");
+}
+
+.buttonGrupo {
+  -fx-background-image: url("img/grupoButton.png");
+}
+
 .buttonFechar:hover {
   -fx-background-image: url("img/buttonFecharHover.png");
 }
@@ -74,6 +82,15 @@
   -fx-background-image: url("img/buttonAlertHover.png");
 }
 
+.buttonSair:hover {
+  -fx-background-image: url("img/buttonSairHover.png");
+}
+
+.buttonGrupo:hover {
+  -fx-background-image: url("img/grupoButtonHover.png");
+  -fx-cursor: hand;
+}
+
 .buttonFechar:pressed {
   -fx-background-image: url("img/buttonFecharPressed.png");
 }
@@ -100,6 +117,14 @@
 
 .buttonAlert:pressed {
   -fx-background-image: url("img/buttonAlertPressed.png");
+}
+
+.buttonSair:pressed {
+  -fx-background-image: url("img/buttonSairPressed.png");
+}
+
+.buttonGrupo:pressed {
+  -fx-background-image: url("img/grupoButtonPressed.png");
 }
 
 .chat {

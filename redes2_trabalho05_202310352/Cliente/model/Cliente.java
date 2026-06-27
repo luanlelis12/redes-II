@@ -9,6 +9,7 @@
 
 package model;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -38,6 +39,7 @@ public class Cliente extends Thread {
       System.out.println("CLIENTE estabelecido: nome = " + nome + " / ip = " + ipCliente);
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel inicializar o cliente");
+      e.printStackTrace();
     }
   }
 
@@ -60,6 +62,7 @@ public class Cliente extends Thread {
         }
       } catch (Exception e) {
         System.out.println("CLIENTE - ERRO: Nao foi possivel receber a mensagem!");
+        e.printStackTrace();
       }
     }).start();
   }
@@ -112,6 +115,7 @@ public class Cliente extends Thread {
       socketCliente.close();
     } catch (Exception e) {
       System.out.println("CLIENTE - ERRO: Nao foi possivel entrar no grupo!");
+      e.printStackTrace();
     } // fim try-catch
   } // fim do metodo entrarGrupo
 
@@ -136,8 +140,31 @@ public class Cliente extends Thread {
       socketCliente.close();
     } catch (Exception e) {
       System.out.println("CLIENTE - ERRO: Nao foi possivel sair do grupo!");
+      e.printStackTrace();
     } // fim try-catch
   } // fim do metodo sairGrupo
+
+  /*
+   * Metodo: enviarMensagemPrivado
+   * Funcao:
+   * Parametros:
+   * Retorno: void
+   */
+  public void enviarMensagemPrivado(String usuario, String mensagem) {
+    try {
+      byte[] dadosEnviados = new byte[1024];
+
+      String apdu = new String("SENDPVT~~" + usuario + "~~" + nome + "~~" + mensagem + "\n");
+      dadosEnviados = apdu.getBytes();
+
+      System.out.println("CLIENTE - Enviando APDU SENDPVT para o servidor");
+      DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
+      endpointCliente.send(datagramaEnviado);
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Nao foi possivel enviar a mensagem no privado!");
+      e.printStackTrace();
+    } // fim try-catch
+  } // fim do metodo enviarMensagemPrivado
 
   /*
    * Metodo: enviarMensagem
@@ -157,7 +184,51 @@ public class Cliente extends Thread {
       endpointCliente.send(datagramaEnviado);
     } catch (Exception e) {
       System.out.println("CLIENTE - ERRO: Nao foi possivel enviar a mensagem!");
+      e.printStackTrace();
     } // fim try-catch
   } // fim do metodo enviarMensagem
+
+  /*
+   * Metodo: fazerLogin
+   * Funcao: Conecta via TCP e pergunta se o nome ja esta em uso
+   */
+  public boolean fazerLogin() {
+    try {
+      Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
+
+      // Cria a saida primeiro
+      ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
+      saida.flush();
+      ObjectInputStream entrada = new ObjectInputStream(socketCliente.getInputStream());
+
+      // Envia a APDU de checagem
+      saida.writeObject("LOGIN~~" + this.nome);
+      saida.flush();
+
+      // Fica travado aqui esperando o servidor responder (LOGIN_OK ou LOGIN_ERROR)
+      String resposta = (String) entrada.readObject();
+      socketCliente.close();
+
+      return resposta.equals("LOGIN_OK");
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Nao foi possivel comunicar com o servidor!");
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  // Já aproveite e crie o método de Logout para enviar quando a aplicação fechar!
+  public void fazerLogout() {
+    try {
+      Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
+      ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
+      saida.writeObject("LOGOUT~~" + this.nome);
+      saida.flush();
+      socketCliente.close();
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Nao foi possivel fazer logout!");
+      e.printStackTrace();
+    }
+  }
 
 }

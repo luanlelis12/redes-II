@@ -30,6 +30,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -67,9 +68,16 @@ public class clienteController implements Initializable {
   private VBox conversaVBox;
   @FXML
   private Pane barraSuperior;
+  @FXML
+  private ScrollPane conversaScrollPane;
+  @FXML
+  private TextField nomeUserField;
 
   private double xOffset = 0;
   private double yOffset = 0;
+
+  private final String GRUPO = "grupo";
+  private final String PRIVADO = "priv";
 
   private static clienteController instancia;
 
@@ -93,6 +101,11 @@ public class clienteController implements Initializable {
           mensagemField.clear();
         } // fim do if
       } // fim do if
+    });
+
+    conversaVBox.heightProperty().addListener((observable, oldValue, newValue) -> {
+      conversaScrollPane.layout();
+      conversaScrollPane.setVvalue(1.0d);
     });
 
     mensagemField.textProperty().addListener((observable, valorAntigo, valorNovo) -> {
@@ -124,13 +137,22 @@ public class clienteController implements Initializable {
 
   } // fim do metodo initialize
 
-  public static void criarCliente(String nome) {
+  public static boolean criarCliente(String nome) {
     try {
-      cliente = new Cliente(nome, "10.227.119.185");
-      cliente.start();
+      cliente = new Cliente(nome, "10.102.166.110");
+      boolean aprovado = cliente.fazerLogin();
+
+      if (aprovado) {
+        cliente.start(); // Só liga a Thread de escuta se o nome for aceite!
+        return true;
+      } else {
+        return false;
+      }
+
     } catch (Exception e) {
-      System.out.println();
+      e.printStackTrace();
     }
+    return false;
   }
 
   /*
@@ -139,7 +161,7 @@ public class clienteController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public void enviarMensagem() {
+  public void enviarMensagem(String tipoConversa) {
 
     if (grupoSelecionado == null)
       return;
@@ -148,7 +170,6 @@ public class clienteController implements Initializable {
     mensagemField.clear();
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
-    
     String grupoPuro = processadorTexto.retirarFlagEscape(grupoSelecionado);
     historicoMensagens.get(grupoPuro).add(balaoDeDialogo);
 
@@ -156,7 +177,11 @@ public class clienteController implements Initializable {
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
     System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
-    cliente.enviarMensagem(grupoSelecionado, mensagem);
+    if (tipoConversa.equals(GRUPO)) {
+      cliente.enviarMensagem(grupoSelecionado, mensagem);
+    } else if (tipoConversa.equals(PRIVADO)) {
+      cliente.enviarMensagemPrivado(grupoSelecionado, mensagem);
+    }
   }
 
   public static void receberMensagem(String mensagem, String nomeRemetente, String grupo) {
@@ -229,6 +254,7 @@ public class clienteController implements Initializable {
    */
   public void entrarGrupo() {
     String nomeGrupo = nomeGrupoField.getText();
+    nomeGrupoField.clear();
     String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
 
     if (nomeGrupoProcessado == null || nomeGrupoProcessado.trim().isEmpty()) {
@@ -248,6 +274,7 @@ public class clienteController implements Initializable {
         janelaAlerta.show();
       } catch (IOException e) {
         System.out.println("Erro ao carregar o alerta!");
+        e.printStackTrace();
       }
       return;
     } // fim do if
@@ -269,80 +296,105 @@ public class clienteController implements Initializable {
         janelaAlerta.show();
       } catch (IOException e) {
         System.out.println("Erro ao carregar o alerta!");
+        e.printStackTrace();
       }
       return;
     }
 
-    grupos.add(nomeGrupo);
-    adicionarGrupoNaTela(nomeGrupo);
-    cliente.entrarGrupo(nomeGrupoProcessado);
+    try {
+      cliente.entrarGrupo(nomeGrupoProcessado);
+      grupos.add(nomeGrupo);
+      adicionarConversaNaTela(nomeGrupo, GRUPO);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   } // fim do metodo entrarGrupo
 
   public void sairGrupo(AnchorPane itemConversa) {
-    Label label = (Label) itemConversa.getChildren().get(1);
-    String nomeGrupo = label.getText();
-    System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
-    nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
-    grupos.remove(nomeGrupo);
-    cliente.sairGrupo(nomeGrupo);
-    itemConversa.getChildren().removeAll();
+    Label label = (Label) itemConversa.lookup("#nomeConversa");
+
+    if (label != null) {
+      String nomeGrupo = label.getText();
+      System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
+
+      nomeGrupo = processadorTexto.inserirFlagEscape(nomeGrupo);
+      cliente.sairGrupo(nomeGrupo);
+    }
+
+    itemConversa.getChildren().clear();
     vboxGrupos.getChildren().remove(itemConversa);
   }
 
-  public void adicionarGrupoNaTela(String nomeDoGrupo) {
+  public void criarConversa() {
+    String nome = nomeUserField.getText();
+    nomeGrupoField.clear();
+    adicionarConversaNaTela(nome, PRIVADO);
+  }
+
+  public void adicionarConversaNaTela(String nomeConversa, String tipoConversa) {
     try {
-      AnchorPane itemConversa = new AnchorPane();
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/grupoButton.fxml"));
+      AnchorPane itemConversa = loader.load();
 
-      // Image icon = new Image("");
-      ImageView iconConversa = new ImageView();
+      ImageView icone = (ImageView) itemConversa.lookup("#iconeConversa");
 
-      iconConversa.setLayoutX(10);
-      iconConversa.setLayoutY(10);
-      iconConversa.setFitHeight(50);
-      iconConversa.setFitWidth(50);
+      if (tipoConversa.equals(PRIVADO)) {
+        String caminhoImagem = "/view/img/iconPriv.png";
 
-      Label nomeConversa = new Label(nomeDoGrupo);
-
-      nomeConversa.setLayoutX(70);
-      nomeConversa.setLayoutY(20);
-
-      Button sairConversa = new Button("S");
-
-      sairConversa.setLayoutX(220);
-      sairConversa.setLayoutY(10);
-      sairConversa.setPrefSize(50, 50);
-
-      sairConversa.setOnAction(event -> {
-        sairGrupo(itemConversa);
-      });
-
-      itemConversa.getChildren().addAll(iconConversa, nomeConversa, sairConversa);
-
-      itemConversa.setOnMouseClicked(null);
-      itemConversa.getStyleClass().add("itemConversa");
-
-      itemConversa.setPrefSize(280, 70);
-      itemConversa.setMinSize(280, 70);
-
-      if (!historicoMensagens.containsKey(nomeDoGrupo)) {
-        historicoMensagens.put(nomeDoGrupo, new ArrayList<HBox>());
+        try {
+          Image novaImagem = new Image(getClass().getResourceAsStream(caminhoImagem));
+          icone.setImage(novaImagem);
+        } catch (Exception e) {
+          System.out.println("Aviso: Imagem não encontrada, mantendo a foto padrão.");
+        }
       }
 
+      Label labelNome = (Label) itemConversa.lookup("#nomeConversa");
+      if (labelNome != null) {
+        labelNome.setText(nomeConversa);
+      }
+
+      Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
+      if (sairConversa != null) {
+        sairConversa.setOnAction(event -> {
+          sairGrupo(itemConversa);
+        });
+      }
+
+      if (!historicoMensagens.containsKey(nomeConversa)) {
+        historicoMensagens.put(nomeConversa, new ArrayList<HBox>());
+      }
+      
       itemConversa.setOnMouseClicked(event -> {
-        grupoSelecionado = processadorTexto.inserirFlagEscape(nomeDoGrupo);
-        conversaSelecionadaLabel.setText(nomeDoGrupo);
-
-        conversaVBox.getChildren().clear();
-
-        conversaVBox.getChildren().addAll(historicoMensagens.get(nomeDoGrupo));
+        abrirConversa(nomeConversa);
       });
 
       vboxGrupos.getChildren().add(itemConversa);
 
-    } catch (Exception e) {
+      abrirConversa(nomeConversa);
+
+    } catch (
+
+    Exception e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");
+      e.printStackTrace();
     }
-  } // fim do metodo adicionarGrupoNaTela
+  } // fim do metodo adicionarConversaNaTela
+
+  /*
+   * Metodo: abrirConversa
+   * Funcao:
+   * Parametros:
+   * Retorno: void
+   */
+  public void abrirConversa(String nomeDoGrupo) {
+    grupoSelecionado = processadorTexto.inserirFlagEscape(nomeDoGrupo);
+    conversaSelecionadaLabel.setText(nomeDoGrupo);
+
+    // Limpa a tela e carrega o historico do grupo
+    conversaVBox.getChildren().clear();
+    conversaVBox.getChildren().addAll(historicoMensagens.get(nomeDoGrupo));
+  } // fim do metodo abrirConversa
 
   /*
    * Metodo: selecionarGrupo
@@ -362,8 +414,28 @@ public class clienteController implements Initializable {
    * Retorno: void
    */
   public void fecharAplicacao() {
-    System.out.println("CLIENTE - Fechando aplicacao");
-    Platform.exit();
+    System.out.println("CLIENTE - Iniciando encerramento da aplicacao...");
+
+    if (cliente != null) {
+
+      for (String nomeGrupo : grupos) {
+        System.out.println("CLIENTE - Desconectando do grupo: " + nomeGrupo);
+
+        String grupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
+
+        cliente.sairGrupo(grupoProcessado);
+      }
+      cliente.fazerLogout();
+
+      Platform.exit();
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    System.out.println("CLIENTE - Aplicacao encerrada com sucesso.");
     System.exit(0);
   } // fim do metodo fecharAplicacao
 
