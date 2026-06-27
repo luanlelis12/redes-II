@@ -97,7 +97,7 @@ public class clienteController implements Initializable {
         // Verifica se o usuario NAO esta segurando o Shift
         event.consume();
         if (!event.isShiftDown()) {
-          enviarMensagem();
+          // enviarMensagem();
           mensagemField.clear();
         } // fim do if
       } // fim do if
@@ -137,9 +137,9 @@ public class clienteController implements Initializable {
 
   } // fim do metodo initialize
 
-  public static boolean criarCliente(String nome) {
+  public static boolean criarCliente(String nome, String ipServidor) {
     try {
-      cliente = new Cliente(nome, "10.102.166.110");
+      cliente = new Cliente(nome, ipServidor);
       boolean aprovado = cliente.fazerLogin();
 
       if (aprovado) {
@@ -151,8 +151,8 @@ public class clienteController implements Initializable {
 
     } catch (Exception e) {
       e.printStackTrace();
+      return false;
     }
-    return false;
   }
 
   /*
@@ -170,6 +170,7 @@ public class clienteController implements Initializable {
     mensagemField.clear();
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
+
     String grupoPuro = processadorTexto.retirarFlagEscape(grupoSelecionado);
     historicoMensagens.get(grupoPuro).add(balaoDeDialogo);
 
@@ -364,7 +365,7 @@ public class clienteController implements Initializable {
       if (!historicoMensagens.containsKey(nomeConversa)) {
         historicoMensagens.put(nomeConversa, new ArrayList<HBox>());
       }
-      
+
       itemConversa.setOnMouseClicked(event -> {
         abrirConversa(nomeConversa);
       });

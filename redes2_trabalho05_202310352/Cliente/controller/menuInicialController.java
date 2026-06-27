@@ -36,11 +36,17 @@ public class menuInicialController implements Initializable {
     System.out.println("O Controller foi carregado corretamente!");
   }
 
+  /*
+   * Metodo: criarCliente
+   * Funcao: inicializa o cliente
+   * Parametros: event = evento que iniciou o metodo
+   * Retorno: void
+   */
   public void criarCliente(ActionEvent event) {
     String nomeCliente = nomeTextField.getText();
     nomeCliente = processadorTexto.inserirFlagEscape(nomeCliente);
 
-    if (nomeCliente == null || nomeCliente.trim().isEmpty()) {
+    if (nomeCliente == null || nomeCliente.trim().isEmpty()) { // verifica se o nome eh vazio
       try {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
         Parent root = loader.load();
@@ -58,11 +64,34 @@ public class menuInicialController implements Initializable {
       } catch (IOException e) {
         System.out.println("CLIENTE - Erro: Nao foi possivel carregar o alerta!");
         e.printStackTrace();
-      }
+      } // fim do try-catch
       return;
     } // fim do if
 
-    boolean sucesso = clienteController.criarCliente(nomeCliente);
+    String ipServidor = descobrirServidor();
+
+    if (ipServidor == null) { // se o servidor estiver fora de ar emitir alert
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+        controladorDoAlerta.setDetalhes("ERRO: Servidor fora de ar.", "O Servidor não está online!");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("CLIENTE - Erro ao abrir alerta!");
+        e.printStackTrace();
+      } // fim do try-catch
+      return;
+    } // fim do if
+
+    // Se achou, tenta conectar enviando o IP que descobriu!
+    boolean sucesso = clienteController.criarCliente(nomeCliente, ipServidor);
 
     if (!sucesso) {
       try {
@@ -80,10 +109,9 @@ public class menuInicialController implements Initializable {
       } catch (IOException e) {
         System.out.println("CLIENTE - Erro ao abrir alerta!");
         e.printStackTrace();
-      }
-
+      } // fim do try-catch
       return;
-    }
+    } // fim do if
 
     System.out.println("CLIENTE - criando usuario " + nomeCliente + ".");
 
@@ -123,6 +151,41 @@ public class menuInicialController implements Initializable {
       e.printStackTrace();
     } // fim do try-catch
 
+  }
+
+  /*
+   * Metodo: descobrirServidor
+   * Funcao: Envia um pacote na rede e devolve o IP de quem responder
+   * Parametros:
+   * Retorno: void
+   */
+  private String descobrirServidor() {
+    System.out.println("CLIENTE - Procurando servidor na rede local...");
+    try (java.net.DatagramSocket socket = new java.net.DatagramSocket()) {
+      socket.setBroadcast(true);
+      socket.setSoTimeout(3000);
+
+      byte[] dados = "DISCOVER".getBytes();
+
+      java.net.DatagramPacket pacoteEnvio = new java.net.DatagramPacket(dados, dados.length,
+          java.net.InetAddress.getByName("255.255.255.255"), 8080);
+      socket.send(pacoteEnvio);
+
+      byte[] bufferResposta = new byte[1024];
+      java.net.DatagramPacket pacoteResposta = new java.net.DatagramPacket(bufferResposta, bufferResposta.length);
+
+      socket.receive(pacoteResposta);
+
+      String resposta = new String(pacoteResposta.getData(), 0, pacoteResposta.getLength()).trim();
+      if (resposta.equals("DISCOVER_OK")) {
+        String ipEncontrado = pacoteResposta.getAddress().getHostAddress();
+        System.out.println("CLIENTE - Servidor encontrado no IP: " + ipEncontrado);
+        return ipEncontrado;
+      }
+    } catch (Exception e) {
+      System.out.println("CLIENTE - Servidor não encontrado (Timeout).");
+    }
+    return null;
   }
 
 }
