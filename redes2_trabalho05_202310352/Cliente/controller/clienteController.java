@@ -219,6 +219,13 @@ public class clienteController implements Initializable {
 
     Platform.runLater(() -> {
       HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
+      
+      // Verifica quem enviou a mensagem
+      if (nomeFinal.equals("SERVIDOR")) {
+        balaoDeDialogo = criarAvisoSistema(msgFinal);
+      } else {
+        balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
+      }
 
       Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
 
@@ -458,6 +465,28 @@ public class clienteController implements Initializable {
       e.printStackTrace();
     }
   } // fim do metodo adicionarConversaNaTela
+
+  /*
+   * Metodo: criarAvisoSistema
+   * Funcao: Cria um aviso centralizado, sem bordas, para eventos de entrada e
+   * saída
+   */
+  public static HBox criarAvisoSistema(String mensagem) {
+    Label textoMsg = new Label(mensagem);
+    textoMsg.setFont(new Font("System", 12));
+
+    textoMsg.setStyle(
+        "-fx-text-fill: #555555; -fx-font-style: italic; -fx-background-color: #e8e8e8; -fx-background-radius: 10px; -fx-padding: 4px 15px;");
+    textoMsg.setWrapText(true);
+    textoMsg.setMaxWidth(380);
+    textoMsg.setAlignment(Pos.CENTER);
+
+    HBox linha = new HBox(textoMsg);
+    linha.setAlignment(Pos.CENTER);
+    linha.setPadding(new Insets(10, 15, 10, 15));
+
+    return linha;
+  } // fim do metodo criarAvisoSistema
 
   /*
    * Metodo: abrirConversa

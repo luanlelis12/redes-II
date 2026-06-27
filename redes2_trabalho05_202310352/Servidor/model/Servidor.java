@@ -245,11 +245,11 @@ public class Servidor extends Thread {
   public void inserirNoGrupo(String nomeGrupo, String nomeUsuario, InetAddress ipCliente) {
     Usuario novoUsuario = new Usuario(ipCliente, nomeUsuario, PORTA_TCP);
     if (grupos.containsKey(nomeGrupo)) {
-      if (grupos.get(nomeGrupo).contains(novoUsuario)) {
-        System.out.println("SERVIDOR TCP - " + nomeUsuario + " ja esta no grupo " + nomeGrupo + ".");
-      } else {
+      if (!grupos.get(nomeGrupo).contains(novoUsuario)) { // Se ele ainda não estava no grupo
         System.out.println("SERVIDOR TCP - Adicionando " + nomeUsuario + " no grupo " + nomeGrupo + ".");
         grupos.get(nomeGrupo).add(novoUsuario);
+
+        enviarMensagem(nomeUsuario + " entrou no grupo.", nomeGrupo, "SERVIDOR");
       }
     } else {
       System.out
@@ -257,6 +257,8 @@ public class Servidor extends Thread {
       ArrayList<Usuario> listaUsuario = new ArrayList<>();
       listaUsuario.add(novoUsuario);
       grupos.put(nomeGrupo, listaUsuario);
+
+      enviarMensagem(nomeUsuario + " criou o grupo.", nomeGrupo, "SERVIDOR");
     }
   }
 
@@ -272,6 +274,8 @@ public class Servidor extends Thread {
     if (grupos.get(nomeGrupo).isEmpty()) {
       System.out.println("SERVIDOR TCP - O grupo " + nomeGrupo + " possui zero usuarios apagando grupo.");
       grupos.remove(nomeGrupo);
+    } else {
+      enviarMensagem(nomeUsuario + " saiu do grupo.", nomeGrupo, "SERVIDOR");
     }
   }
 
