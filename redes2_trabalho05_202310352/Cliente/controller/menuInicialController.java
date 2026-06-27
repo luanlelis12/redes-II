@@ -76,7 +76,7 @@ public class menuInicialController implements Initializable {
         Parent root = loader.load();
 
         alertController controladorDoAlerta = loader.getController();
-        controladorDoAlerta.setDetalhes("ERRO: Servidor fora de ar.", "O Servidor não está online!");
+        controladorDoAlerta.setDetalhes("ERRO: Servidor fora de ar.", "O Servidor nao esta online!");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));

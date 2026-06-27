@@ -45,6 +45,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Pair;
 import model.Cliente;
 import util.processadorTexto;
 
@@ -82,9 +83,9 @@ public class clienteController implements Initializable {
   private static clienteController instancia;
 
   private static Cliente cliente;
-  private static String grupoSelecionado = null;
+  private static Pair<String, String> conversaSelecionada = null; // <nomeDaConversa,tipoDeConversa>
   private ArrayList<String> grupos = new ArrayList<>();
-  private HashMap<String, ArrayList<HBox>> historicoMensagens = new HashMap<>();
+  private HashMap<Pair<String, String>, ArrayList<HBox>> historicoMensagens = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -97,7 +98,7 @@ public class clienteController implements Initializable {
         // Verifica se o usuario NAO esta segurando o Shift
         event.consume();
         if (!event.isShiftDown()) {
-          // enviarMensagem();
+          enviarMensagem();
           mensagemField.clear();
         } // fim do if
       } // fim do if
@@ -161,9 +162,9 @@ public class clienteController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public void enviarMensagem(String tipoConversa) {
+  public void enviarMensagem() {
 
-    if (grupoSelecionado == null)
+    if (conversaSelecionada == null)
       return;
 
     String mensagem = mensagemField.getText();
@@ -171,43 +172,53 @@ public class clienteController implements Initializable {
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
 
-    String grupoPuro = processadorTexto.retirarFlagEscape(grupoSelecionado);
-    historicoMensagens.get(grupoPuro).add(balaoDeDialogo);
-
+    historicoMensagens.get(conversaSelecionada).add(balaoDeDialogo);
     conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
     System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
-    if (tipoConversa.equals(GRUPO)) {
-      cliente.enviarMensagem(grupoSelecionado, mensagem);
-    } else if (tipoConversa.equals(PRIVADO)) {
-      cliente.enviarMensagemPrivado(grupoSelecionado, mensagem);
-    }
-  }
+    if (conversaSelecionada.getValue().equals(GRUPO)) {
+      cliente.enviarMensagem(conversaSelecionada.getKey(), mensagem);
+    } else if (conversaSelecionada.getValue().equals(PRIVADO)) {
+      cliente.enviarMensagemPrivado(conversaSelecionada.getKey(), mensagem);
+    } // fim do if
+  } // fim do metodo enviarMensagem
 
-  public static void receberMensagem(String mensagem, String nomeRemetente, String grupo) {
+  /*
+   * Metodo: receberMensagem
+   * Funcao:
+   * Parametros:
+   * Retorno: void
+   */
+  public static void receberMensagem(String mensagem, String nomeRemetente, String nomeConversa, String tipoConversa) {
 
-    grupo = grupo.trim();
+    nomeConversa = nomeConversa.trim();
     mensagem = mensagem.trim();
     nomeRemetente = nomeRemetente.trim();
 
     final String msgFinal = processadorTexto.retirarFlagEscape(mensagem);
     final String nomeFinal = processadorTexto.retirarFlagEscape(nomeRemetente);
-    final String grupoFinal = processadorTexto.retirarFlagEscape(grupo);
+    final String nomeConversaFinal = processadorTexto.retirarFlagEscape(nomeConversa);
 
     Platform.runLater(() -> {
       HBox balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
 
-      if (instancia.historicoMensagens.containsKey(grupoFinal)) {
-        instancia.historicoMensagens.get(grupoFinal).add(balaoDeDialogo);
+      Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
+
+      if (!instancia.historicoMensagens.containsKey(chaveRecebida)) {
+        instancia.adicionarConversaNaTela(nomeConversaFinal, tipoConversa);
       }
-      if (grupoSelecionado != null && processadorTexto.retirarFlagEscape(grupoSelecionado).equals(grupoFinal)) {
+
+      instancia.historicoMensagens.get(chaveRecebida).add(balaoDeDialogo);
+
+      if (conversaSelecionada != null && conversaSelecionada.equals(chaveRecebida)) {
         instancia.conversaVBox.getChildren().add(balaoDeDialogo);
       }
     });
 
     System.out
-        .println("CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " no grupo " + grupoFinal + ".");
+        .println(
+            "CLIENTE - exibindo mensagem \"" + msgFinal + "\" de " + nomeFinal + " na conversa " + nomeConversaFinal + ".");
   }
 
   public static HBox criarBalaoDialogo(String mensagem, String nomeRemetente, boolean enviadaPorMim) {
@@ -328,7 +339,11 @@ public class clienteController implements Initializable {
 
   public void criarConversa() {
     String nome = nomeUserField.getText();
-    nomeGrupoField.clear();
+
+    if (nome == null || nome.trim().isEmpty())
+      return;
+
+    nomeUserField.clear();
     adicionarConversaNaTela(nome, PRIVADO);
   }
 
@@ -362,17 +377,19 @@ public class clienteController implements Initializable {
         });
       }
 
-      if (!historicoMensagens.containsKey(nomeConversa)) {
-        historicoMensagens.put(nomeConversa, new ArrayList<HBox>());
+      Pair<String, String> chaveConversa = new Pair<>(nomeConversa, tipoConversa);
+
+      if (!historicoMensagens.containsKey(chaveConversa)) {
+        historicoMensagens.put(chaveConversa, new ArrayList<HBox>());
       }
 
       itemConversa.setOnMouseClicked(event -> {
-        abrirConversa(nomeConversa);
+        abrirConversa(nomeConversa, tipoConversa);
       });
 
       vboxGrupos.getChildren().add(itemConversa);
 
-      abrirConversa(nomeConversa);
+      abrirConversa(nomeConversa, tipoConversa);
 
     } catch (
 
@@ -388,13 +405,13 @@ public class clienteController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public void abrirConversa(String nomeDoGrupo) {
-    grupoSelecionado = processadorTexto.inserirFlagEscape(nomeDoGrupo);
-    conversaSelecionadaLabel.setText(nomeDoGrupo);
+  public void abrirConversa(String nomeConversa, String tipoConversa) {
+    conversaSelecionada = new Pair<>(processadorTexto.inserirFlagEscape(nomeConversa), tipoConversa);
+    conversaSelecionadaLabel.setText(nomeConversa);
 
-    // Limpa a tela e carrega o historico do grupo
+    // Usa o Pair inteiro para pescar as mensagens!
     conversaVBox.getChildren().clear();
-    conversaVBox.getChildren().addAll(historicoMensagens.get(nomeDoGrupo));
+    conversaVBox.getChildren().addAll(historicoMensagens.get(conversaSelecionada));
   } // fim do metodo abrirConversa
 
   /*

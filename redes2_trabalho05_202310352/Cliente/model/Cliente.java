@@ -25,18 +25,21 @@ public class Cliente extends Thread {
   private final int PORTA_UDP = 8080;
   private final int PORTA_TCP = 8081;
 
-  private String nome;
+  private final String GRUPO = "grupo";
+  private final String PRIVADO = "priv";
+
+  private String nomeCliente;
   private InetAddress ipCliente;
   private InetAddress ipServidor;
   private DatagramSocket endpointCliente;
 
-  public Cliente(String nome, String ipServidor) {
+  public Cliente(String nomeCliente, String ipServidor) {
     try {
-      this.nome = nome;
+      this.nomeCliente = nomeCliente;
       ipCliente = InetAddress.getLocalHost();
       this.ipServidor = InetAddress.getByName(ipServidor);
       endpointCliente = new DatagramSocket(PORTA_UDP);
-      System.out.println("CLIENTE estabelecido: nome = " + nome + " / ip = " + ipCliente);
+      System.out.println("CLIENTE estabelecido: nome = " + nomeCliente + " / ip = " + ipCliente);
     } catch (Exception e) {
       System.out.println("ERRO: Nao foi possivel inicializar o cliente");
       e.printStackTrace();
@@ -74,25 +77,51 @@ public class Cliente extends Thread {
    * Retorno: void
    */
   private void processarApdu(String apduRecebida) {
-    System.out.println("oi");
+    String[] partes = dividirApdu(apduRecebida);
+    switch (partes[0]) {
+      case "SEND":
+        try {
+          String grupoDestino = partes[1];
+          String usuarioRemetente = partes[2];
+          String mensagem = partes[3];
+          clienteController.receberMensagem(mensagem, grupoDestino, usuarioRemetente, GRUPO);
+        } catch (Exception e) {
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
+        }
+        break;
+      case "SENDPVT":
+        try {
+          String usuarioDestino = partes[1];
+          String usuarioRemetente = partes[2];
+          String mensagem = partes[3];
+          clienteController.receberMensagem(mensagem, usuarioDestino, usuarioRemetente, PRIVADO);
+        } catch (Exception e) {
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SENDPVT.");
+        }
+        break;
+
+      default:
+        break;
+    }
+  } // fim do processo
+
+  public String[] dividirApdu(String apdu) {
     ArrayList<String> list = new ArrayList<>();
     int indice = 0;
-    boolean ehFlag = true;
-    for (int i = 0; i < apduRecebida.length(); i++) {
-      if (apduRecebida.charAt(i) == '{') {
+    for (int i = 0; i < apdu.length(); i++) {
+      if (apdu.charAt(i) == '{') {
         i++;
-      } else if (apduRecebida.charAt(i) == '~') {
-        list.add(apduRecebida.substring(indice, i).trim());
+      } else if (apdu.charAt(i) == '~') {
+        list.add(apdu.substring(indice, i).trim());
         i++;
         indice = i + 1;
       }
     }
-    list.add(apduRecebida.substring(indice, apduRecebida.length()));
+    list.add(apdu.substring(indice, apdu.length()));
     int resultSize = list.size();
     String[] result = new String[resultSize];
-    String[] partes = list.subList(0, resultSize).toArray(result);
-    clienteController.receberMensagem(partes[3], partes[2], partes[1]);
-  } // fim do processo
+    return list.subList(0, resultSize).toArray(result);
+  }
 
   /*
    * Metodo: entrarGrupo
@@ -107,7 +136,7 @@ public class Cliente extends Thread {
       OutputStream saida1 = socketCliente.getOutputStream();
       ObjectOutputStream saida = new ObjectOutputStream(saida1);
 
-      String apdu = new String("JOIN~~" + grupo + "~~" + nome + "\n");
+      String apdu = new String("JOIN~~" + grupo + "~~" + nomeCliente + "\n");
 
       System.out.println("CLIENTE - Enviando APDU JOIN para o servidor");
       saida.writeObject(apdu);
@@ -132,7 +161,7 @@ public class Cliente extends Thread {
       OutputStream saida1 = socketCliente.getOutputStream();
       ObjectOutputStream saida = new ObjectOutputStream(saida1);
 
-      String apdu = new String("LEAVE~~" + grupo + "~~" + nome + "\n");
+      String apdu = new String("LEAVE~~" + grupo + "~~" + nomeCliente + "\n");
 
       System.out.println("CLIENTE - Enviando APDU LEAVE para o servidor");
       saida.writeObject(apdu);
@@ -150,11 +179,11 @@ public class Cliente extends Thread {
    * Parametros:
    * Retorno: void
    */
-  public void enviarMensagemPrivado(String usuario, String mensagem) {
+  public void enviarMensagemPrivado(String usuarioDestino, String mensagem) {
     try {
       byte[] dadosEnviados = new byte[1024];
 
-      String apdu = new String("SENDPVT~~" + usuario + "~~" + nome + "~~" + mensagem + "\n");
+      String apdu = new String("SENDPVT~~" + usuarioDestino + "~~" + nomeCliente + "~~" + mensagem + "\n");
       dadosEnviados = apdu.getBytes();
 
       System.out.println("CLIENTE - Enviando APDU SENDPVT para o servidor");
@@ -176,7 +205,7 @@ public class Cliente extends Thread {
     try {
       byte[] dadosEnviados = new byte[1024];
 
-      String apdu = new String("SEND~~" + grupo + "~~" + nome + "~~" + mensagem + "\n");
+      String apdu = new String("SEND~~" + grupo + "~~" + nomeCliente + "~~" + mensagem + "\n");
       dadosEnviados = apdu.getBytes();
 
       System.out.println("CLIENTE - Enviando APDU SEND para o servidor");
@@ -202,7 +231,7 @@ public class Cliente extends Thread {
       ObjectInputStream entrada = new ObjectInputStream(socketCliente.getInputStream());
 
       // Envia a APDU de checagem
-      saida.writeObject("LOGIN~~" + this.nome);
+      saida.writeObject("LOGIN~~" + this.nomeCliente);
       saida.flush();
 
       // Fica travado aqui esperando o servidor responder (LOGIN_OK ou LOGIN_ERROR)
@@ -217,12 +246,11 @@ public class Cliente extends Thread {
     }
   }
 
-  // Já aproveite e crie o método de Logout para enviar quando a aplicação fechar!
   public void fazerLogout() {
     try {
       Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
       ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
-      saida.writeObject("LOGOUT~~" + this.nome);
+      saida.writeObject("LOGOUT~~" + this.nomeCliente);
       saida.flush();
       socketCliente.close();
     } catch (Exception e) {
