@@ -9,6 +9,7 @@
 
 package model;
 
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class Conversa {
   private String tipo; // "grupo" ou "priv"
   private ArrayList<HBox> historico;
   private int notificacoes;
+  private Label notificacaoLabel;
 
   public Conversa(String nome, String tipo) {
     this.nome = nome;
@@ -65,7 +67,26 @@ public class Conversa {
     this.historico = historico;
   }
 
+  public void setNotificacaoLabel(Label notificacaoLabel) {
+    this.notificacaoLabel = notificacaoLabel;
+    atualizarTela();
+  }
+
   public void setNotificacoes(int notificacoes) {
     this.notificacoes = notificacoes;
+    atualizarTela();
   }
+
+  private void atualizarTela() {
+    if (this.notificacaoLabel != null) {
+      if (this.notificacoes > 0) {
+        this.notificacaoLabel.setText(String.valueOf(this.notificacoes));
+        this.notificacaoLabel.setVisible(true);
+      } else {
+        this.notificacaoLabel.setVisible(false);
+        this.notificacaoLabel.setText("");
+      }
+    }
+  }
+
 }

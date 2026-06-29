@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import controller.clienteController;
 import controller.menuInicialController;
 import controller.sobreController;
+import controller.entrarConversaController;
 
 public class Principal extends Application {
 

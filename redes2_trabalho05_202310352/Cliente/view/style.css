@@ -10,7 +10,8 @@
   -fx-background-color: transparent;
 }
 
-.button:hover, .itemConversa:hover {
+.button:hover,
+.itemConversa:hover {
   -fx-cursor: hand;
 }
 
@@ -56,6 +57,7 @@
 
 .buttonEnviarDes {
   -fx-background-image: url("img/buttonEnviarDes.png");
+  -fx-cursor: none;
 }
 
 .buttonEnviar:hover {
@@ -115,16 +117,16 @@
 }
 
 .buttonGrupo {
-  -fx-background-image: url("img/grupoButton.png");
+  -fx-background-color: #e9e9e9;
 }
 
 .buttonGrupo:hover {
-  -fx-background-image: url("img/grupoButtonHover.png");
+  -fx-background-color: #ffffff;
   -fx-cursor: hand;
 }
 
 .buttonGrupo:pressed {
-  -fx-background-image: url("img/grupoButtonPressed.png");
+  -fx-background-color: #d0d0d0;
 }
 
 .chat {
@@ -132,7 +134,7 @@
 }
 
 .grupos {
-  -fx-background-image: url("img/bgGrupos.png");
+  -fx-background-image: url("img/bgConversas.png");
 }
 
 .alert {
@@ -145,4 +147,56 @@
 
 .notificacaoLabel {
   -fx-background-color: #f5e55a;
+}
+
+.scroll-bar {
+  -fx-border: none;
+}
+
+.scroll-bar:vertical .track {
+  -fx-background-color: #efefed;
+  -fx-border-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+  -fx-background-color: #aaa7a2;
+  -fx-padding: 10px;
+}
+
+.scroll-bar:vertical .thumb:hover {
+  -fx-background-color: #7d796a;
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+
+.buttonConversas {
+  -fx-background-image: url("img/buttonConversa.png");
+}
+
+.buttonConversas:hover {
+  -fx-background-image: url("img/buttonConversaHover.png");
+}
+
+.buttonConversas:pressed {
+  -fx-background-image: url("img/buttonConversaPressed.png");
+}
+
+.buttonAddConversas {
+  -fx-background-image: url("img/buttonAddConversa.png");
+}
+
+.buttonAddConversas:hover {
+  -fx-background-image: url("img/buttonAddConversaHover.png");
+}
+
+.buttonAddConversas:pressed {
+  -fx-background-image: url("img/buttonAddConversaPressed.png");
+}
+
+.paneUsuarios {
+  -fx-background-image: url("img/bgGrupos.png");
 }

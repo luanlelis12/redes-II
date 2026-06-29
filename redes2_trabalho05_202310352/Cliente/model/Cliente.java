@@ -17,6 +17,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import controller.clienteController;
 
@@ -58,10 +59,10 @@ public class Cliente extends Thread {
           endpointCliente.receive(pacoteRecebido);
 
           String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
-          
-          if (apduRecebida == "DISCOVER")
+
+          if (apduRecebida.equals("DISCOVER"))
             continue;
-          
+
           System.out.println("CLIENTE - Recebeu apdu " + apduRecebida);
           new Thread(() -> {
             processarApdu(apduRecebida);
@@ -90,7 +91,7 @@ public class Cliente extends Thread {
           String mensagem = partes[3];
           clienteController.receberMensagem(mensagem, grupoDestino, usuarioRemetente, GRUPO);
         } catch (Exception e) {
-          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
+          System.out.println("CLIENTE - ERRO: Nao foi possivel processar a APDU SEND.");
         }
         break;
       case "SENDPVT":
@@ -100,7 +101,32 @@ public class Cliente extends Thread {
           String mensagem = partes[3];
           clienteController.receberMensagem(mensagem, usuarioDestino, usuarioRemetente, PRIVADO);
         } catch (Exception e) {
-          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SENDPVT.");
+          System.out.println("CLIENTE - ERRO: Nao foi possivel processar a APDU SENDPVT.");
+        }
+        break;
+      case "LISTCVS":
+        try {
+          ArrayList<String> grupos = new ArrayList<>();
+          // Se o tamanho for maior que 1, significa que existem grupos na lista
+          if (partes.length > 1) {
+            grupos = new ArrayList<>(Arrays.asList(Arrays.copyOfRange(partes, 1, partes.length)));
+          }
+          // Envia a lista para o controlador principal abrir a tela
+          clienteController.exibirListaConversas(grupos, GRUPO);
+        } catch (Exception e) {
+          System.out.println("CLIENTE - ERRO: Nao foi possivel processar a APDU LISTCVS.");
+        }
+        break;
+      case "LISTMEMBERS":
+        try {
+          ArrayList<String> membros = new ArrayList<>();
+          if (partes.length > 1) {
+            membros = new ArrayList<>(Arrays.asList(Arrays.copyOfRange(partes, 1, partes.length)));
+          }
+          // Envia a lista para o controlador principal abrir a tela
+          clienteController.exibirListaConversas(membros, PRIVADO);
+        } catch (Exception e) {
+          System.out.println("CLIENTE - ERRO: Nao foi possivel processar a APDU LISTMEMBERS.");
         }
         break;
 
@@ -261,6 +287,36 @@ public class Cliente extends Thread {
       System.out.println("CLIENTE - ERRO: Nao foi possivel fazer logout!");
       e.printStackTrace();
     }
+  }
+
+  public void solicitarListaGrupos() {
+    try {
+      byte[] dadosEnviados = new byte[1024];
+      String apdu = new String("LISTCVS~~" + nomeCliente + "\n");
+      dadosEnviados = apdu.getBytes();
+
+      System.out.println("CLIENTE - Solicitando lista de grupos ao servidor...");
+      DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
+      endpointCliente.send(datagramaEnviado);
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Nao foi possivel solicitar grupos!");
+    }
+  }
+
+  public void solicitarListaMembros(String grupo) {
+    try {
+      byte[] dadosEnviados = new byte[1024];
+
+      String apdu = new String("LISTMEMBERS~~" + grupo + "~~" + nomeCliente + "\n");
+      dadosEnviados = apdu.getBytes();
+
+      System.out.println("CLIENTE - Enviando APDU SEND para o servidor");
+      DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
+      endpointCliente.send(datagramaEnviado);
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Nao foi possivel enviar a mensagem!");
+      e.printStackTrace();
+    } // fim try-catch
   }
 
   public void desligarCliente() {

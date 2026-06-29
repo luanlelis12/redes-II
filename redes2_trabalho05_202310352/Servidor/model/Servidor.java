@@ -173,7 +173,6 @@ public class Servidor extends Thread {
           e.getStackTrace();
         }
         break;
-
       case "LOGOUT":
         try {
           String nome = partes[1];
@@ -190,6 +189,29 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LOGOUT.");
           e.printStackTrace();
           mutex.release();
+        }
+        break;
+      case "LISTCVS":
+        try {
+          String nome = partes[1];
+          mutex.acquire();
+          listarConversas(nome);
+          mutex.release();
+        } catch (Exception e) {
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTCVS.");
+          e.getStackTrace();
+        }
+        break;
+      case "LISTMEMBERS":
+        try {
+          String nomeGrupo = partes[1];
+          String nome = partes[2];
+          mutex.acquire();
+          listarMembrosGrupo(nomeGrupo, nome);
+          mutex.release();
+        } catch (Exception e) {
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTMEMBERS.");
+          e.getStackTrace();
         }
         break;
 
@@ -317,6 +339,60 @@ public class Servidor extends Thread {
       endpointServidor.send(datagramaEnviado);
     } catch (Exception e) {
       System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar a mensagem privada!");
+    }
+  }
+
+  private void listarConversas(String nomeUsuarioRemetente) {
+    Usuario usuarioRemetente = usuariosOnline.get(nomeUsuarioRemetente);
+    try {
+      byte[] dadosEnviados = new byte[1024];
+
+      String apdu = new String("LISTCVS");
+      for (String grupo : grupos.keySet()) {
+        apdu += ("~~" + grupo);
+      }
+      apdu += "\n";
+
+      dadosEnviados = apdu.getBytes();
+
+      DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length,
+          usuarioRemetente.getIp(),
+          PORTA_UDP);
+      System.out.println(
+          "SERVIDOR UDP - enviando lista de todos os grupos para usuario " + usuarioRemetente.getNome()
+              + " ip = "
+              + usuarioRemetente.getIp() + ".");
+      endpointServidor.send(datagramaEnviado);
+    } catch (Exception e) {
+      System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar lista de todos os grupos!");
+    }
+  }
+
+  private void listarMembrosGrupo(String nomeGrupo, String nomeUsuarioRemetente) {
+    ArrayList<Usuario> membros = grupos.get(nomeGrupo);
+    Usuario usuarioRemetente = usuariosOnline.get(nomeUsuarioRemetente);
+    try {
+      byte[] dadosEnviados = new byte[1024];
+
+      String apdu = new String("LISTMEMBERS");
+      for (Usuario usuario : membros) {
+        if (!usuario.equals(usuarioRemetente))
+          apdu += ("~~" + usuario.getNome());
+      }
+      apdu += "\n";
+
+      dadosEnviados = apdu.getBytes();
+
+      DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length,
+          usuarioRemetente.getIp(),
+          PORTA_UDP);
+      System.out.println(
+          "SERVIDOR UDP - enviando membros do grupo " + nomeGrupo + " para usuario " + usuarioRemetente.getNome()
+              + " ip = "
+              + usuarioRemetente.getIp() + ".");
+      endpointServidor.send(datagramaEnviado);
+    } catch (Exception e) {
+      System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar os membros do grupo " + nomeGrupo + "!");
     }
   }
 

@@ -30,7 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
@@ -55,8 +55,6 @@ public class clienteController implements Initializable {
   @FXML
   private TextArea caixaDeMensagem;
   @FXML
-  private TextField nomeGrupoField;
-  @FXML
   private TextArea mensagemField;
   @FXML
   private Label conversaSelecionadaLabel;
@@ -69,13 +67,15 @@ public class clienteController implements Initializable {
   @FXML
   private ScrollPane conversaScrollPane;
   @FXML
-  private TextField nomeUserField;
+  private ToggleGroup tipoDeConversa;
+  @FXML
+  private Button abrirListaMembrosButton;
 
   private double xOffset = 0;
   private double yOffset = 0;
 
-  private static final String GRUPO = "grupo";
-  private static final String PRIVADO = "priv";
+  static final String GRUPO = "grupo";
+  static final String PRIVADO = "priv";
 
   private static clienteController instancia;
 
@@ -110,7 +110,6 @@ public class clienteController implements Initializable {
       if (enviarButton != null) {
         enviarButton.getStyleClass().remove("buttonEnviar");
         enviarButton.getStyleClass().remove("buttonEnviarDes");
-
         if (valorNovo.trim().isEmpty()) {
           enviarButton.getStyleClass().add("buttonEnviarDes");
         } else {
@@ -147,7 +146,7 @@ public class clienteController implements Initializable {
       boolean aprovado = cliente.fazerLogin();
 
       if (aprovado) {
-        cliente.start(); // Só liga a Thread de escuta se o nome for aceite!
+        cliente.start(); // So liga a Thread de escuta se o nome for aceite!
         return true;
       } else {
         cliente.desligarCliente();
@@ -229,6 +228,11 @@ public class clienteController implements Initializable {
       }
 
       Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
+
+      if (!instancia.listaConversas.containsKey(chaveRecebida)) {
+        instancia.adicionarConversaNaTela(nomeConversaFinal, tipoConversa);
+      } // fim if
+
       Conversa conversa = instancia.listaConversas.get(chaveRecebida);
 
       if (conversaSelecionada == null || !conversaSelecionada.equals(chaveRecebida)) {
@@ -237,15 +241,11 @@ public class clienteController implements Initializable {
         int contagemAtual = conversa.getNotificacoes();
 
         // Adiciona +1 nas notificacoes
-        conversa.setNotificacoes(contagemAtual+1);;
+        conversa.setNotificacoes(contagemAtual + 1);
 
         System.out
             .println("CLIENTE - " + nomeConversaFinal + " tem " + (contagemAtual + 1) + " novas mensagens.");
       }
-      
-      if (!instancia.listaConversas.containsKey(chaveRecebida)) {
-        instancia.adicionarConversaNaTela(nomeConversaFinal, tipoConversa);
-      } // fim if
 
       conversa.adicionarMensagem(balaoDeDialogo);
 
@@ -320,9 +320,7 @@ public class clienteController implements Initializable {
    * Parametros:
    * Retorno: void
    */
-  public void entrarGrupo() {
-    String nomeGrupo = nomeGrupoField.getText();
-    nomeGrupoField.clear();
+  public void entrarGrupo(String nomeGrupo) {
     String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
 
     // Alert para impedir do usuario criar grupo com nome vazio
@@ -394,7 +392,7 @@ public class clienteController implements Initializable {
     if (label != null) {
       String nomeGrupo = label.getText();
       System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
-      Pair<String,String> grupo = new Pair<String,String>(nomeGrupo, GRUPO);
+      Pair<String, String> grupo = new Pair<String, String>(nomeGrupo, GRUPO);
 
       listaConversas.remove(grupo);
 
@@ -405,6 +403,8 @@ public class clienteController implements Initializable {
           conversaVBox.getChildren().clear();
           conversaSelecionadaLabel.setText("");
           conversaSelecionada = null;
+          mensagemField.setDisable(true);
+          abrirListaMembrosButton.setVisible(false);
         }
       }
 
@@ -417,25 +417,22 @@ public class clienteController implements Initializable {
   } // fim do metodo sairGrupo
 
   /*
-   * Metodo: criarConversa
+   * Metodo: criarConversaPrivada
    * Funcao: cria uma conversa privada com outro usuario
    * Parametros:
    * Retorno: void
    */
-  public void criarConversa() {
-    String nome = nomeUserField.getText();
-
+  public void criarConversaPrivada(String nomeUsuario) {
     // impede de criar conversa com alguem de nome vazio
-    if (nome == null || nome.trim().isEmpty())
+    if (nomeUsuario == null || nomeUsuario.trim().isEmpty())
       return;
 
-    nomeUserField.clear();
-    adicionarConversaNaTela(nome, PRIVADO);
-  } // fim do metodo criarConversa
+    adicionarConversaNaTela(nomeUsuario, PRIVADO);
+  } // fim do metodo criarConversaPrivada
 
   /*
-   * Metodo: criarConversa
-   * Funcao: cria uma conversa privada com outro usuario
+   * Metodo: adicionarConversaNaTela
+   * Funcao:
    * Parametros:
    * Retorno: void
    */
@@ -449,6 +446,11 @@ public class clienteController implements Initializable {
       Label labelNome = (Label) itemConversa.lookup("#nomeConversa");
       if (labelNome != null) {
         labelNome.setText(nomeConversa);
+      }
+
+      Label notificacaoLabel = (Label) itemConversa.lookup("#notificacaoLabel");
+      if (notificacaoLabel != null) {
+        notificacaoLabel.setVisible(false);
       }
 
       Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
@@ -477,6 +479,10 @@ public class clienteController implements Initializable {
         listaConversas.put(chaveConversa, new Conversa(nomeConversa, tipoConversa));
       }
 
+      if (notificacaoLabel != null) {
+        listaConversas.get(chaveConversa).setNotificacaoLabel(notificacaoLabel);
+      }
+
       itemConversa.setOnMouseClicked(event -> {
         abrirConversa(nomeConversa, tipoConversa);
       });
@@ -485,9 +491,7 @@ public class clienteController implements Initializable {
 
       abrirConversa(nomeConversa, tipoConversa);
 
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");
       e.printStackTrace();
     }
@@ -532,12 +536,18 @@ public class clienteController implements Initializable {
     conversaSelecionada = new Pair<>(nomeConversa, tipoConversa);
     conversaSelecionadaLabel.setText(nomeConversa);
 
-    // Zera o contador de notificações desta conversa na memória
     listaConversas.get(conversaSelecionada).setNotificacoes(0);
-    System.out.println("Lidas as mensagens de: " + nomeConversa);
+    System.out.println("CLIENTE - Lidas as mensagens de: " + nomeConversa);
 
-    // Usa o Pair inteiro para pescar as mensagens!
+    if (tipoConversa.equals(GRUPO)) {
+      abrirListaMembrosButton.setVisible(true);
+    } else {
+      abrirListaMembrosButton.setVisible(false);
+    }
+    mensagemField.setDisable(false);
+
     conversaVBox.getChildren().clear();
+    conversaVBox.getChildren().addAll(listaConversas.get(conversaSelecionada).getHistorico());
   } // fim do metodo abrirConversa
 
   /*
@@ -552,6 +562,71 @@ public class clienteController implements Initializable {
   } // fim do metodo selecionarGrupo
 
   /*
+   * Metodo: abrirTelaEntrarConversa
+   * Funcao: abre uma para adicionar grupos e comecar outras conversas
+   * Parametros:
+   * Retorno: void
+   */
+  public void abrirTelaEntrarConversa() {
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/entrarConversa.fxml"));
+      Parent root = loader.load();
+
+      entrarConversaController controladorPopup = loader.getController();
+
+      controladorPopup.setControladorPai(this);
+
+      Stage janelEntrarConversa = new Stage();
+      janelEntrarConversa.setScene(new Scene(root));
+      janelEntrarConversa.initStyle(StageStyle.UNDECORATED);
+      janelEntrarConversa.initModality(Modality.APPLICATION_MODAL);
+      janelEntrarConversa.show();
+
+    } catch (IOException e) {
+      System.out.println("CLIENTE - Erro: Nao foi possivel carregar a tela de adicionar conversas: ");
+      e.printStackTrace();
+    } // fim do try-catch
+  } // fim do metodo abrirTelaEntrarConversa
+
+  public void abrirListaGrupos() {
+    cliente.solicitarListaGrupos();
+  }
+
+  public void abrirListaMembros() {
+    if (conversaSelecionada != null && conversaSelecionada.getValue().equals(GRUPO)) {
+      cliente.solicitarListaMembros(processadorTexto.retirarFlagEscape(conversaSelecionada.getKey()));
+    }
+  }
+
+  /*
+   * Metodo: exibirListaConversas
+   * Funcao: Chamado pelo UDP quando a lista chega. Abre o popup com os dados.
+   */
+  public static void exibirListaConversas(ArrayList<String> itens, String tipo) {
+    Platform.runLater(() -> {
+      try {
+        FXMLLoader loader = new FXMLLoader(instancia.getClass().getResource("/view/listaConversas.fxml"));
+        Parent root = loader.load();
+
+        listarConversasController controladorPopup = loader.getController();
+        controladorPopup.setControladorPai(instancia);
+
+        controladorPopup.carregarDados(itens, tipo);
+
+        Stage janelaLista = new Stage();
+        janelaLista.setScene(new Scene(root));
+        janelaLista.initStyle(StageStyle.UNDECORATED);
+        janelaLista.initModality(Modality.APPLICATION_MODAL);
+        janelaLista.show();
+
+      } catch (IOException e) {
+        System.out.println("CLIENTE - Erro ao abrir a lista recebida!");
+        e.printStackTrace();
+      }
+    });
+  }
+
+  /*
    * Metodo: fecharAplicacao
    * Funcao: fechar a aplicacao
    * Parametros:
@@ -561,8 +636,6 @@ public class clienteController implements Initializable {
     System.out.println("CLIENTE - Iniciando encerramento da aplicacao...");
 
     if (cliente != null) {
-
-
       listaConversas.forEach((chave, valor) -> {
         System.out.println("CLIENTE - Desconectando do grupo: " + valor.getNome());
 
