@@ -126,6 +126,8 @@ public class Servidor extends Thread {
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU JOIN.");
+          e.getStackTrace();
+          mutex.release();
         }
         break;
       case "LEAVE":
@@ -137,6 +139,8 @@ public class Servidor extends Thread {
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LEAVE.");
+          e.getStackTrace();
+          mutex.release();
         }
         break;
       case "SEND":
@@ -149,6 +153,8 @@ public class Servidor extends Thread {
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
+          e.getStackTrace();
+          mutex.release();
         }
         break;
       case "SENDPVT":
@@ -161,6 +167,8 @@ public class Servidor extends Thread {
           mutex.release();
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SENDPVT.");
+          e.getStackTrace();
+          mutex.release();
         }
         break;
       case "LOGIN":
@@ -200,6 +208,7 @@ public class Servidor extends Thread {
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTCVS.");
           e.getStackTrace();
+          mutex.release();
         }
         break;
       case "LISTMEMBERS":
@@ -212,6 +221,7 @@ public class Servidor extends Thread {
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTMEMBERS.");
           e.getStackTrace();
+          mutex.release();
         }
         break;
 
