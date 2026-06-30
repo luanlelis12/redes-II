@@ -194,9 +194,9 @@ public class clienteController implements Initializable {
     System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
 
     if (conversaSelecionada.getValue().equals(GRUPO)) {
-      cliente.enviarMensagem(conversaSelecionada.getKey(), mensagem);
+      cliente.enviarMensagem(processadorTexto.inserirFlagEscape(conversaSelecionada.getKey()), mensagem);
     } else if (conversaSelecionada.getValue().equals(PRIVADO)) {
-      cliente.enviarMensagemPrivado(conversaSelecionada.getKey(), mensagem);
+      cliente.enviarMensagemPrivado(processadorTexto.inserirFlagEscape(conversaSelecionada.getKey()), mensagem);
     } // fim do if
   } // fim do metodo enviarMensagem
 
@@ -436,13 +436,21 @@ public class clienteController implements Initializable {
     if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(nomeUsuarioProcessado))
       return;
 
+    Pair<String, String> conversaUsuario = new Pair<>(nomeUsuario, PRIVADO);
+
+    if (listaConversas.containsKey(conversaUsuario))
+      return;
+
+    listaConversas.put(conversaUsuario, new Conversa(nomeUsuario, PRIVADO));
+
     adicionarConversaNaTela(nomeUsuario, PRIVADO);
   } // fim do metodo criarConversaPrivada
 
   /*
    * Metodo: adicionarConversaNaTela
    * Funcao: adiciona o grupo/usuario na interface para conversar
-   * Parametros: nomeConversa = nome do usuario/grupo que esta conversando, tipoConversa = define se eh um grupo e uma conversa
+   * Parametros: nomeConversa = nome do usuario/grupo que esta conversando,
+   * tipoConversa = define se eh um grupo e uma conversa
    * Retorno: void
    */
   public void adicionarConversaNaTela(String nomeConversa, String tipoConversa) {
@@ -458,8 +466,10 @@ public class clienteController implements Initializable {
       } // fim do if
 
       Label notificacaoLabel = (Label) itemConversa.lookup("#notificacaoLabel");
+      ImageView notificacaoImage = (ImageView) itemConversa.lookup("#notificacaoImage");
       if (notificacaoLabel != null) {
         notificacaoLabel.setVisible(false);
+        notificacaoImage.setVisible(false);
       } // fim do if
 
       Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
@@ -489,6 +499,7 @@ public class clienteController implements Initializable {
       } // fim do if
 
       if (notificacaoLabel != null) {
+        listaConversas.get(chaveConversa).setNotificacaoImage(notificacaoImage);
         listaConversas.get(chaveConversa).setNotificacaoLabel(notificacaoLabel);
       } // fim do if
 
@@ -509,7 +520,8 @@ public class clienteController implements Initializable {
   /*
    * Metodo: criarAvisoSistema
    * Funcao: Cria um aviso centralizado na conversa
-   * Parametros: mensagem = mensagem do servidor sobre saida de alguem ou entrada num grupo
+   * Parametros: mensagem = mensagem do servidor sobre saida de alguem ou entrada
+   * num grupo
    * Retorno: void
    */
   public static HBox criarAvisoSistema(String mensagem) {
@@ -540,7 +552,8 @@ public class clienteController implements Initializable {
   /*
    * Metodo: abrirConversa
    * Funcao: abre a conversa (grupo/usuario)
-   * Parametros: nomeConversa = nome do grupo/usuario, tipoConversa = se eh um usuario ou grupo
+   * Parametros: nomeConversa = nome do grupo/usuario, tipoConversa = se eh um
+   * usuario ou grupo
    * Retorno: void
    */
   public void abrirConversa(String nomeConversa, String tipoConversa) {
@@ -611,7 +624,8 @@ public class clienteController implements Initializable {
 
   /*
    * Metodo: abrirListaGrupos
-   * Funcao: Pede ao cliente solicitar no servidor os membros de um grupo especifico
+   * Funcao: Pede ao cliente solicitar no servidor os membros de um grupo
+   * especifico
    * Parametros:
    * Retorno: void
    */
@@ -625,7 +639,8 @@ public class clienteController implements Initializable {
   /*
    * Metodo: exibirListaConversas
    * Funcao: Chamado pelo UDP quando a lista chega. Abre o popup com os dados.
-   * Parametros: itens = grupos/usuarios, tipo = define se os itens sao grupos ou usuarios
+   * Parametros: itens = grupos/usuarios, tipo = define se os itens sao grupos ou
+   * usuarios
    * Retorno: void
    */
   public static void exibirListaConversas(ArrayList<String> itens, String tipo) {
@@ -649,13 +664,13 @@ public class clienteController implements Initializable {
         System.out.println("CLIENTE - Erro ao abrir a lista recebida!");
         e.printStackTrace();
       } // fim do try-catch
-    }); 
+    });
   } // fim do metodo exibirListaConversas
 
   /*
    * Metodo: fecharAplicacao
    * Funcao: fechar a aplicacao
-   * Parametros: fecha a 
+   * Parametros: fecha a
    * Retorno: void
    */
   public void fecharAplicacao() {

@@ -109,7 +109,9 @@ public class listarConversasController implements Initializable {
       } // fim do if
 
       Label notificacaoLabel = (Label) itemConversa.lookup("#notificacaoLabel");
+      ImageView notificacaoImage = (ImageView) itemConversa.lookup("#notificacaoImage");
       itemConversa.getChildren().remove(notificacaoLabel);
+      itemConversa.getChildren().remove(notificacaoImage);
 
       Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
       itemConversa.getChildren().remove(sairConversa);

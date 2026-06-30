@@ -10,17 +10,22 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="70.0" prefWidth="280.0" styleClass="buttonGrupo" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button layoutX="220.0" layoutY="20.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="buttonSair" />
-      <ImageView fx:id="iconeConversa" fitHeight="50.0" fitWidth="58.0" layoutX="10.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="iconeConversa" fitHeight="60.0" fitWidth="68.0" layoutX="8.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@img/iconGrupo.png" />
          </image>
       </ImageView>
       <Label fx:id="nomeConversa" layoutX="79.0" layoutY="21.0">
          <font>
-            <Font size="18.0" />
+            <Font name="System Bold" size="18.0" />
          </font>
       </Label>
-      <Label fx:id="notificacaoLabel" alignment="CENTER" layoutX="42.0" layoutY="5.0" prefHeight="22.0" prefWidth="22.0" style="-fx-background-color: #fffb00; -fx-border-color: #000000; -fx-border-width: 2px; -fx-text-fill: #FFFFFF;" styleClass="notificacaoLabel" text="3">
+      <ImageView fx:id="notificacaoImage" fitHeight="28.0" fitWidth="28.0" layoutX="48.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@img/notification.png" />
+         </image>
+      </ImageView>
+      <Label fx:id="notificacaoLabel" alignment="CENTER" layoutX="52.0" layoutY="7.0" prefHeight="22.0" prefWidth="22.0" styleClass="notificacaoLabel" text="4">
          <font>
             <Font name="System Bold" size="12.0" />
          </font></Label>
