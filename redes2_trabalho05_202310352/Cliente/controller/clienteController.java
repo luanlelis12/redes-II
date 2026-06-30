@@ -509,7 +509,8 @@ public class clienteController implements Initializable {
 
       vboxGrupos.getChildren().add(itemConversa);
 
-      abrirConversa(nomeConversa, tipoConversa);
+      if (tipoConversa.equals(GRUPO))
+        abrirConversa(nomeConversa, tipoConversa);
 
     } catch (Exception e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");

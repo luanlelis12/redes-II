@@ -25,6 +25,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import util.processadorTexto;
 
 public class listarConversasController implements Initializable {
 
@@ -86,7 +87,7 @@ public class listarConversasController implements Initializable {
 
     // Exibe na tela todos os grupos/membros
     for (String item : conversas) {
-      adicionarGruposOuMembros(item);
+      adicionarGruposOuMembros(processadorTexto.retirarFlagEscape(item));
     } // fim do for
   }
 
