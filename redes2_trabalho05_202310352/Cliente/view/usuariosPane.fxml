@@ -28,7 +28,7 @@
             </AnchorPane>
          </content>
       </ScrollPane>
-      <Button layoutX="310.0" layoutY="10.0" mnemonicParsing="false" onAction="#fecharAplicacao" prefHeight="40.0" prefWidth="40.0" styleClass="buttonFecharChat" />
+      <Button layoutX="310.0" layoutY="10.0" mnemonicParsing="false" onAction="#fecharTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonFecharChat" />
       <Button layoutX="260.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#minimizarTela" prefHeight="40.0" prefWidth="40.0" styleClass="buttonMinimizar" />
    </children>
 </AnchorPane>

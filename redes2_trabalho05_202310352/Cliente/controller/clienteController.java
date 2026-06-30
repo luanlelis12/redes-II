@@ -424,7 +424,7 @@ public class clienteController implements Initializable {
    */
   public void criarConversaPrivada(String nomeUsuario) {
     // impede de criar conversa com alguem de nome vazio
-    if (nomeUsuario == null || nomeUsuario.trim().isEmpty())
+    if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(cliente.getNomeCliente()))
       return;
 
     adicionarConversaNaTela(nomeUsuario, PRIVADO);
@@ -467,7 +467,7 @@ public class clienteController implements Initializable {
           Image novaImagem = new Image(getClass().getResourceAsStream(caminhoImagem));
           icone.setImage(novaImagem);
         } catch (Exception e) {
-          System.out.println("Aviso: Imagem não encontrada, mantendo a foto padrão.");
+          System.out.println("Aviso: Imagem nao encontrada, mantendo a foto padrao.");
         }
 
         itemConversa.getChildren().remove(sairConversa);
@@ -605,7 +605,7 @@ public class clienteController implements Initializable {
   public static void exibirListaConversas(ArrayList<String> itens, String tipo) {
     Platform.runLater(() -> {
       try {
-        FXMLLoader loader = new FXMLLoader(instancia.getClass().getResource("/view/listaConversas.fxml"));
+        FXMLLoader loader = new FXMLLoader(instancia.getClass().getResource("/view/usuariosPane.fxml"));
         Parent root = loader.load();
 
         listarConversasController controladorPopup = loader.getController();

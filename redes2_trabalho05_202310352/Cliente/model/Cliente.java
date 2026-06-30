@@ -323,4 +323,52 @@ public class Cliente extends Thread {
     endpointCliente.close();
   }
 
+  public int getPORTA_UDP() {
+    return PORTA_UDP;
+  }
+
+  public int getPORTA_TCP() {
+    return PORTA_TCP;
+  }
+
+  public String getGRUPO() {
+    return GRUPO;
+  }
+
+  public String getPRIVADO() {
+    return PRIVADO;
+  }
+
+  public String getNomeCliente() {
+    return nomeCliente;
+  }
+
+  public void setNomeCliente(String nomeCliente) {
+    this.nomeCliente = nomeCliente;
+  }
+
+  public InetAddress getIpCliente() {
+    return ipCliente;
+  }
+
+  public void setIpCliente(InetAddress ipCliente) {
+    this.ipCliente = ipCliente;
+  }
+
+  public InetAddress getIpServidor() {
+    return ipServidor;
+  }
+
+  public void setIpServidor(InetAddress ipServidor) {
+    this.ipServidor = ipServidor;
+  }
+
+  public DatagramSocket getEndpointCliente() {
+    return endpointCliente;
+  }
+
+  public void setEndpointCliente(DatagramSocket endpointCliente) {
+    this.endpointCliente = endpointCliente;
+  }
+
 }

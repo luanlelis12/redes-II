@@ -8,30 +8,49 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class listarConversasController implements Initializable {
+
+  @FXML
+  private VBox vboxConversas;
+  @FXML
+  private Pane barraSuperior;
+  @FXML
+  private Label tituloLabel;
 
   private clienteController controladorPai;
   private ArrayList<String> conversas = new ArrayList<>();
   private String tipoConversa;
 
-  @FXML
-  private VBox vboxConversas;
+  private double xOffset = 0;
+  private double yOffset = 0;
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
+
+    if (barraSuperior != null) {
+      barraSuperior.setOnMousePressed(event -> {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
+      });
+
+      barraSuperior.setOnMouseDragged(event -> {
+        Stage janela = (Stage) barraSuperior.getScene().getWindow();
+
+        janela.setX(event.getScreenX() - xOffset);
+        janela.setY(event.getScreenY() - yOffset);
+      });
+    }
+
     for (String conversa : conversas) {
       adicionarConversaNaTela(conversa);
     }
@@ -48,6 +67,12 @@ public class listarConversasController implements Initializable {
     this.conversas = itens;
 
     vboxConversas.getChildren().clear(); // Limpa itens velhos, se houver
+
+    if (tipo.equals(clienteController.GRUPO)) {
+      tituloLabel.setText("Grupos");
+    } else if (tipo.equals(clienteController.PRIVADO)) {
+      tituloLabel.setText("Membros");
+    }
 
     if (conversas.isEmpty()) {
       // Opcional: Mostra um aviso bonitinho se não houver ninguem
@@ -91,7 +116,7 @@ public class listarConversasController implements Initializable {
           Image novaImagem = new Image(getClass().getResourceAsStream(caminhoImagem));
           icone.setImage(novaImagem);
         } catch (Exception e) {
-          System.out.println("Aviso: Imagem não encontrada, mantendo a foto padrão.");
+          System.out.println("Aviso: Imagem nao encontrada, mantendo a foto padrao.");
         }
 
       }
@@ -99,12 +124,12 @@ public class listarConversasController implements Initializable {
       if (tipoConversa.equals(clienteController.GRUPO)) {
         itemConversa.setOnMouseClicked(event -> {
           controladorPai.entrarGrupo(nomeConversa);
-          fecharTela(null);
+          fecharTela();
         });
       } else if (tipoConversa.equals(clienteController.PRIVADO)) {
         itemConversa.setOnMouseClicked(event -> {
           controladorPai.criarConversaPrivada(nomeConversa);
-          fecharTela(null);
+          fecharTela();
         });
       }
 
@@ -116,42 +141,24 @@ public class listarConversasController implements Initializable {
   } // fim do metodo adicionarConversaNaTela
 
   /*
-   * Metodo: criarAvisoSistema
-   * Funcao: Cria um aviso centralizado com estilo Retro (Arcade/Win95)
-   */
-  public static HBox criarAvisoSistema(String mensagem) {
-    Label textoMsg = new Label(">>> " + mensagem + " <<<");
-    textoMsg.setFont(new Font("System", 12));
-
-    String estiloRetroAlerta = "-fx-background-color: #fdf289; " +
-        "-fx-text-fill: #000000; " +
-        "-fx-font-weight: bold; " +
-        "-fx-border-color: #000000; " +
-        "-fx-border-width: 2px; " +
-        "-fx-padding: 5px 15px; " +
-        "-fx-effect: dropshadow(three-pass-box, #000000, 0, 0, 4, 4);";
-
-    textoMsg.setStyle(estiloRetroAlerta);
-    textoMsg.setWrapText(true);
-    textoMsg.setMaxWidth(380);
-    textoMsg.setAlignment(Pos.CENTER);
-
-    HBox linha = new HBox(textoMsg);
-    linha.setAlignment(Pos.CENTER);
-
-    linha.setPadding(new Insets(10, 15, 15, 15));
-
-    return linha;
-  }
-
-  /*
    * Metodo: fecharTela
    * Funcao: Fecha a tela
    */
-  public void fecharTela(ActionEvent event) {
-    Stage janela = (Stage) ((Node) event.getSource()).getScene().getWindow();
+  public void fecharTela() {
+    Stage janela = (Stage) vboxConversas.getScene().getWindow();
     janela.close();
   }
+
+  /*
+   * Metodo: minimizarTela
+   * Funcao: minimizar a tela
+   * Parametros: event = evento que ativou o metodo
+   * Retorno: void
+   */
+  public void minimizarTela(ActionEvent event) {
+    Stage janela = (Stage) ((Node) event.getSource()).getScene().getWindow();
+    janela.setIconified(true);
+  } // fim do metodo minimizarTela
 
   public void setControladorPai(clienteController controladorPai) {
     this.controladorPai = controladorPai;
