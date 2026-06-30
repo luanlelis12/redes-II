@@ -2,9 +2,9 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 12/06/2026
-* Ultima alteracao.: 
+* Ultima alteracao.: 30/06/2026
 * Nome.............: clienteController.java
-* Funcao...........: 
+* Funcao...........: Faz a ponte de comunicacao entre a interface e a classe cliente
 *******************************************************************/
 package controller;
 
@@ -81,8 +81,8 @@ public class clienteController implements Initializable {
 
   private static Cliente cliente;
 
-  private static Pair<String, String> conversaSelecionada = null; // <nomeDaConversa,tipoDeConversa>
-  private HashMap<Pair<String, String>, Conversa> listaConversas = new HashMap<>();
+  private static Pair<String, String> conversaSelecionada = null; // Pair<nomeDaConversa,tipoDeConversa>
+  private HashMap<Pair<String, String>, Conversa> listaConversas = new HashMap<>(); // <Pair<nomeDaConversa,tipoDeConversa>,Conversa>
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -101,11 +101,13 @@ public class clienteController implements Initializable {
       } // fim do if
     });
 
+    // Abre a scrollPane da conversa na mensagem mais recente
     conversaVBox.heightProperty().addListener((observable, oldValue, newValue) -> {
       conversaScrollPane.layout();
       conversaScrollPane.setVvalue(1.0d);
     });
 
+    // Muda o design do botao ao escrever algo na caixa de texto
     mensagemField.textProperty().addListener((observable, valorAntigo, valorNovo) -> {
       if (enviarButton != null) {
         enviarButton.getStyleClass().remove("buttonEnviar");
@@ -118,6 +120,7 @@ public class clienteController implements Initializable {
       } // fim do if
     });
 
+    // posibilita o usuario mexer a interface pela barra superior do programa
     if (barraSuperior != null) {
       barraSuperior.setOnMousePressed(event -> {
         xOffset = event.getSceneX();
@@ -130,7 +133,7 @@ public class clienteController implements Initializable {
         janela.setX(event.getScreenX() - xOffset);
         janela.setY(event.getScreenY() - yOffset);
       });
-    }
+    } // fim do if
 
   } // fim do metodo initialize
 
@@ -145,19 +148,21 @@ public class clienteController implements Initializable {
       cliente = new Cliente(nome, ipServidor);
       boolean aprovado = cliente.fazerLogin();
 
+      // Verifica se o login do cliente foi aprovada
       if (aprovado) {
-        cliente.start(); // So liga a Thread de escuta se o nome for aceite!
+        System.out.println("CLIENTE - Login aprovado!");
+        cliente.start();
         return true;
       } else {
         cliente.desligarCliente();
         System.out.println("CLIENTE - Login desaprovado desligando conexao.");
         return false;
-      }
+      } // fim do if-else
 
     } catch (Exception e) {
       e.printStackTrace();
       return false;
-    }
+    } // fim do try-catch
   } // fim do metodo criarCliente
 
   /*
@@ -181,11 +186,13 @@ public class clienteController implements Initializable {
 
     HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
 
+    // Adiciona o balao de mensagem no historico da conversa e na interface
     listaConversas.get(conversaSelecionada).adicionarMensagem(balaoDeDialogo);
     conversaVBox.getChildren().add(balaoDeDialogo);
 
     mensagem = processadorTexto.inserirFlagEscape(mensagem);
     System.out.println("CLIENTE - enviando mensagem \"" + mensagem + "\"");
+
     if (conversaSelecionada.getValue().equals(GRUPO)) {
       cliente.enviarMensagem(conversaSelecionada.getKey(), mensagem);
     } else if (conversaSelecionada.getValue().equals(PRIVADO)) {
@@ -225,7 +232,7 @@ public class clienteController implements Initializable {
         balaoDeDialogo = criarAvisoSistema(msgFinal);
       } else {
         balaoDeDialogo = criarBalaoDialogo(msgFinal, nomeFinal, false);
-      }
+      } // fim do if-else
 
       Pair<String, String> chaveRecebida = new Pair<>(nomeConversaFinal, tipoConversa);
 
@@ -245,7 +252,7 @@ public class clienteController implements Initializable {
 
         System.out
             .println("CLIENTE - " + nomeConversaFinal + " tem " + (contagemAtual + 1) + " novas mensagens.");
-      }
+      } // fim do if
 
       conversa.adicionarMensagem(balaoDeDialogo);
 
@@ -276,12 +283,13 @@ public class clienteController implements Initializable {
     balao.setMaxWidth(400);
     balao.setPadding(new Insets(10));
 
+    // Muda o design da depende de quem enviou
     if (!enviadaPorMim && nomeRemetente != null && !nomeRemetente.isEmpty()) {
       Label labelNome = new Label(nomeRemetente);
       labelNome.setStyle("-fx-font-weight: bold; -fx-text-fill: #0000aa;");
       labelNome.setFont(new Font("System", 13));
       balao.getChildren().add(labelNome);
-    }
+    } // fim do if
 
     Label textoMsg = new Label(mensagem);
     textoMsg.setFont(new Font("System", 14));
@@ -297,7 +305,7 @@ public class clienteController implements Initializable {
       linha.setPadding(new Insets(10, 25, 10, 15));
     } else {
       linha.setPadding(new Insets(10, 15, 10, 25));
-    }
+    } // fim do if-else
 
     String estiloRetroBase = "-fx-border-color: #000000; " +
         "-fx-border-width: 2px; " +
@@ -309,7 +317,7 @@ public class clienteController implements Initializable {
     } else {
       linha.setAlignment(Pos.CENTER_LEFT);
       balao.setStyle(estiloRetroBase + "-fx-background-color: #FFFFFF;");
-    }
+    } // fim do if-else
 
     return linha;
   } // fim do metodo criarBalaoDialogo
@@ -317,7 +325,7 @@ public class clienteController implements Initializable {
   /*
    * Metodo: entrarGrupo
    * Funcao: envia para a classe cliente o grupo que o usuario quer entrar
-   * Parametros:
+   * Parametros: nomeGrupo = grupo que o usuario quer entrar
    * Retorno: void
    */
   public void entrarGrupo(String nomeGrupo) {
@@ -405,12 +413,12 @@ public class clienteController implements Initializable {
           conversaSelecionada = null;
           mensagemField.setDisable(true);
           abrirListaMembrosButton.setVisible(false);
-        }
-      }
+        } // fim do if
+      } // fim do if
 
       String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
       cliente.sairGrupo(nomeGrupoProcessado);
-    }
+    } // fim do if
 
     itemConversa.getChildren().clear();
     vboxGrupos.getChildren().remove(itemConversa);
@@ -419,12 +427,13 @@ public class clienteController implements Initializable {
   /*
    * Metodo: criarConversaPrivada
    * Funcao: cria uma conversa privada com outro usuario
-   * Parametros:
+   * Parametros: nomeUsuario = usuario que o cliente quer conversar
    * Retorno: void
    */
   public void criarConversaPrivada(String nomeUsuario) {
     // impede de criar conversa com alguem de nome vazio
-    if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(cliente.getNomeCliente()))
+    String nomeUsuarioProcessado = processadorTexto.retirarFlagEscape(cliente.getNomeCliente());
+    if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(nomeUsuarioProcessado))
       return;
 
     adicionarConversaNaTela(nomeUsuario, PRIVADO);
@@ -432,8 +441,8 @@ public class clienteController implements Initializable {
 
   /*
    * Metodo: adicionarConversaNaTela
-   * Funcao:
-   * Parametros:
+   * Funcao: adiciona o grupo/usuario na interface para conversar
+   * Parametros: nomeConversa = nome do usuario/grupo que esta conversando, tipoConversa = define se eh um grupo e uma conversa
    * Retorno: void
    */
   public void adicionarConversaNaTela(String nomeConversa, String tipoConversa) {
@@ -446,19 +455,19 @@ public class clienteController implements Initializable {
       Label labelNome = (Label) itemConversa.lookup("#nomeConversa");
       if (labelNome != null) {
         labelNome.setText(nomeConversa);
-      }
+      } // fim do if
 
       Label notificacaoLabel = (Label) itemConversa.lookup("#notificacaoLabel");
       if (notificacaoLabel != null) {
         notificacaoLabel.setVisible(false);
-      }
+      } // fim do if
 
       Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
       if (sairConversa != null) {
         sairConversa.setOnAction(event -> {
           sairGrupo(itemConversa);
         });
-      }
+      } // fim do if
 
       if (tipoConversa.equals(PRIVADO)) {
         String caminhoImagem = "/view/img/iconPriv.png";
@@ -468,20 +477,20 @@ public class clienteController implements Initializable {
           icone.setImage(novaImagem);
         } catch (Exception e) {
           System.out.println("Aviso: Imagem nao encontrada, mantendo a foto padrao.");
-        }
+        } // fim do try-catch
 
         itemConversa.getChildren().remove(sairConversa);
-      }
+      } // fim do if
 
       Pair<String, String> chaveConversa = new Pair<>(nomeConversa, tipoConversa);
 
       if (!listaConversas.containsKey(chaveConversa)) {
         listaConversas.put(chaveConversa, new Conversa(nomeConversa, tipoConversa));
-      }
+      } // fim do if
 
       if (notificacaoLabel != null) {
         listaConversas.get(chaveConversa).setNotificacaoLabel(notificacaoLabel);
-      }
+      } // fim do if
 
       itemConversa.setOnMouseClicked(event -> {
         abrirConversa(nomeConversa, tipoConversa);
@@ -494,12 +503,14 @@ public class clienteController implements Initializable {
     } catch (Exception e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");
       e.printStackTrace();
-    }
+    } // fim do try-catch
   } // fim do metodo adicionarConversaNaTela
 
   /*
    * Metodo: criarAvisoSistema
-   * Funcao: Cria um aviso centralizado com estilo Retro (Arcade/Win95)
+   * Funcao: Cria um aviso centralizado na conversa
+   * Parametros: mensagem = mensagem do servidor sobre saida de alguem ou entrada num grupo
+   * Retorno: void
    */
   public static HBox criarAvisoSistema(String mensagem) {
     Label textoMsg = new Label(">>> " + mensagem + " <<<");
@@ -524,12 +535,12 @@ public class clienteController implements Initializable {
     linha.setPadding(new Insets(10, 15, 15, 15));
 
     return linha;
-  }
+  } // fim do metodo criarAvisoSistema
 
   /*
    * Metodo: abrirConversa
-   * Funcao:
-   * Parametros:
+   * Funcao: abre a conversa (grupo/usuario)
+   * Parametros: nomeConversa = nome do grupo/usuario, tipoConversa = se eh um usuario ou grupo
    * Retorno: void
    */
   public void abrirConversa(String nomeConversa, String tipoConversa) {
@@ -543,7 +554,7 @@ public class clienteController implements Initializable {
       abrirListaMembrosButton.setVisible(true);
     } else {
       abrirListaMembrosButton.setVisible(false);
-    }
+    } // fim do if-else
     mensagemField.setDisable(false);
 
     conversaVBox.getChildren().clear();
@@ -588,19 +599,34 @@ public class clienteController implements Initializable {
     } // fim do try-catch
   } // fim do metodo abrirTelaEntrarConversa
 
+  /*
+   * Metodo: abrirListaGrupos
+   * Funcao: Pede ao cliente solicitar no servidor o grupos disponiveis
+   * Parametros:
+   * Retorno: void
+   */
   public void abrirListaGrupos() {
     cliente.solicitarListaGrupos();
-  }
+  } // fim do metodo abrirListaGrupos
 
+  /*
+   * Metodo: abrirListaGrupos
+   * Funcao: Pede ao cliente solicitar no servidor os membros de um grupo especifico
+   * Parametros:
+   * Retorno: void
+   */
   public void abrirListaMembros() {
     if (conversaSelecionada != null && conversaSelecionada.getValue().equals(GRUPO)) {
-      cliente.solicitarListaMembros(processadorTexto.retirarFlagEscape(conversaSelecionada.getKey()));
-    }
-  }
+      String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(conversaSelecionada.getKey());
+      cliente.solicitarListaMembros(nomeGrupoProcessado);
+    } // fim do if
+  } // fim do metodo abrirListaMembros
 
   /*
    * Metodo: exibirListaConversas
    * Funcao: Chamado pelo UDP quando a lista chega. Abre o popup com os dados.
+   * Parametros: itens = grupos/usuarios, tipo = define se os itens sao grupos ou usuarios
+   * Retorno: void
    */
   public static void exibirListaConversas(ArrayList<String> itens, String tipo) {
     Platform.runLater(() -> {
@@ -622,14 +648,14 @@ public class clienteController implements Initializable {
       } catch (IOException e) {
         System.out.println("CLIENTE - Erro ao abrir a lista recebida!");
         e.printStackTrace();
-      }
-    });
-  }
+      } // fim do try-catch
+    }); 
+  } // fim do metodo exibirListaConversas
 
   /*
    * Metodo: fecharAplicacao
    * Funcao: fechar a aplicacao
-   * Parametros:
+   * Parametros: fecha a 
    * Retorno: void
    */
   public void fecharAplicacao() {
@@ -644,14 +670,15 @@ public class clienteController implements Initializable {
         cliente.sairGrupo(grupoProcessado);
       });
       cliente.fazerLogout();
+      cliente.desligarCliente();
 
       Platform.exit();
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
         e.printStackTrace();
-      }
-    }
+      } // fim do try-catch
+    } // fim do if
 
     System.out.println("CLIENTE - Aplicacao encerrada com sucesso.");
     System.exit(0);

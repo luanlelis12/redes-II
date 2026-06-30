@@ -1,3 +1,11 @@
+/* ***************************************************************
+* Autor............: Luan Alves Lelis Costa
+* Matricula........: 202310352
+* Inicio...........: 12/06/2026
+* Ultima alteracao.: 12/06/2026
+* Nome.............: processadorTexto.java
+* Funcao...........: Classe para gerenciar o texto, inserindo ou tirando escapes e flags
+*******************************************************************/
 package util;
 
 public class processadorTexto {

@@ -2,9 +2,9 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 15/06/2026
-* Ultima alteracao.: 
-* Nome.............: MenuInicial.java
-* Funcao...........: 
+* Ultima alteracao.: 27/06/2026
+* Nome.............: menuInicialController.java
+* Funcao...........: Gerencia a interface do menuInicial e comunica com o cliente.java para criar o cliente
 *******************************************************************/
 package controller;
 
@@ -41,6 +41,7 @@ public class menuInicialController implements Initializable {
   public void initialize(URL location, ResourceBundle resources) {
     System.out.println("O Controller foi carregado corretamente!");
 
+    // posibilita o usuario mexer a interface pela barra superior do programa
     if (barraSuperior != null) {
       barraSuperior.setOnMousePressed(event -> {
         xOffset = event.getSceneX();
@@ -88,6 +89,7 @@ public class menuInicialController implements Initializable {
       return;
     } // fim do if
 
+    // Faz um broadcast para encontrar o servidor
     String ipServidor = descobrirServidor();
 
     if (ipServidor == null) { // se o servidor estiver fora de ar emitir alert
@@ -110,7 +112,7 @@ public class menuInicialController implements Initializable {
       return;
     } // fim do if
 
-    // Se achou, tenta conectar enviando o IP que descobriu!
+    // Se achou, tenta conectar enviando o IP que descobriu
     boolean sucesso = clienteController.criarCliente(nomeCliente, ipServidor);
 
     if (!sucesso) {
@@ -150,12 +152,24 @@ public class menuInicialController implements Initializable {
 
   } // fim do metodo criarCliente
 
+  /*
+   * Metodo: fecharTela
+   * Funcao: Fecha a tela
+   * Parametros: 
+   * Retorno: void
+   */
   public void fecharAplicacao() {
     System.out.println("CLIENTE - Fechando aplicacao.");
     Platform.exit();
     System.exit(0);
   } // fim do metodo fecharAplicacao
 
+  /*
+   * Metodo: abrirSobre
+   * Funcao: abrir o sobre do aplicativo
+   * Parametros: event = evento que inicializou a funcao
+   * Retorno: void
+   */
   public void abrirSobre(ActionEvent event) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/sobre.fxml"));
@@ -203,11 +217,11 @@ public class menuInicialController implements Initializable {
         String ipEncontrado = pacoteResposta.getAddress().getHostAddress();
         System.out.println("CLIENTE - Servidor encontrado no IP: " + ipEncontrado);
         return ipEncontrado;
-      }
+      } // fim do if
     } catch (Exception e) {
       System.out.println("CLIENTE - Servidor nao encontrado (Timeout).");
-    }
+    } // fim do try-catch
     return null;
-  }
+  } // fim do metodo descobrirServidor
 
 }

@@ -149,30 +149,6 @@
   -fx-background-color: #f5e55a;
 }
 
-.scroll-bar {
-  -fx-border: none;
-}
-
-.scroll-bar:vertical .track {
-  -fx-background-color: #efefed;
-  -fx-border-color: transparent;
-}
-
-.scroll-bar:vertical .thumb {
-  -fx-background-color: #aaa7a2;
-  -fx-padding: 10px;
-}
-
-.scroll-bar:vertical .thumb:hover {
-  -fx-background-color: #7d796a;
-}
-
-.scroll-bar:vertical .increment-button,
-.scroll-bar:vertical .decrement-button {
-  -fx-background-color: transparent;
-  -fx-padding: 0;
-}
-
 .buttonConversas {
   -fx-background-image: url("img/buttonConversa.png");
 }
@@ -199,4 +175,45 @@
 
 .paneUsuarios {
   -fx-background-image: url("img/bgGrupos.png");
+}
+
+.scroll-pane {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+.scroll-pane > .viewport {
+  -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+  -fx-pref-height: 0;
+}
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+  -fx-shape: " ";
+  -fx-padding: 0;
+}
+
+.scroll-bar:vertical .track {
+  -fx-background-color: #f0f0f0;
+  -fx-background-radius: 0;
+  -fx-border-color: #d0d0d0;
+  -fx-border-width: 0 0 0 1px;
+}
+
+.scroll-bar:vertical .thumb {
+  -fx-background-color: #bbbbbb;
+  -fx-background-radius: 0;
+  -fx-background-insets: 2px;
+}
+
+.scroll-bar:vertical .thumb:hover {
+  -fx-background-color: #999999;
+}
+
+.scroll-bar:vertical .thumb:pressed {
+  -fx-background-color: #777777;
 }

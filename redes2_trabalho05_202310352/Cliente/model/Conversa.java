@@ -2,11 +2,10 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 27/06/2026
-* Ultima alteracao.: 
+* Ultima alteracao.: 29/06/2026
 * Nome.............: Conversa.java
-* Funcao...........: 
+* Funcao...........: Classe para gerenciar conversas em grupo ou entre usuarios
 *******************************************************************/
-
 package model;
 
 import javafx.scene.control.Label;

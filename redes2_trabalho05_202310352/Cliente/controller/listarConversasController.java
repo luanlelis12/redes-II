@@ -1,3 +1,11 @@
+/* ***************************************************************
+* Autor............: Luan Alves Lelis Costa
+* Matricula........: 202310352
+* Inicio...........: 29/06/2026
+* Ultima alteracao.: 30/06/2026
+* Nome.............: listarConversasController.java
+* Funcao...........: Gerencia a interface de lista membros de um grupo ou listar os grupos no servidor
+*******************************************************************/
 package controller;
 
 import java.net.URL;
@@ -36,7 +44,7 @@ public class listarConversasController implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-
+    // posibilita o usuario mexer a interface pela barra superior do programa
     if (barraSuperior != null) {
       barraSuperior.setOnMousePressed(event -> {
         xOffset = event.getSceneX();
@@ -49,18 +57,14 @@ public class listarConversasController implements Initializable {
         janela.setX(event.getScreenX() - xOffset);
         janela.setY(event.getScreenY() - yOffset);
       });
-    }
-
-    for (String conversa : conversas) {
-      adicionarConversaNaTela(conversa);
-    }
-  }
-
-  // Apague o conteúdo do initialize()!
+    } // fim do if
+  } // fim do metodo initialize
 
   /*
    * Metodo: carregarDados
-   * Funcao: Recebe a lista que veio do servidor e desenha os botões
+   * Funcao: Recebe a lista que veio do servidor e desenha os botoes
+   * Parametros: itens = grupos disponiveis ou membros do grupo, tipo = define se sao usuarios ou grupos
+   * Retorno: void
    */
   public void carregarDados(ArrayList<String> itens, String tipo) {
     this.tipoConversa = tipo;
@@ -72,26 +76,27 @@ public class listarConversasController implements Initializable {
       tituloLabel.setText("Grupos");
     } else if (tipo.equals(clienteController.PRIVADO)) {
       tituloLabel.setText("Membros");
-    }
+    } // fim do if-else
 
+    // Mostra um aviso se nao houver ninguem ou nenhum grupo
     if (conversas.isEmpty()) {
-      // Opcional: Mostra um aviso bonitinho se não houver ninguem
       vboxConversas.getChildren().add(new Label("Nenhum item encontrado."));
       return;
-    }
+    } // fim do if
 
+    // Exibe na tela todos os grupos/membros
     for (String item : conversas) {
-      adicionarConversaNaTela(item);
-    }
+      adicionarGruposOuMembros(item);
+    } // fim do for
   }
 
   /*
-   * Metodo: adicionarConversaNaTela
-   * Funcao:
-   * Parametros:
+   * Metodo: adicionarGruposOuMembros
+   * Funcao: adicionar os grupos/membros na tela
+   * Parametros: nomeConversa = nome do membro/grupo
    * Retorno: void
    */
-  public void adicionarConversaNaTela(String nomeConversa) {
+  public void adicionarGruposOuMembros(String nomeConversa) {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/grupoButton.fxml"));
       AnchorPane itemConversa = loader.load();
@@ -101,7 +106,7 @@ public class listarConversasController implements Initializable {
       Label labelNome = (Label) itemConversa.lookup("#nomeConversa");
       if (labelNome != null) {
         labelNome.setText(nomeConversa);
-      }
+      } // fim do if
 
       Label notificacaoLabel = (Label) itemConversa.lookup("#notificacaoLabel");
       itemConversa.getChildren().remove(notificacaoLabel);
@@ -109,6 +114,7 @@ public class listarConversasController implements Initializable {
       Button sairConversa = (Button) itemConversa.lookup(".buttonSair");
       itemConversa.getChildren().remove(sairConversa);
 
+      // Se for um usuario inicializa uma imagem diferente
       if (tipoConversa.equals(clienteController.PRIVADO)) {
         String caminhoImagem = "/view/img/iconPriv.png";
 
@@ -117,32 +123,33 @@ public class listarConversasController implements Initializable {
           icone.setImage(novaImagem);
         } catch (Exception e) {
           System.out.println("Aviso: Imagem nao encontrada, mantendo a foto padrao.");
-        }
+        } // fim do try-catch
+      } // fim do if
 
-      }
-
-      if (tipoConversa.equals(clienteController.GRUPO)) {
+      if (tipoConversa.equals(clienteController.GRUPO)) { // se for um grupo possibilita entrar no grupo clicando nele
         itemConversa.setOnMouseClicked(event -> {
           controladorPai.entrarGrupo(nomeConversa);
           fecharTela();
         });
-      } else if (tipoConversa.equals(clienteController.PRIVADO)) {
+      } else if (tipoConversa.equals(clienteController.PRIVADO)) { // se for um usuario criar uma conversa no privado clicando nele
         itemConversa.setOnMouseClicked(event -> {
           controladorPai.criarConversaPrivada(nomeConversa);
           fecharTela();
         });
-      }
+      } // fim do if
 
       vboxConversas.getChildren().add(itemConversa);
     } catch (Exception e) {
       System.out.println("CLIENTE - Erro: Nao foi possivel carregar o visual do grupo!");
       e.printStackTrace();
-    }
+    } // fim do try-catch
   } // fim do metodo adicionarConversaNaTela
 
   /*
    * Metodo: fecharTela
    * Funcao: Fecha a tela
+   * Parametros: 
+   * Retorno: void
    */
   public void fecharTela() {
     Stage janela = (Stage) vboxConversas.getScene().getWindow();

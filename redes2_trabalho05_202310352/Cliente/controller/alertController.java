@@ -1,3 +1,11 @@
+/* ***************************************************************
+* Autor............: Luan Alves Lelis Costa
+* Matricula........: 202310352
+* Inicio...........: 27/06/2026
+* Ultima alteracao.: 30/06/2026
+* Nome.............: alertController.java
+* Funcao...........: Gerencia a interface dos alerts
+*******************************************************************/
 package controller;
 
 import java.net.URL;
@@ -40,11 +48,13 @@ public class alertController implements Initializable {
         janela.setY(event.getScreenY() - yOffset);
       });
     } // fim do if
-  }
+  } // fim do metodo initialize
 
   /*
    * Metodo: setDetalhes
-   * Funcao: Recebe os textos personalizados e injeta na tela ANTES de ela abrir
+   * Funcao: Recebe os textos personalizados e insere na tela
+   * Parametros: titulo = titulo do alert, mensagem = mensagem do alert
+   * Retorno: void
    */
   public void setDetalhes(String titulo, String mensagem) {
     tituloLabel.setText(titulo);
@@ -54,6 +64,8 @@ public class alertController implements Initializable {
   /*
    * Metodo: fecharAlerta
    * Funcao: Fecha a janela atual (O pop-up do alerta)
+   * Parametros: event = evento que inicializou a funcao
+   * Retorno: void
    */
   @FXML
   public void fecharAlerta(ActionEvent event) {
