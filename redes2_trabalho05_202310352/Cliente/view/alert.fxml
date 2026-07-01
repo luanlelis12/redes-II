@@ -6,6 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="480.0" styleClass="alert" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.alertController">
    <children>
@@ -16,8 +17,11 @@
             <Image url="@img/alertImage.png" />
          </image>
       </ImageView>
-      <Label fx:id="tituloLabel" layoutX="40.0" layoutY="95.0" prefHeight="20.0" prefWidth="240.0" />
-      <Label fx:id="mensagemLabel" layoutX="40.0" layoutY="142.0" prefHeight="80.0" prefWidth="220.0" wrapText="true" />
+      <Label fx:id="tituloLabel" layoutX="40.0" layoutY="95.0" prefHeight="20.0" prefWidth="240.0">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font></Label>
+      <Label fx:id="mensagemLabel" layoutX="40.0" layoutY="130.0" prefHeight="110.0" prefWidth="220.0" wrapText="true" />
       <Pane fx:id="barraSuperior" prefHeight="60.0" prefWidth="420.0" />
    </children>
 </AnchorPane>

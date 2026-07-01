@@ -447,8 +447,51 @@ public class clienteController implements Initializable {
     String nomeUsuarioProcessado = processadorTexto.retirarFlagEscape(cliente.getNomeCliente());
 
     // impede de criar conversa com alguem de nome vazio
-    if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(nomeUsuarioProcessado))
+    if (nomeUsuarioProcessado == null || nomeUsuarioProcessado.trim().isEmpty()) {
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+
+        controladorDoAlerta.setDetalhes("Nome do Usuario Vazio",
+            "Por favor, digite um nome valido para o usuario em que deseja conversar.");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("Erro ao carregar o alerta!");
+        e.printStackTrace();
+      } // fim do try-catch
       return;
+    } // fim do if
+
+    if (nomeUsuario.equals(cliente.getNomeCliente())) {
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+
+        controladorDoAlerta.setDetalhes("Nome de Usuario Invalido",
+            "Por favor, digite um nome diferente para o usuario em que deseja conversar.");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+
+        janelaAlerta.show();
+      } catch (IOException e) {
+        System.out.println("Erro ao carregar o alerta!");
+        e.printStackTrace();
+      } // fim do try-catch
+      return;
+    }
 
     // Se o usuario ja tem essa conversa aberta apenas abre ela
     Pair<String, String> chavePrivada = new Pair<>(nomeUsuario, PRIVADO);

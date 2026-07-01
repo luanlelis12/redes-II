@@ -36,16 +36,13 @@ public class entrarConversaController {
   public void confirmarEntrada(ActionEvent event) {
     String nomeDigitado = nomeConversaField.getText();
 
-    // Verifica se o nome digitado nao eh vazio
-    if (nomeDigitado != null && !nomeDigitado.trim().isEmpty()) {
-      RadioButton selecionado = (RadioButton) tipoDeConversa.getSelectedToggle();
+    RadioButton selecionado = (RadioButton) tipoDeConversa.getSelectedToggle();
 
-      if (selecionado != null && selecionado.getText().equalsIgnoreCase("Grupo")) {
-        controladorPai.entrarGrupo(nomeDigitado);
-      } else {
-        controladorPai.criarConversaPrivada(nomeDigitado);
-      } // fim do if-else
-    } // fim do if
+    if (selecionado != null && selecionado.getText().equalsIgnoreCase("Grupo")) {
+      controladorPai.entrarGrupo(nomeDigitado);
+    } else {
+      controladorPai.criarConversaPrivada(nomeDigitado);
+    } // fim do if-else
     fecharTela(event);
   }
 
