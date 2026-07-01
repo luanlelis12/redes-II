@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 12/06/2026
-* Ultima alteracao.: 30/06/2026
+* Ultima alteracao.: 01/07/2026
 * Nome.............: clienteController.java
 * Funcao...........: Faz a ponte de comunicacao entre a interface e a classe cliente
 *******************************************************************/
@@ -184,7 +184,7 @@ public class clienteController implements Initializable {
     if (mensagem.equals(""))
       return;
 
-    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Você", true);
+    HBox balaoDeDialogo = criarBalaoDialogo(mensagem, "Voce", true);
 
     // Adiciona o balao de mensagem no historico da conversa e na interface
     listaConversas.get(conversaSelecionada).adicionarMensagem(balaoDeDialogo);
@@ -339,7 +339,8 @@ public class clienteController implements Initializable {
 
         alertController controladorDoAlerta = loader.getController();
 
-        controladorDoAlerta.setDetalhes("Nenhum nome foi inserido", "Digite o nome do grupo para entrar.");
+        controladorDoAlerta.setDetalhes("Nome do Grupo Vazio",
+            "Por favor, digite um nome valido para o grupo em que deseja entrar ou criar.");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));
@@ -364,7 +365,8 @@ public class clienteController implements Initializable {
 
         alertController controladorDoAlerta = loader.getController();
 
-        controladorDoAlerta.setDetalhes("Voce ja esta nesse grupo.", "Voce ja esta nesse grupo.");
+        controladorDoAlerta.setDetalhes("Ja Pertence ao Grupo",
+            "Voce ja esta conectado a este grupo. Por favor, selecione-o na sua lista lateral para conversar.");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));
@@ -469,8 +471,8 @@ public class clienteController implements Initializable {
 
         alertController controladorDoAlerta = loader.getController();
 
-        controladorDoAlerta.setDetalhes("Usuario Invalido",
-            "O usuario '" + nomeUsuario + "' nao existe ou esta offline no momento.");
+        controladorDoAlerta.setDetalhes("Usuario Nao Encontrado", "O utilizador '" + nomeUsuario
+            + "' nao existe ou esta offline no momento. Verifique se o nome foi digitado corretamente.");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));

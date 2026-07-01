@@ -2,9 +2,9 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 12/06/2026
-* Ultima alteracao.: 
+* Ultima alteracao.: 01/07/2026
 * Nome.............: Servidor.java
-* Funcao...........: 
+* Funcao...........: Gerenciar os grupos, usuarios e as apdus recebidas
 *******************************************************************/
 
 package model;

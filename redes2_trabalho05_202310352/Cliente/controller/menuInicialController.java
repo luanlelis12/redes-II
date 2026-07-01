@@ -2,7 +2,7 @@
 * Autor............: Luan Alves Lelis Costa
 * Matricula........: 202310352
 * Inicio...........: 15/06/2026
-* Ultima alteracao.: 27/06/2026
+* Ultima alteracao.: 1/07/2026
 * Nome.............: menuInicialController.java
 * Funcao...........: Gerencia a interface do menuInicial e comunica com o cliente.java para criar o cliente
 *******************************************************************/
@@ -74,7 +74,7 @@ public class menuInicialController implements Initializable {
 
         alertController controladorDoAlerta = loader.getController();
 
-        controladorDoAlerta.setDetalhes("tituloErro", "mensagemErro");
+        controladorDoAlerta.setDetalhes("Nome Obrigatorio", "Por favor, digite um nome de usuario valido antes de tentar conectar.");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));
@@ -98,8 +98,7 @@ public class menuInicialController implements Initializable {
         Parent root = loader.load();
 
         alertController controladorDoAlerta = loader.getController();
-        controladorDoAlerta.setDetalhes("ERRO: Servidor fora de ar.", "O Servidor nao esta online!");
-
+        controladorDoAlerta.setDetalhes("Servidor Nao Encontrado", "Nao foi possivel localizar o servidor na rede local. Verifique se ele esta ligado e tente novamente.");
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));
         janelaAlerta.initStyle(StageStyle.UNDECORATED);
@@ -121,7 +120,7 @@ public class menuInicialController implements Initializable {
         Parent root = loader.load();
 
         alertController controladorDoAlerta = loader.getController();
-        controladorDoAlerta.setDetalhes("NOME EM USO", "Este nome ja esta sendo utilizado no servidor.");
+        controladorDoAlerta.setDetalhes("Nome Indisponivel", "Este nome de usuario ja esta conectado no chat. Por favor, escolha um nome diferente para entrar.");
 
         Stage janelaAlerta = new Stage();
         janelaAlerta.setScene(new Scene(root));
