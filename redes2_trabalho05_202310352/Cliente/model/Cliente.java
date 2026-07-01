@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 import controller.clienteController;
 
@@ -57,7 +58,8 @@ public class Cliente extends Thread {
           System.out.println("CLIENTE - esperando uma mensagem...");
           endpointCliente.receive(pacoteRecebido);
 
-          String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
+          String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength(),
+              StandardCharsets.UTF_8).trim();
 
           if (apduRecebida.equals("DISCOVER"))
             continue;
@@ -170,23 +172,33 @@ public class Cliente extends Thread {
    * Parametros: grupo = grupo que o usuario quer entrar
    * Retorno: void
    */
-  public void entrarGrupo(String grupo) {
+  public boolean entrarGrupo(String grupo) {
     try {
       Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
 
-      OutputStream saida1 = socketCliente.getOutputStream();
-      ObjectOutputStream saida = new ObjectOutputStream(saida1);
+      socketCliente.setSoTimeout(2000);
+
+      ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
+      saida.flush();
+      ObjectInputStream entrada = new ObjectInputStream(socketCliente.getInputStream());
 
       String apdu = new String("JOIN~~" + grupo + "~~" + nomeCliente + "\n");
-
-      System.out.println("CLIENTE - Enviando APDU JOIN para o servidor");
+      System.out.println("CLIENTE - Enviando APDU JOIN para o servidor...");
       saida.writeObject(apdu);
       saida.flush();
+
+      String resposta = (String) entrada.readObject();
       socketCliente.close();
+
+      return resposta.equals("JOIN_OK");
+    } catch (java.net.SocketTimeoutException e) {
+      // Cai aqui se o tempo esgotar
+      System.out.println("CLIENTE - ERRO: Tempo limite excedido. O Servidor nao respondeu ao JOIN.");
+      return false;
     } catch (Exception e) {
-      System.out.println("CLIENTE - ERRO: Nao foi possivel entrar no grupo!");
-      e.printStackTrace();
-    } // fim try-catch
+      System.out.println("CLIENTE - ERRO: Falha na conexao com o servidor!");
+      return false;
+    } // fim do try-catch
   } // fim do metodo entrarGrupo
 
   /*
@@ -195,23 +207,33 @@ public class Cliente extends Thread {
    * Parametros: grupo = grupo que o usuario quer sair
    * Retorno: void
    */
-  public void sairGrupo(String grupo) {
+  public boolean sairGrupo(String grupo) {
     try {
       Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
 
-      OutputStream saida1 = socketCliente.getOutputStream();
-      ObjectOutputStream saida = new ObjectOutputStream(saida1);
+      socketCliente.setSoTimeout(2000);
+
+      ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
+      saida.flush();
+      ObjectInputStream entrada = new ObjectInputStream(socketCliente.getInputStream());
 
       String apdu = new String("LEAVE~~" + grupo + "~~" + nomeCliente + "\n");
-
-      System.out.println("CLIENTE - Enviando APDU LEAVE para o servidor");
+      System.out.println("CLIENTE - Enviando APDU LEAVE para o servidor...");
       saida.writeObject(apdu);
       saida.flush();
+
+      String resposta = (String) entrada.readObject();
       socketCliente.close();
+
+      return resposta.equals("LEAVE_OK");
+    } catch (java.net.SocketTimeoutException e) {
+      // Cai aqui se o tempo esgotar
+      System.out.println("CLIENTE - ERRO: Tempo limite excedido. O Servidor nao respondeu ao LEAVE.");
+      return false;
     } catch (Exception e) {
-      System.out.println("CLIENTE - ERRO: Nao foi possivel sair do grupo!");
-      e.printStackTrace();
-    } // fim try-catch
+      System.out.println("CLIENTE - ERRO: Falha na conexao com o servidor!");
+      return false;
+    } // fim do try-catch
   } // fim do metodo sairGrupo
 
   /*
@@ -226,7 +248,7 @@ public class Cliente extends Thread {
       byte[] dadosEnviados = new byte[1024];
 
       String apdu = new String("SENDPVT~~" + usuarioDestino + "~~" + nomeCliente + "~~" + mensagem + "\n");
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       System.out.println("CLIENTE - Enviando APDU SENDPVT para o servidor");
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
@@ -248,7 +270,7 @@ public class Cliente extends Thread {
       byte[] dadosEnviados = new byte[1024];
 
       String apdu = new String("SEND~~" + grupo + "~~" + nomeCliente + "~~" + mensagem + "\n");
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       System.out.println("CLIENTE - Enviando APDU SEND para o servidor");
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
@@ -318,8 +340,9 @@ public class Cliente extends Thread {
   public void solicitarListaGrupos() {
     try {
       byte[] dadosEnviados = new byte[1024];
+
       String apdu = new String("LISTCVS~~" + nomeCliente + "\n");
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       System.out.println("CLIENTE - Solicitando lista de grupos ao servidor...");
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
@@ -341,7 +364,7 @@ public class Cliente extends Thread {
       byte[] dadosEnviados = new byte[1024];
 
       String apdu = new String("LISTMEMBERS~~" + grupo + "~~" + nomeCliente + "\n");
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       System.out.println("CLIENTE - Enviando APDU SEND para o servidor");
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, ipServidor, PORTA_UDP);
@@ -351,6 +374,39 @@ public class Cliente extends Thread {
       e.printStackTrace();
     } // fim try-catch
   } // fim do metodo solicitarListaMembros
+
+  /*
+   * Metodo: verificarUsuario
+   * Funcao: Pergunta ao servidor via TCP se um usuario especifico esta online
+   */
+  public boolean verificarUsuario(String nomeUsuarioDestino) {
+    try {
+      Socket socketCliente = new Socket(ipServidor, PORTA_TCP);
+      socketCliente.setSoTimeout(5000);
+
+      ObjectOutputStream saida = new ObjectOutputStream(socketCliente.getOutputStream());
+      saida.flush();
+      ObjectInputStream entrada = new ObjectInputStream(socketCliente.getInputStream());
+
+      String apdu = new String("CHECKUSER~~" + nomeUsuarioDestino + "\n");
+      System.out.println("CLIENTE - Verificando se o usuario " + nomeUsuarioDestino + " existe...");
+      saida.writeObject(apdu);
+      saida.flush();
+
+      String resposta = (String) entrada.readObject();
+      socketCliente.close();
+
+      return resposta.equals("USER_OK");
+
+    } catch (java.net.SocketTimeoutException e) {
+      System.out.println("CLIENTE - ERRO: Tempo limite excedido ao verificar usuario.");
+      return false;
+    } catch (Exception e) {
+      System.out.println("CLIENTE - ERRO: Falha ao verificar usuario no servidor.");
+      e.printStackTrace();
+      return false;
+    } // fim do try-catch
+  } // fim do metodo verificarUsuario
 
   public void desligarCliente() {
     endpointCliente.close();

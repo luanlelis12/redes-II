@@ -17,6 +17,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class Servidor extends Thread {
               ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
 
               String apduRecebida = ((String) entrada.readObject()).trim();
+
               System.out.println("SERVIDOR TCP - APDU recebida: " + apduRecebida + ".");
 
               processarApdu(apduRecebida, conexao.getInetAddress(), saida);
@@ -85,12 +87,12 @@ public class Servidor extends Thread {
         endpointServidor.receive(pacoteRecebido);
         System.out.println("SERVIDOR UDP - recebendo pacote do ip = " + pacoteRecebido.getAddress() + ".");
 
-        String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength()).trim();
+        String apduRecebida = new String(pacoteRecebido.getData(), 0, pacoteRecebido.getLength(),
+            StandardCharsets.UTF_8).trim();
 
         // ======= INTERCEPTA O BROADCAST DE DESCOBERTA =======
         if (apduRecebida.equals("DISCOVER")) {
           byte[] resposta = "DISCOVER_OK".getBytes();
-          // Responde diretamente para a porta e IP de quem gritou na rede
           DatagramPacket pacoteResposta = new DatagramPacket(resposta, resposta.length, pacoteRecebido.getAddress(),
               pacoteRecebido.getPort());
           endpointServidor.send(pacoteResposta);
@@ -124,11 +126,16 @@ public class Servidor extends Thread {
           mutex.acquire();
           inserirNoGrupo(grupo, nome, ipCliente);
           mutex.release();
+
+          if (saida != null) {
+            saida.writeObject("JOIN_OK");
+            saida.flush();
+          } // fim do if
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU JOIN.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "LEAVE":
         try {
@@ -137,11 +144,16 @@ public class Servidor extends Thread {
           mutex.acquire();
           sairDoGrupo(grupo, nome);
           mutex.release();
+
+          if (saida != null) {
+            saida.writeObject("LEAVE_OK");
+            saida.flush();
+          } // fim do if
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LEAVE.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "SEND":
         try {
@@ -155,7 +167,7 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SEND.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "SENDPVT":
         try {
@@ -169,7 +181,7 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU SENDPVT.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "LOGIN":
         try {
@@ -179,7 +191,7 @@ public class Servidor extends Thread {
         } catch (Exception e) {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LOGIN.");
           e.getStackTrace();
-        }
+        } // fim do try-catch
         break;
       case "LOGOUT":
         try {
@@ -188,7 +200,7 @@ public class Servidor extends Thread {
 
           if (usuariosOnline.containsKey(nome)) {
             usuariosOnline.remove(nome);
-          }
+          } // fim do if
 
           mutex.release();
           System.out.println("SERVIDOR TCP - Usuario " + nome + " deslogado.");
@@ -197,7 +209,7 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LOGOUT.");
           e.printStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "LISTCVS":
         try {
@@ -209,7 +221,7 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTCVS.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
       case "LISTMEMBERS":
         try {
@@ -222,14 +234,37 @@ public class Servidor extends Thread {
           System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU LISTMEMBERS.");
           e.getStackTrace();
           mutex.release();
-        }
+        } // fim do try-catch
         break;
+      case "CHECKUSER":
+        try {
+          String nomeAlvo = partes[1];
+          mutex.acquire();
 
+          boolean existe = usuariosOnline.containsKey(nomeAlvo);
+          mutex.release();
+
+          if (saida != null) {
+            saida.writeObject(existe ? "USER_OK" : "USER_NOT_FOUND");
+            saida.flush();
+          } // fim do if
+        } catch (Exception e) {
+          System.out.println("SERVIDOR - ERRO: Nao foi possivel processar a APDU CHECKUSER.");
+          e.printStackTrace();
+          mutex.release();
+        } // fim do try-catch
+        break;
       default:
         break;
     }
   } // fim do metodo processarApdu
 
+  /*
+   * Metodo: dividirApdu
+   * Funcao: Pegar a APDU recebida e divide num array
+   * Parametros: apdu = APDU enviada pelo servidor
+   * Retorno: String[]
+   */
   public String[] dividirApdu(String apdu) {
     ArrayList<String> list = new ArrayList<>();
     int indice = 0;
@@ -240,14 +275,23 @@ public class Servidor extends Thread {
         list.add(apdu.substring(indice, i).trim());
         i++;
         indice = i + 1;
-      }
-    }
+      } // fim do if-else
+    } // fim do for
     list.add(apdu.substring(indice, apdu.length()));
     int resultSize = list.size();
     String[] result = new String[resultSize];
     return list.subList(0, resultSize).toArray(result);
-  }
+  } // fim do metodo dividirApdu
 
+  /*
+   * Metodo: logarUsuario
+   * Funcao: Pega as informacoes do cliente, verifica se ja tem com um nome igual
+   * ja logado, caso nao, armazena essas informacoes e retorna uma mensagem de
+   * confirmacao
+   * Parametros: nome = nome do cliente, ipCliente = endereco ip do cliente, saida
+   * = caminho de saida para retornar a mensagem
+   * Retorno: void
+   */
   public void logarUsuario(String nome, InetAddress ipCliente, ObjectOutputStream saida) {
     try {
       boolean nomeEmUso = usuariosOnline.containsKey(nome);
@@ -257,32 +301,39 @@ public class Servidor extends Thread {
       if (aprovado) {
         Usuario novoUsuario = new Usuario(ipCliente, nome, PORTA_TCP);
         usuariosOnline.put(nome, novoUsuario);
-      }
+      } // fim do if
 
       mutex.release();
 
       if (saida != null) {
         saida.writeObject(aprovado ? "LOGIN_OK" : "LOGIN_ERROR");
         saida.flush();
-      }
+      } // fim do if
       System.out.println("SERVIDOR TCP - Validando LOGIN de " + nome + " (Aprovado: " + aprovado + ").");
 
     } catch (Exception e) {
       System.out.println("SERVIDOR - ERRO Crítico no logarUsuario:");
       e.printStackTrace();
       mutex.release();
-    }
-  }
+    } // fim do try-catch
+  } // fim do metodo logarUsuario
 
+  /*
+   * Metodo: inserirNoGrupo
+   * Funcao: Insere o usuario num grupo
+   * Parametros: nomeUsuario = nome do cliente, ipCliente = endereco ip do
+   * cliente, nomeGrupo = nome do grupo
+   * Retorno: void
+   */
   public void inserirNoGrupo(String nomeGrupo, String nomeUsuario, InetAddress ipCliente) {
     Usuario novoUsuario = new Usuario(ipCliente, nomeUsuario, PORTA_TCP);
     if (grupos.containsKey(nomeGrupo)) {
-      if (!grupos.get(nomeGrupo).contains(novoUsuario)) { // Se ele ainda não estava no grupo
+      if (!grupos.get(nomeGrupo).contains(novoUsuario)) {
         System.out.println("SERVIDOR TCP - Adicionando " + nomeUsuario + " no grupo " + nomeGrupo + ".");
         grupos.get(nomeGrupo).add(novoUsuario);
 
         enviarMensagem(nomeUsuario + " entrou no grupo.", nomeGrupo, "SERVIDOR");
-      }
+      } // fim do if
     } else {
       System.out
           .println("SERVIDOR TCP - Criando novo grupo " + nomeGrupo + " adicionando usuario " + nomeUsuario + ".");
@@ -291,9 +342,15 @@ public class Servidor extends Thread {
       grupos.put(nomeGrupo, listaUsuario);
 
       enviarMensagem(nomeUsuario + " criou o grupo.", nomeGrupo, "SERVIDOR");
-    }
-  }
+    } // fim do if-else
+  } // fim do metodo inserirNoGrupo
 
+  /*
+   * Metodo: sairDoGrupo
+   * Funcao: Retira o usuario do grupo
+   * Parametros: nomeUsuario = nome do cliente, nomeGrupo = nome do grupo
+   * Retorno: void
+   */
   public void sairDoGrupo(String nomeGrupo, String nomeUsuario) {
     ArrayList<Usuario> listaDeUsuarios = grupos.get(nomeGrupo);
     for (Usuario usuario : listaDeUsuarios) {
@@ -301,16 +358,24 @@ public class Servidor extends Thread {
         grupos.get(nomeGrupo).remove(usuario);
         System.out.println("SERVIDOR TCP - Removendo o usuario " + nomeUsuario + " do grupo " + nomeGrupo + ".");
         break;
-      }
-    }
+      } // fim do if
+    } // fim do for
     if (grupos.get(nomeGrupo).isEmpty()) {
       System.out.println("SERVIDOR TCP - O grupo " + nomeGrupo + " possui zero usuarios apagando grupo.");
       grupos.remove(nomeGrupo);
     } else {
       enviarMensagem(nomeUsuario + " saiu do grupo.", nomeGrupo, "SERVIDOR");
-    }
-  }
+    } // fim do if-else
+  } // fim do metodo sairDoGrupo
 
+  /*
+   * Metodo: enviarMensagem
+   * Funcao: envia uma mensagem para todos os usarios do grupo, tirando o
+   * remetente da mensagem
+   * Parametros: nomeUsuario = nome do cliente, nomeGrupo = nome do grupo,
+   * mensagem = mensagem enviada pelo usuario
+   * Retorno: void
+   */
   public void enviarMensagem(String mensagem, String nomeGrupo, String nomeUsuario) {
     ArrayList<Usuario> listaDeUsuarios = grupos.get(nomeGrupo);
     for (Usuario usuario : listaDeUsuarios) {
@@ -319,7 +384,7 @@ public class Servidor extends Thread {
           byte[] dadosEnviados = new byte[1024];
 
           String apdu = new String("SEND~~" + nomeGrupo + "~~" + nomeUsuario + "~~" + mensagem + "\n");
-          dadosEnviados = apdu.getBytes();
+          dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
           DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, usuario.getIp(),
               PORTA_UDP);
@@ -328,18 +393,27 @@ public class Servidor extends Thread {
           endpointServidor.send(datagramaEnviado);
         } catch (Exception e) {
           System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar a mensagem!");
-        }
-      }
-    }
-  }
+        } // fim do try-catch
+      } // fim do if
+    } // fim do for
+  } // fim do metodo enviarMensagem
 
+  /*
+   * Metodo: enviarMensagemPrivado
+   * Funcao: envia uma mensagem para apenas um unico usuario
+   * Parametros: nomeUsuarioDestino = nome do cliente que vai receber a mensagem,
+   * nomeUsuarioRemetente = usuario remetente, mensagem = mensagem enviada pelo
+   * remetente
+   * usuario
+   * Retorno: void
+   */
   public void enviarMensagemPrivado(String mensagem, String nomeUsuarioDestino, String nomeUsuarioRemetente) {
     Usuario usuarioDestino = usuariosOnline.get(nomeUsuarioDestino);
     try {
       byte[] dadosEnviados = new byte[1024];
 
       String apdu = new String("SENDPVT~~" + nomeUsuarioDestino + "~~" + nomeUsuarioRemetente + "~~" + mensagem + "\n");
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length, usuarioDestino.getIp(),
           PORTA_UDP);
@@ -349,9 +423,15 @@ public class Servidor extends Thread {
       endpointServidor.send(datagramaEnviado);
     } catch (Exception e) {
       System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar a mensagem privada!");
-    }
-  }
+    } // fim do try-catch
+  } // fim do metodo enviarMensagemPrivado
 
+  /*
+   * Metodo: listarConversas
+   * Funcao: retorna uma lista de todos os grupos
+   * Parametros: nomeUsuarioRemetente = usuario que pediu a lista de grupos
+   * Retorno: void
+   */
   private void listarConversas(String nomeUsuarioRemetente) {
     Usuario usuarioRemetente = usuariosOnline.get(nomeUsuarioRemetente);
     try {
@@ -363,7 +443,7 @@ public class Servidor extends Thread {
       }
       apdu += "\n";
 
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length,
           usuarioRemetente.getIp(),
@@ -375,9 +455,16 @@ public class Servidor extends Thread {
       endpointServidor.send(datagramaEnviado);
     } catch (Exception e) {
       System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar lista de todos os grupos!");
-    }
-  }
+    } // fim do try-catch
+  } // fim do if
 
+  /*
+   * Metodo: listarMembrosGrupo
+   * Funcao: retorna uma lista de todos os usuarios de um grupo
+   * Parametros: nomeUsuarioRemetente = usuario que pediu a lista de membros,
+   * nomeGrupo = grupo que o usuario que a lista
+   * Retorno: void
+   */
   private void listarMembrosGrupo(String nomeGrupo, String nomeUsuarioRemetente) {
     ArrayList<Usuario> membros = grupos.get(nomeGrupo);
     Usuario usuarioRemetente = usuariosOnline.get(nomeUsuarioRemetente);
@@ -388,10 +475,10 @@ public class Servidor extends Thread {
       for (Usuario usuario : membros) {
         if (!usuario.equals(usuarioRemetente))
           apdu += ("~~" + usuario.getNome());
-      }
+      } // fim do for
       apdu += "\n";
 
-      dadosEnviados = apdu.getBytes();
+      dadosEnviados = apdu.getBytes(StandardCharsets.UTF_8);
 
       DatagramPacket datagramaEnviado = new DatagramPacket(dadosEnviados, dadosEnviados.length,
           usuarioRemetente.getIp(),
@@ -403,7 +490,7 @@ public class Servidor extends Thread {
       endpointServidor.send(datagramaEnviado);
     } catch (Exception e) {
       System.out.println("SERVIDOR UDP - ERRO: Nao foi possivel enviar os membros do grupo " + nomeGrupo + "!");
-    }
-  }
+    } // fim do try-catch
+  } // fim do metodo listarMembrosGrupo
 
 }

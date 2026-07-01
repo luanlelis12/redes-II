@@ -380,9 +380,15 @@ public class clienteController implements Initializable {
     } // fim do if
 
     try {
-      cliente.entrarGrupo(nomeGrupoProcessado);
-      listaConversas.put(grupo, new Conversa(nomeGrupo, GRUPO));
-      adicionarConversaNaTela(nomeGrupo, GRUPO);
+      boolean sucesso = cliente.entrarGrupo(nomeGrupoProcessado);
+
+      if (sucesso) {
+        System.out.println("CLIENTE - Entrada no grupo confirmada pelo servidor!");
+        listaConversas.put(grupo, new Conversa(nomeGrupo, GRUPO));
+        adicionarConversaNaTela(nomeGrupo, GRUPO);
+      } else {
+        System.out.println("CLIENTE - O servidor negou ou falhou a entrada no grupo.");
+      } // fim do if
     } catch (Exception e) {
       e.printStackTrace();
     } // fim do try-catch
@@ -399,29 +405,34 @@ public class clienteController implements Initializable {
 
     if (label != null) {
       String nomeGrupo = label.getText();
-      System.out.println("CLIENTE - Saindo do grupo " + nomeGrupo + ".");
-      Pair<String, String> grupo = new Pair<String, String>(nomeGrupo, GRUPO);
-
-      listaConversas.remove(grupo);
-
-      if (conversaSelecionada != null) {
-        String nomeConversaAberta = processadorTexto.retirarFlagEscape(conversaSelecionada.getKey());
-
-        if (nomeConversaAberta.equals(nomeGrupo)) {
-          conversaVBox.getChildren().clear();
-          conversaSelecionadaLabel.setText("");
-          conversaSelecionada = null;
-          mensagemField.setDisable(true);
-          abrirListaMembrosButton.setVisible(false);
-        } // fim do if
-      } // fim do if
+      System.out.println("CLIENTE - Solicitando saida do grupo " + nomeGrupo + "...");
 
       String nomeGrupoProcessado = processadorTexto.inserirFlagEscape(nomeGrupo);
-      cliente.sairGrupo(nomeGrupoProcessado);
-    } // fim do if
 
-    itemConversa.getChildren().clear();
-    vboxGrupos.getChildren().remove(itemConversa);
+      boolean sucesso = cliente.sairGrupo(nomeGrupoProcessado);
+
+      if (sucesso) {
+        Pair<String, String> grupo = new Pair<String, String>(nomeGrupo, GRUPO);
+        listaConversas.remove(grupo);
+
+        if (conversaSelecionada != null) {
+          String nomeConversaAberta = processadorTexto.retirarFlagEscape(conversaSelecionada.getKey());
+
+          if (nomeConversaAberta.equals(nomeGrupo)) {
+            conversaVBox.getChildren().clear();
+            conversaSelecionadaLabel.setText("");
+            conversaSelecionada = null;
+            mensagemField.setDisable(true);
+            abrirListaMembrosButton.setVisible(false);
+          } // fim do if
+        } // fim do if
+
+        itemConversa.getChildren().clear();
+        vboxGrupos.getChildren().remove(itemConversa);
+      } else {
+        System.out.println("CLIENTE - O servidor falhou em remover o usuario do grupo.");
+      } // fim do if-else
+    } // fim do if
   } // fim do metodo sairGrupo
 
   /*
@@ -431,19 +442,47 @@ public class clienteController implements Initializable {
    * Retorno: void
    */
   public void criarConversaPrivada(String nomeUsuario) {
-    // impede de criar conversa com alguem de nome vazio
     String nomeUsuarioProcessado = processadorTexto.retirarFlagEscape(cliente.getNomeCliente());
+
+    // impede de criar conversa com alguem de nome vazio
     if (nomeUsuario == null || nomeUsuario.trim().isEmpty() || nomeUsuario.equals(nomeUsuarioProcessado))
       return;
 
-    Pair<String, String> conversaUsuario = new Pair<>(nomeUsuario, PRIVADO);
-
-    if (listaConversas.containsKey(conversaUsuario))
+    // Se o usuario ja tem essa conversa aberta apenas abre ela
+    Pair<String, String> chavePrivada = new Pair<>(nomeUsuario, PRIVADO);
+    if (listaConversas.containsKey(chavePrivada)) {
+      abrirConversa(nomeUsuario, PRIVADO);
       return;
+    } // fim do if
 
-    listaConversas.put(conversaUsuario, new Conversa(nomeUsuario, PRIVADO));
+    boolean usuarioExiste = cliente.verificarUsuario(nomeUsuario);
 
-    adicionarConversaNaTela(nomeUsuario, PRIVADO);
+    if (usuarioExiste) {
+      System.out.println("CLIENTE - Usuario encontrado! Criando aba privada.");
+      adicionarConversaNaTela(nomeUsuario, PRIVADO);
+    } else {
+      System.out.println("CLIENTE - O usuario " + nomeUsuario + " nao existe ou esta offline.");
+
+      try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/alert.fxml"));
+        Parent root = loader.load();
+
+        alertController controladorDoAlerta = loader.getController();
+
+        controladorDoAlerta.setDetalhes("Usuario Invalido",
+            "O usuario '" + nomeUsuario + "' nao existe ou esta offline no momento.");
+
+        Stage janelaAlerta = new Stage();
+        janelaAlerta.setScene(new Scene(root));
+        janelaAlerta.initStyle(StageStyle.UNDECORATED);
+        janelaAlerta.initModality(Modality.APPLICATION_MODAL);
+        janelaAlerta.show();
+
+      } catch (IOException e) {
+        System.out.println("Erro ao carregar o alerta!");
+        e.printStackTrace();
+      } // fim do try-catch
+    } // fim do if-else
   } // fim do metodo criarConversaPrivada
 
   /*
